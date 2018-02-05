@@ -1,0 +1,13 @@
+{
+  "acount": {
+    "base_info": "acount.base_info"
+  },
+  "customer": {
+    "fee_month": "customer.fee_month",
+    "fee_year": "customer.fee_year"
+  },
+  "report": {
+    "tag_report": "report.tag_report",
+    "gps_report": "report.gps_report"
+  }
+}

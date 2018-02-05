@@ -1,0 +1,94 @@
+<div id="divAccount" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" title="<%= t('account.my_account') %>" data-i18n="[title]account.my_account">
+    <form id="frmAccount" class="form-horizontal">
+        <div class="tabbable tabs-top">
+            <ul id="acountTab" class="nav nav-tabs">
+                <li class="active">
+                    <a href="#accountPanel" data-toggle="tab" value="1" data-i18n="account.base_info"><%= t('account.base_info') %></a>
+                </li>
+                <li>
+                    <a href="#passwordPanel" data-toggle="tab" value="2" data-i18n="account.password_info"><%= t('account.password_info') %></a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active row-fluid" id="accountPanel">
+                    <div>
+                        <div class="control-group">
+                            <!-- Text input-->
+                            <label class="control-label" for="_cust_name" data-i18n="customer.name"><%= t('customer.name') %></label>
+
+                            <div class="controls">
+                                <input id="_cust_name" name="_cust_name" type="text" placeholder="<%= t('customer.name') %>" class="input-xlarge" data-i18n="[placeholder]customer.name">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <!-- Text input-->
+                            <label class="control-label" for="_contacter" data-i18n="customer.contact"><%= t('customer.contact') %></label>
+
+                            <div class="controls">
+                                <input id="_contacter" name="_contacter" type="text" placeholder="<%= t('customer.contact') %>" class="input-xlarge" data-i18n="[placeholder]customer.contact">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <!-- Search input-->
+                            <label class="control-label" for="_contacter_tel" data-i18n="customer.tel"><%= t('customer.tel') %></label>
+
+                            <div class="controls">
+                                <input id="_contacter_tel" name="_contacter_tel" type="text" placeholder="<%= t('customer.tel') %>"
+                                       class="input-xlarge" data-i18n="[placeholder]customer.tel">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="control-group">
+                            <!-- Search input-->
+                            <label class="control-label" for="current_month_fee" data-i18n="customer.fee_month"><%= t('customer.fee_month') %></label>
+
+                            <div class="controls">
+                                <input id="current_month_fee" name="current_month_fee" type="text" placeholder="0.00" class="input-mini" data-i18n="[placeholder]customer.fee_month">元
+                                <span class="parent-fee">基准月费：<span id="parent_month_fee">0.00</span>元</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <!-- Search input-->
+                            <label class="control-label" for="current_year_fee" data-i18n="customer.fee_year"><%= t('customer.fee_year') %></label>
+
+                            <div class="controls">
+                                <input id="current_year_fee" name="current_year_fee" type="text" placeholder="0.00" class="input-mini" data-i18n="[placeholder]customer.fee_year">元
+                                <span class="parent-fee">基准年费：<span id="parent_year_fee">0.00</span>元</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane row-fluid" id="passwordPanel">
+                    <div>
+                        <div class="control-group">
+                            <!-- Text input-->
+                            <label class="control-label" for="account_old_password" data-i18n="account.old_password"><%= t('account.old_password') %></label>
+
+                            <div class="controls">
+                                <input id="account_old_password" name="account_old_password" type="password" placeholder="<%= t('account.modify_password') %>"
+                                       class="input-xlarge" data-i18n="[placeholder]account.modify_password">
+                            </div>
+                        </div>
+                        <div class="control-group" id="password_bar">
+                            <!-- Text input-->
+                            <label class="control-label" for="account_password" data-i18n="account.new_password"><%= t('account.new_password') %></label>
+
+                            <div class="controls">
+                                <input id="account_password" name="account_password" type="password" placeholder="<%= t('account.modify_password') %>"
+                                       class="input-xlarge" data-i18n="[placeholder]account.modify_password">
+                            </div>
+                        </div>
+                        <div class="control-group" id="password_bar2">
+                            <!-- Text input-->
+                            <label class="control-label" for="account_password2" data-i18n="account.password_again"><%= t('account.password_again') %></label>
+
+                            <div class="controls">
+                                <input id="account_password2" name="account_password2" type="password" placeholder="<%= t('account.password_again') %>" class="input-xlarge" data-i18n="[placeholder]account.password_again">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
