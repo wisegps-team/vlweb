@@ -399,7 +399,7 @@ var updateVehicleCount = function (callback) {
     query.isDepart = is_depart ? 1: 0;
 
     wistorm_api._count('vehicle2', query, auth_code, true, function (obj) {
-        console.log(obj);
+        console.log(obj,'updateVehicleCount');
         $('#onlineStatus').find('a')[0].innerHTML = _counts['1'] + '(' + (obj.online || 0) + ')';
         $('#offlineStatus').find('a')[0].innerHTML = _counts['2'] + '(' + (obj.offline || 0) + ')';
         $('#alertStatus').find('a')[0].innerHTML = _counts['3'] + '(' + (obj.alert || 0) + ')';
@@ -703,6 +703,7 @@ function _clearTimeout(){
 }
 
 function retrieveData( sSource, aoData, fnCallback ) {
+    // debugger;
     if(uid === 0){
         var json = {};
         json.aaData = [];
@@ -804,7 +805,7 @@ function retrieveData( sSource, aoData, fnCallback ) {
     var page_no = (aoData[3].value / page_count) + 1;
     var url = "";
     if(is_depart){
-        url = wistorm_api._lookupUrl('vehicle', lookup, query_json, 'objectId,name,model,did,sim,serviceRegDate,serviceExpireIn,device.activeGpsData,device.workType,device.params', 'name', 'name', page_no, page_count, auth_code, true);
+        url = wistorm_api._lookupUrl('vehicle', lookup, query_json, 'objectId,name,model,did,sim,serviceRegDate,serviceExpireIn,objectType,device.activeGpsData,device.workType,device.params,device.vehicleName,device.did', 'name', 'name', page_no, page_count, auth_code, true);
     }else{
         url = wistorm_api._listUrl('_iotDevice', query_json, 'objectId,vehicleName,did,activeGpsData,workType,params', 'vehicleName', 'vehicleName', 0, 0, page_no, page_count, auth_code, true);
     }
@@ -874,7 +875,7 @@ function windowResize() {
     $('#map_canvas').css({"height": windowHeight + "px"});
     // 修改车辆列表高度
     var height = $(window).height() - $('#accordion2').height() - 210;
-    // $('.dataTables_scrollBody').css({"height": height + "px"});
+    $('.dataTables_scrollBody').css({"height": height + "px"});
 }
 
 var addVehicle = function (did) {
@@ -974,13 +975,13 @@ var refreshVehicles = function () {
                 }
             }
         }
-        wimap.addVehicles(vehicles, false, false, false);
+        wimap.addVehicles(vehicles, false, false, false); //bmap.js
         if(devices.total > 0){
             updateVehicleCount();
         }
     });
 };
-
+//清除选择
 var clearVehicles = function () {
     $(":checkbox").attr("checked", false);
     uid = 0;
@@ -994,7 +995,7 @@ var clearVehicles = function () {
     // interval = 10;
     // updateTime = new Date(0);
 };
-
+//有车辆时定时刷新
 var interval = 10;
 var intervalId;
 var refreshLocation = function () {

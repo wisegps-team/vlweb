@@ -169,9 +169,14 @@ function getIconStatus(vehicle, if_playback) {
 }
 
 function getIconName(vehicle) {
-    var icon_name = "normal";
-    if (vehicle.obj_type == 0) {
-        icon_name = "normal";
+    var icon_name = "normal"; //vehicleType
+    // if (vehicle.obj_type == 0) {
+    //     icon_name = "normal";
+    // }
+    if(!vehicle.objectType){
+        icon_name = "normal"
+    }else {
+        icon_name = vehicle.objectType
     }
     return icon_name;
 }
