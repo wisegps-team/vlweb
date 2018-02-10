@@ -149,6 +149,7 @@ function getAllDepart() {
         uid: dealer_id
     };
     wistorm_api._list('department', query_json, 'objectId,name,parentId,uid', 'name', 'name', 0, 0, 1, -1, auth_code, true, function (json) {
+        console.log(json, 'alldepart')
         var onCustomerAssignClick = function (event, treeId, treeNode) {
             if (parseInt(treeNode.id) > -1) {
                 assignDepartId = treeNode.id;
@@ -551,12 +552,110 @@ function vehicleQuery(cust_id, tree_path, is_depart) {
         }
     }
     setLoading("vehicle_list");
+    // debugger;
     wistorm_api._list('vehicle', query_json, 'objectId,name,model,did,sim,serviceRegDate,serviceExpireIn,contact,tel', '-createdAt', '-createdAt', 0, 0, 1, -1, auth_code, true, vehicleQuerySuccess)
+
+    wistorm_api._list('department', { uid: cust_id }, '', '-createdAt', '-createdAt', 0, 0, 1, -1, auth_code, true, function (json) {
+        var departmentData = {};
+        if (json.total) {
+            json.data.forEach(ele => {
+                departmentData[ele.objectId] = ele.name;
+            })
+        }
+        exportCustomer('vehicle', query_json, departmentData)
+        // console.log(departmentData)
+        // console.log(json,'department',cust_id)
+    })
+
 }
+
+var exportData;
+var exportCustomer = function (tableName, query_json, departEnum) {
+    var query = query_json;
+
+    Object.assign(departEnum, { 'undefined': '' })
+    var departString = 'enum' + JSON.stringify(departEnum);
+
+    var typeChangeFn = function () {
+        if (typeof v == 'undefined') {
+            return ''
+        } else if (typeof v == 'string' || typeof v == 'number') {
+            return v
+        }
+    }
+    var dateFn = function () {
+        if (v) {
+            return v
+        } else {
+            return ''
+        }
+    }
+    
+
+    // var exportObj = {
+    //     map: 'BAIDU',
+    //     fields: ["name", "departId", "objectType", "model", "sim", "contact", "tel", "serviceExpireIn", "remark", "did", "insuranceExpireIn", "maintainExpireIn", "inspectExpireIn", "maintainMileage"],
+    //     titles: ['车辆名称', '所属部门', "车辆类型", "车辆型号", "SIM卡号", "联系人", "联系电话", "到期时间", "备注", "终端ID", "保养到期日", "年检到期日", "保险到期日", "保养里程"],
+    //     displays: ["s", departString, 's', 's', "s", "s", "s", 'd', "s", "s", "d", "d", "d", "s"]
+    // };
+    // var titles = ['车辆名称', '所属部门', "车辆类型", "车辆型号", "SIM卡号", "联系人", "联系电话", "到期时间", "备注", "终端ID", "保养到期日", "年检到期日", "保险到期日", "保养里程"];
+    var exportObj = {
+        map: 'BAIDU',
+        fields: ["name", "departId", "objectType", "model", "sim", "contact", "tel", "serviceExpireIn", "remark", "did", "insuranceExpireIn", "maintainExpireIn", "inspectExpireIn", "maintainMileage"],
+        titles: [i18next.t('vehicle.name'), i18next.t('system.depart'), i18next.t('vehicle.objectType'), i18next.t('vehicle.model'), i18next.t('vehicle.sim'), i18next.t('vehicle.contact'), i18next.t('vehicle.tel'), i18next.t('vehicle.end_date'), i18next.t('vehicle.remark'),  i18next.t('device.id'), i18next.t('vehicle.insuranceExpireIn'), i18next.t('vehicle.maintainExpireIn'), i18next.t('vehicle.inspectExpireIn'), i18next.t('vehicle.maintainMileage')],
+        displays: ["s", departString, typeChangeFn.toString(), typeChangeFn.toString(), typeChangeFn.toString(), typeChangeFn.toString(), typeChangeFn.toString(), 'd', typeChangeFn.toString(), typeChangeFn.toString(), dateFn.toString(), dateFn.toString(), dateFn.toString(), typeChangeFn.toString()]
+    };
+    // t
+    // "s", typeChangeFn.toString(), typeChangeFn.toString(), typeChangeFn.toString(), typeChangeFn.toString(), typeChangeFn.toString(), typeChangeFn.toString(), 'd', typeChangeFn.toString(), typeChangeFn.toString(), dateFn.toString(), dateFn.toString(), dateFn.toString(), typeChangeFn.toString()
+    // for (var i = 0; i < (exportObj.displays.length = 14); i++) {
+    //     if (i == 7 || i == 10 || i == 11 || i == 12) {
+    //         exportObj.displays[i] = dateFn.toString();
+    //     } else {
+    //         exportObj.displays[i] = typeChangeFn.toString()
+    //     }
+    // }
+    // var exportObj = {
+    //     map: 'BAIDU',
+    //     fields: ["name", "model", "sim"],
+    //     titles: ['车辆名称', '车辆型号', "SIM卡号"],
+    //     displays: ["s", "s", typeChangeFn.toString()]
+    // };
+    // debugger;
+    // exportUrl = wistorm_api._exportUrl(tableName, query, exportObj.fields.join(','), exportObj.titles.join(','), exportObj.displays.join('#'), '-createdAt', '-createdAt', exportObj.map || 'BAIDU', auth_code);
+    wistorm_api._exportPost(tableName, query, exportObj.fields.join(','), exportObj.titles.join(','), exportObj.displays.join('#'), '-createdAt', '-createdAt', exportObj.map || 'BAIDU', auth_code, function (json) {
+        console.log(json, 'exportPost')
+        exportData = json;
+    });
+
+}
+
+$('#export').on('click', function () {
+    var reader = new FileReader();
+    reader.readAsDataURL(exportData);
+    reader.onload = function (e) {
+        // 转换完成，创建一个a标签用于下载
+        var a = document.createElement('a');
+        a.download = 'data.xlsx';
+        a.href = e.target.result;
+        $("body").append(a);  // 修复firefox中无法触发click
+        a.click();
+        $(a).remove();
+    }
+})
+
+
+
 
 var names = [];
 
 var vehicleQuerySuccess = function (json) {
+    if (json.total) {
+        $('#export').show()
+    } else {
+        $('#export').hide()
+    }
+
+
     var j, _j, UnContacter, Uncontacter_tel;
     names = [];
     // if(json.status_code === 0 && selectNode && selectNode.id !== $.cookie('dealer_id')){
@@ -1343,24 +1442,24 @@ $(document).ready(function () {
                             }
                         }
                     },
-                    sim:{
-                        rangelength:[11, 13],
-                        required:true,
-                        remote:{
-                            url:"exists", //后台处理程序
-                            type:"get", //数据发送方式
-                            dataType:"json", //接受数据格式
-                            data:{
-                                auth_code:function () {
+                    sim: {
+                        rangelength: [11, 13],
+                        required: true,
+                        remote: {
+                            url: "exists", //后台处理程序
+                            type: "get", //数据发送方式
+                            dataType: "json", //接受数据格式
+                            data: {
+                                auth_code: function () {
                                     return $.cookie('auth_code');
                                 },
-                                query_type:function () {
+                                query_type: function () {
                                     return 1;
                                 },
-                                value:function () {
+                                value: function () {
                                     return $('#sim').val();
                                 },
-                                old_value: function(){
+                                old_value: function () {
                                     return edit_sim;
                                 }
                             }

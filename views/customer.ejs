@@ -30,6 +30,7 @@
     <![endif]-->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/index.css" rel="stylesheet">
+    <link href="css/Icon/iconfont.css" rel="stylesheet">
     <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -118,6 +119,9 @@
                 </select>
                 <input id="customerKey" class="input-medium" type="text" data-provide="typeahead" data-items="5" autocomplete="off" data-source="" placeholder="<%= t('customer.search') %>" data-i18n="[placeholder]customer.search">
                 <button class="btn btn-primary" type="button" id="addCustomer" data-i18n="customer.new"><%= t('customer.new') %></button>
+                <button class="btn btn-primary" type="button" id="export" data-i18n="report.export" style="display:none;margin-left:10px">
+                    <%= t('report.export') %>
+                </button>
                 <!-- <button class="btn" type="button" id="searchVehicle">搜索</button> -->
                 <!-- <button class="btn btn-primary" type="button" id="delVehicle">删除</button> -->
                 <!-- <a href="#frmVehicle" role="button" class="btn" data-toggle="modal"><i class="icon-plus"></i> 新增</a>
@@ -186,6 +190,7 @@
 <script src="js/wistorm/wistorm.js"></script>
 <script src="js/json.js"></script>
 <!--<script src="js/index.js"></script>-->
+<script src="js/table.js"></script>
 <script src="js/locales.js" ></script>
 <script src="js/customer.js"></script>
 <script src="js/account.js"></script>

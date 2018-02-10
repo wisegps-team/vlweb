@@ -308,7 +308,19 @@
     "fortify": "设防",
     "lock": "锁车",
     "gps_time": "定位时间",
-    "rcv_time": "接收时间"
+    "rcv_time": "接收时间",
+    "acc_off_time": "熄火时间",
+    "acc_on_time": "启动时间",
+    "idle_duration": "停留时长",
+    "idle_location": "停留位置",
+    "run_time": "行驶时间",
+    "run_distance": "行驶距离",
+    "startlon": "起点经度",
+    "startlat": "起点纬度",
+    "startlocation": "起点位置",
+    "endlon": "终点经度",
+    "endlat": "终点纬度",
+    "endlocation": "终点位置"
   },
   "playback": {
     "start_time": "开始时间",

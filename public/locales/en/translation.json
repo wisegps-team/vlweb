@@ -308,7 +308,19 @@
     "fortify": "Fortify",
     "lock": "Lock",
     "gps_time": "GPS Time",
-    "rcv_time": "Rcv Time"
+    "rcv_time": "Rcv Time",
+    "acc_off_time": "Acc Off Time",
+    "acc_on_time": "Acc On Time",
+    "idle_duration": "Idle Duration",
+    "idle_location": "Idle Location",
+    "run_time": "Run Time",
+    "run_distance": "Run Distance",
+    "startlon": "Start Lon",
+    "startlat": "Start Lat",
+    "startlocation": "Start Location",
+    "endlon": "End Lon",
+    "endlat": "End Lat",
+    "endlocation": "End Location"
   },
   "playback": {
     "start_time": "Start Time",

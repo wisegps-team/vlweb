@@ -20,11 +20,11 @@ var login_depart_id = $.cookie('depart_id');
 
 function windowResize() {
     var height = $(window).height() - 122;
-    $('#customerTree').css({"height": height + "px"});
+    $('#customerTree').css({ "height": height + "px" });
 };
 
 // 客户详细信息
-function deviceInfo(did){
+function deviceInfo(did) {
     // var auth_code = $.cookie('auth_code');
     // var searchUrl = $.cookie('Host') + "vehicle/" + obj_id;
     // var searchData = { auth_code:auth_code };
@@ -35,47 +35,47 @@ function deviceInfo(did){
     var query_json = {
         did: did
     };
-    wistorm_api._get('_iotDevice', query_json, 'objectId,did,model,workType,vehicleId,vehicleName', auth_code, true, function(json){
+    wistorm_api._get('_iotDevice', query_json, 'objectId,did,model,workType,vehicleId,vehicleName', auth_code, true, function (json) {
         deviceInfoSuccess(json.data);
     });
 }
 
-function vehicleDeviceList(){
+function vehicleDeviceList() {
     $("#divDeviceAssign").dialog("open");
 }
 
 // 跳转到日志页面
-function logInfo(device_id){
+function logInfo(device_id) {
     var logUrl = "/datalog?device_id=" + device_id;
     window.location.href = logUrl;
 }
 
-var deviceInfoSuccess = function(json) {
+var deviceInfoSuccess = function (json) {
     //alert(json);
     // validator_vehicle.resetForm();
-    var title = i18next.t("device.edit_device",{cust_name: cust_name});
+    var title = i18next.t("device.edit_device", { cust_name: cust_name });
     initFrmDevice(title, 2, json.did, json.model, json.workType, json.vehicleId, json.vehicleName);
     $("#divDeviceEdit").dialog("open");
 };
 
 // 初始化车辆信息窗体
-var initFrmDevice = function(title, flag, did, model, workType, vehicleId, vehicleName){
+var initFrmDevice = function (title, flag, did, model, workType, vehicleId, vehicleName) {
     $("#divDeviceEdit").dialog("option", "title", title);
     _flag = flag;
     $('#editDid').val(did);
     $('#editModel').val(model);
-    $('#editWorkType').val((workType||0).toString());
-    $('#editVehicleName').val(vehicleName||'');
-    $('#unbind').css("display", vehicleName||'' !== '' ? 'inline-block': 'none');
+    $('#editWorkType').val((workType || 0).toString());
+    $('#editVehicleName').val(vehicleName || '');
+    $('#unbind').css("display", vehicleName || '' !== '' ? 'inline-block' : 'none');
 };
 
-var initFrmCustomerList = function(title, obj_id, obj_name, cust_id){
+var initFrmCustomerList = function (title, obj_id, obj_name, cust_id) {
     $("#divCustomerList").dialog("option", "title", title);
     $('#change_obj_id').val(obj_id);
     $('#change_obj_name').val(obj_name);
     $('#change_cust_id').html("");
-    for(var i = 0; i < customers.length; i++){
-        $('#change_cust_id').append("<option value='"+customers[i].cust_id+"'>"+customers[i].cust_name+"</option>");
+    for (var i = 0; i < customers.length; i++) {
+        $('#change_cust_id').append("<option value='" + customers[i].cust_id + "'>" + customers[i].cust_name + "</option>");
     }
     $("#change_cust_id").get(0).value = cust_id;
 };
@@ -85,17 +85,17 @@ function customerQuery() {
     var dealer_id = $.cookie('dealer_id');
     var tree_path = $.cookie('tree_path');
     var key = '';
-    if($('#searchKey').val() !== ''){
+    if ($('#searchKey').val() !== '') {
         key = $('#searchKey').val().trim();
     }
 
     var query_json;
-    if(key !== ""){
+    if (key !== "") {
         query_json = {
             treePath: '^,' + dealer_id + ',',
             name: '^' + key
         };
-    }else{
+    } else {
         query_json = {
             // parentId: dealer_id
             treePath: '^,' + dealer_id + ','
@@ -111,7 +111,7 @@ var treeIcon = {
     '8': '/img/company_icon.png'
 };
 
-var customerQuerySuccess = function(json) {
+var customerQuerySuccess = function (json) {
     var names = [];
     customers = json.data;
     if (json.data.length > 0) {
@@ -131,9 +131,9 @@ var customerQuerySuccess = function(json) {
         names.push(json.data[i].name);
     }
 
-    var onCustomerSelectClick = function(event, treeId, treeNode){
-//        alert(treeNode.tree_path);
-        if(treeNode.pId || treeNode.id == $.cookie('dealer_id')){
+    var onCustomerSelectClick = function (event, treeId, treeNode) {
+        //        alert(treeNode.tree_path);
+        if (treeNode.pId || treeNode.id == $.cookie('dealer_id')) {
             uid = treeNode.id;
             tree_path = treeNode.treePath;
             cust_id = treeNode.id;
@@ -144,38 +144,38 @@ var customerQuerySuccess = function(json) {
         }
     };
 
-    var onCustomerAssignClick = function(event, treeId, treeNode){
-//        alert(treeNode.tree_path);
-        if(treeNode.pId){
+    var onCustomerAssignClick = function (event, treeId, treeNode) {
+        //        alert(treeNode.tree_path);
+        if (treeNode.pId) {
             assignUid = treeNode.id;
             assignTreePath = treeNode.treePath;
             assignName = treeNode.name;
         }
     };
 
-    var onCustomerSelectDblClick = function(event, treeId, treeNode){
+    var onCustomerSelectDblClick = function (event, treeId, treeNode) {
         // var treeObj = $.fn.zTree.getZTreeObj("customerTree");
         // if(treeNode.id !== $.cookie('dealer_id')){
         //     loadSubNode(treeObj, treeNode);
         // }
     };
 
-    var onCustomerAssignDblClick = function(event, treeId, treeNode){
+    var onCustomerAssignDblClick = function (event, treeId, treeNode) {
         // var treeObj = $.fn.zTree.getZTreeObj("customerTreeAssign");
         // loadSubNode(treeObj, treeNode);
     };
 
     var setting = {
-        view: {showIcon: true},
-        check: {enable: false, chkStyle: "checkbox"},
-        data: {simpleData: {enable: true}},
-        callback: {onClick: onCustomerSelectClick, onDblClick: onCustomerSelectDblClick}
+        view: { showIcon: true },
+        check: { enable: false, chkStyle: "checkbox" },
+        data: { simpleData: { enable: true } },
+        callback: { onClick: onCustomerSelectClick, onDblClick: onCustomerSelectDblClick }
     };
     var settingAssign = {
-        view: {showIcon: true},
-        check: {enable: false, chkStyle: "checkbox"},
-        data: {simpleData: {enable: true}},
-        callback: {onClick: onCustomerAssignClick, onDblClick: onCustomerAssignDblClick}
+        view: { showIcon: true },
+        check: { enable: false, chkStyle: "checkbox" },
+        data: { simpleData: { enable: true } },
+        callback: { onClick: onCustomerAssignClick, onDblClick: onCustomerAssignDblClick }
     };
 
     var customerArray = [];
@@ -190,108 +190,108 @@ var customerQuerySuccess = function(json) {
     // });
 
     // if($("#__customer").length > 0){
-        // if($.cookie('dealer_type') == 1 || $.cookie('dealer_type') == 11 || $.cookie('dealer_type') == 2){
-        //     customerArray.push({
-        //         open: true,
-        //         id: '2',
-        //         pId: 0,
-        //         name: '运营商(用户/车辆)',
-        //         icon: '/img/customer.png'
-        //     });
-        //     selectArray.push({
-        //         open: true,
-        //         id: '2',
-        //         pId: 0,
-        //         name: '运营商(用户/车辆)',
-        //         icon: '/img/customer.png'
-        //     });
-        // }
-        //
-        // if($.cookie('dealer_type') == 1 || $.cookie('dealer_type') == 11 || $.cookie('dealer_type') == 2 || $.cookie('dealer_type') == 8) {
-        //     customerArray.push({
-        //         open: false,
-        //         id: '8',
-        //         pId: 0,
-        //         name: '集团用户(用户/车辆)',
-        //         icon: '/img/customer.png'
-        //     });
-        //     selectArray.push({
-        //         open: false,
-        //         id: '8',
-        //         pId: 0,
-        //         name: '集团用户(用户/车辆)',
-        //         icon: '/img/customer.png'
-        //     });
-        //     customerArray.push({
-        //         open: false,
-        //         id: '7',
-        //         pId: 0,
-        //         name: '个人用户(用户/车辆)',
-        //         icon: '/img/customer.png'
-        //     });
-        //     selectArray.push({
-        //         open: false,
-        //         id: '7',
-        //         pId: 0,
-        //         name: '个人用户(用户/车辆)',
-        //         icon: '/img/customer.png'
-        //     });
-        // }
-        //
-        // if($.cookie('dealer_type') == 7) {
-        //     customerArray.push({
-        //         open: false,
-        //         id: '7',
-        //         pId: 0,
-        //         name: '个人用户(用户/车辆)',
-        //         icon: '/img/customer.png'
-        //     });
-        //     selectArray.push({
-        //         open: false,
-        //         id: '7',
-        //         pId: 0,
-        //         name: '个人用户(用户/车辆)',
-        //         icon: '/img/customer.png'
-        //     });
-        // }
+    // if($.cookie('dealer_type') == 1 || $.cookie('dealer_type') == 11 || $.cookie('dealer_type') == 2){
+    //     customerArray.push({
+    //         open: true,
+    //         id: '2',
+    //         pId: 0,
+    //         name: '运营商(用户/车辆)',
+    //         icon: '/img/customer.png'
+    //     });
+    //     selectArray.push({
+    //         open: true,
+    //         id: '2',
+    //         pId: 0,
+    //         name: '运营商(用户/车辆)',
+    //         icon: '/img/customer.png'
+    //     });
+    // }
+    //
+    // if($.cookie('dealer_type') == 1 || $.cookie('dealer_type') == 11 || $.cookie('dealer_type') == 2 || $.cookie('dealer_type') == 8) {
+    //     customerArray.push({
+    //         open: false,
+    //         id: '8',
+    //         pId: 0,
+    //         name: '集团用户(用户/车辆)',
+    //         icon: '/img/customer.png'
+    //     });
+    //     selectArray.push({
+    //         open: false,
+    //         id: '8',
+    //         pId: 0,
+    //         name: '集团用户(用户/车辆)',
+    //         icon: '/img/customer.png'
+    //     });
+    //     customerArray.push({
+    //         open: false,
+    //         id: '7',
+    //         pId: 0,
+    //         name: '个人用户(用户/车辆)',
+    //         icon: '/img/customer.png'
+    //     });
+    //     selectArray.push({
+    //         open: false,
+    //         id: '7',
+    //         pId: 0,
+    //         name: '个人用户(用户/车辆)',
+    //         icon: '/img/customer.png'
+    //     });
+    // }
+    //
+    // if($.cookie('dealer_type') == 7) {
+    //     customerArray.push({
+    //         open: false,
+    //         id: '7',
+    //         pId: 0,
+    //         name: '个人用户(用户/车辆)',
+    //         icon: '/img/customer.png'
+    //     });
+    //     selectArray.push({
+    //         open: false,
+    //         id: '7',
+    //         pId: 0,
+    //         name: '个人用户(用户/车辆)',
+    //         icon: '/img/customer.png'
+    //     });
+    // }
 
-        // 创建三个分类的根节点
-        for (var i = 0; i < json.data.length; i++) {
-            var childCount = json.data[i]['other'] ? (json.data[i]['other']['childCount'] || 0): 0;
-            var vehicleCount = json.data[i]['other'] ? (json.data[i]['other']['vehicleCount'] || 0): 0;
-            customerArray.push({
-                open: false,
-                id: json.data[i]['uid'],
-                treePath: json.data[i]['treePath'],
-                pId: json.data[i]['parentId'][0],
-                name: json.data[i]['name'] + '(' + vehicleCount + ')',
-                icon: treeIcon[json.data[i]['custType']]
-            });
-            selectArray.push({
-                open: false,
-                id: json.data[i]['uid'],
-                treePath: json.data[i]['treePath'],
-                pId: json.data[i]['parentId'][0],
-                name: json.data[i]['name'] + '(' + vehicleCount + ')',
-                icon: treeIcon[json.data[i]['custType']]
-            });
-        }
+    // 创建三个分类的根节点
+    for (var i = 0; i < json.data.length; i++) {
+        var childCount = json.data[i]['other'] ? (json.data[i]['other']['childCount'] || 0) : 0;
+        var vehicleCount = json.data[i]['other'] ? (json.data[i]['other']['vehicleCount'] || 0) : 0;
+        customerArray.push({
+            open: false,
+            id: json.data[i]['uid'],
+            treePath: json.data[i]['treePath'],
+            pId: json.data[i]['parentId'][0],
+            name: json.data[i]['name'] + '(' + vehicleCount + ')',
+            icon: treeIcon[json.data[i]['custType']]
+        });
+        selectArray.push({
+            open: false,
+            id: json.data[i]['uid'],
+            treePath: json.data[i]['treePath'],
+            pId: json.data[i]['parentId'][0],
+            name: json.data[i]['name'] + '(' + vehicleCount + ')',
+            icon: treeIcon[json.data[i]['custType']]
+        });
+    }
     // }
 
     $.fn.zTree.init($("#customerTree"), setting, customerArray);
     $.fn.zTree.init($("#customerTreeAssign"), settingAssign, selectArray);
 
-    $('#customerKey').typeahead({source:names});
+    $('#customerKey').typeahead({ source: names });
 
-    if(uid > 0){
+    if (uid > 0) {
         var treeObj = $.fn.zTree.getZTreeObj("customerTree");
         var node = treeObj.getNodeByParam("id", uid, null);
-        if(node){
+        if (node) {
             tree_path = node.treePath;
             cust_name = node.name;
             $('#selCustName').html(cust_name);
             treeObj.selectNode(node);
-        }else{
+        } else {
             uid = $.cookie('dealer_id');
             tree_path = $.cookie('tree_path');
             node = treeObj.getNodeByParam("id", uid, null);
@@ -300,7 +300,7 @@ var customerQuerySuccess = function(json) {
             $('#selCustName').html(cust_name);
             treeObj.selectNode(node);
         }
-        if(typeof _query != "undefined"){
+        if (typeof _query != "undefined") {
             _query(uid, "");
         }
     }
@@ -309,17 +309,17 @@ var customerQuerySuccess = function(json) {
 // 终端查询
 function _query(cust_id) {
     var key = '';
-    if($("#deviceKey").val() !== ''){
+    if ($("#deviceKey").val() !== '') {
         key = $("#deviceKey").val().trim();
     }
 
     var query_json;
-    if(key !== ""){
+    if (key !== "") {
         query_json = {
             uid: cust_id,
             did: '^' + key
         };
-    }else{
+    } else {
         query_json = {
             uid: cust_id
         };
@@ -332,16 +332,17 @@ function _query(cust_id) {
 
 var names = [];
 
-function retrieveData( sSource, aoData, fnCallback ) {
+function retrieveData(sSource, aoData, fnCallback) {
+    // debugger;
     var key = $('#deviceKey').val().trim();
     var query_json;
-    if(key != ""){
+    if (key != "") {
         var searchType = $('#searchType').val();
-        if($('#allNode').is(':checked')) {
-            var uids = tree_path.split(",").filter(function(value){
+        if ($('#allNode').is(':checked')) {
+            var uids = tree_path.split(",").filter(function (value) {
                 return value !== '';
             });
-            var _uid = uids && uids.length > 0? uids[uids.length-1]: '';
+            var _uid = uids && uids.length > 0 ? uids[uids.length - 1] : '';
             query_json = {
                 uid: _uid,
                 map: 'BAIDU'
@@ -359,6 +360,7 @@ function retrieveData( sSource, aoData, fnCallback ) {
                 "dataType": "json",
                 "data": null, //以json格式传递
                 "success": function (json) {
+                    debugger;
                     json.sEcho = aoData[0].value;
                     json.iTotalRecords = json.total;
                     json.iTotalDisplayRecords = json.total;
@@ -381,41 +383,44 @@ function retrieveData( sSource, aoData, fnCallback ) {
                     fnCallback(json); //服务器端返回的对象的returnObject部分是要求的格式
                 }
             });
-        }else{
+        } else {
             query_json = {
                 uid: uid,
                 map: 'BAIDU'
             };
             query_json[searchType] = '^' + key;
         }
-    }else{
+    } else {
         query_json = {
             uid: uid,
             map: 'BAIDU'
         };
     }
+    exportCustomer('_iotDevice', query_json)
+    $('#export').show()
     var page_count = aoData[4].value;
     var page_no = (aoData[3].value / page_count) + 1;
     var url = wistorm_api._listUrl('_iotDevice', query_json, '_id,uid,objectId,model,did,vehicleId,vehicleName,params,activeGpsData,createdAt', '-createdAt', '-createdAt', 0, 0, page_no, page_count, auth_code, true);
-    $.ajax( {
+    $.ajax({
         "type": "GET",
         "contentType": "application/json",
         "url": url,
         "dataType": "json",
         "data": null, //以json格式传递
-        "success": function(json) {
+        "success": function (json) {
+            debugger;
             json.sEcho = aoData[0].value;
             json.iTotalRecords = json.total;
             json.iTotalDisplayRecords = json.total;
-            for(var i = 0; i < json.data.length; i++){
+            for (var i = 0; i < json.data.length; i++) {
                 json.data[i].index = i;
             }
             json.aaData = json.data;
-            if(json.total === 1){
-                if($("#deviceKey").val() !== '' && json.data.length === 1){
+            if (json.total === 1) {
+                if ($("#deviceKey").val() !== '' && json.data.length === 1) {
                     var treeObj = $.fn.zTree.getZTreeObj("customerTree");
-                    var node = treeObj.getNodeByParam("id", json.data[0].uid[json.data[0].uid.length-1], null);
-                    if(node){
+                    var node = treeObj.getNodeByParam("id", json.data[0].uid[json.data[0].uid.length - 1], null);
+                    if (node) {
                         cust_name = node.name;
                         $('#selCustName').html(cust_name);
                         treeObj.selectNode(node);
@@ -427,13 +432,91 @@ function retrieveData( sSource, aoData, fnCallback ) {
     });
 }
 
+
+var exportData;
+var exportUrl = '';
+var exportCustomer = function (tableName, query_json) {
+    var query = query_json;
+    delete query.map;
+    var workType = {
+        "0": i18next.t('device.wired_device'),
+        "1": i18next.t('device.wireless_device')
+    }
+    Object.assign(workType, { 'undefined': '' })
+    var workTypeString = 'enum' + JSON.stringify(workType);
+
+    var typeChangeFn = function () {
+        if (typeof v == 'undefined') {
+            return ''
+        } else if (typeof v == 'string' || typeof v == 'number') {
+            return v
+        }
+    }
+    var dateFn = function () {
+        if (v) {
+            return v
+        } else {
+            return ''
+        }
+    }
+    var ICCIDFn = function () {
+        if (v) {
+            if (v.iccid)
+                return v.iccid + ''
+        }
+        return ''
+    }
+    var versionFn = function () {
+        if (v) {
+            if (v.version)
+                return v.version + ''
+        }
+        return ''
+    }
+    var exportObj = {
+        map: 'BAIDU',
+        fields: ["did", "vehicleName", "params", "model", "params", "workType", "createdAt",],
+        titles: [i18next.t('device.id'), i18next.t('vehicle.name'), "ICCID", i18next.t('device.model'), i18next.t('device.version'), i18next.t('device.work_type'), i18next.t('device.import_time')],
+        displays: [typeChangeFn.toString(), typeChangeFn.toString(), ICCIDFn.toString(), typeChangeFn.toString(), versionFn.toString(), workTypeString, "d"]
+    };
+    // var exportObj = {
+    //     map: 'BAIDU',
+    //     fields: ["did", "vehicleName","params", "model", "workType", "createdAt",],
+    //     titles: [i18next.t('device.id'), i18next.t('vehicle.name'),"ICCID",  i18next.t('device.model'), i18next.t('device.work_type'), i18next.t('device.import_time')],
+    //     displays: [typeChangeFn.toString(), typeChangeFn.toString(), ICCIDFn.toString(),typeChangeFn.toString(), workTypeString, "d"]
+    // };
+
+    // debugger;
+    // exportUrl = wistorm_api._exportUrl(tableName, query, exportObj.fields.join(','), exportObj.titles.join(','), exportObj.displays.join('#'), '-createdAt', '-createdAt', exportObj.map || 'BAIDU', auth_code);
+    // console.log(exportUrl)
+    wistorm_api._exportPost(tableName, query, exportObj.fields.join(','), exportObj.titles.join(','), exportObj.displays.join('#'), '-createdAt', '-createdAt', exportObj.map || 'BAIDU', auth_code, function (json) {
+        console.log(json, 'exportPost')
+        exportData = json;
+    });
+
+}
+
+$('#export').on('click', function () {
+    var reader = new FileReader();
+    reader.readAsDataURL(exportData);
+    reader.onload = function (e) {
+        // 转换完成，创建一个a标签用于下载
+        var a = document.createElement('a');
+        a.download = 'data.xlsx';
+        a.href = e.target.result;
+        $("body").append(a);  // 修复firefox中无法触发click
+        a.click();
+        $(a).remove();
+    }
+})
+
 var showLocation = function showLocation(thisID, address) {
     thisID.html('(' + address + ')');
     thisID.attr('title', address);
 };
 
-var updateLoc = function(){
-    setTimeout(function(){
+var updateLoc = function () {
+    setTimeout(function () {
         $(".locUpdate").each(function (i) {
             console.log(i + ',' + this);
             if (i != 0) {
@@ -446,7 +529,7 @@ var updateLoc = function(){
     }, 100);
 };
 
-var querySuccess = function(url) {
+var querySuccess = function (url) {
     var gpsFlagDesc =
         ['',
             '<div class="offline">' + i18next.t("locate.bad") + '</div>',
@@ -465,60 +548,75 @@ var querySuccess = function(url) {
     // }
 
     var _columns = [
-        { "mData":null, "sClass":"center did", "searchable": false, "bSortable":false, "fnRender": function(obj){
-            return "<input type='checkbox' id='" + obj.aData.did + "' value='" + obj.aData.did + "'>";
-        }},
-        { "mData":"did", "sClass":""},
-        { "mData":null, "sClass":"", "fnRender": function(obj){
-            return obj.aData.vehicleName? obj.aData.vehicleName : i18next.t("device.unbinded") ;
-        }},
-        { "mData":null, "sClass":"", "fnRender": function(obj){
-            return obj.aData.params? obj.aData.params.iccid || '' : '';
-        }},
-        { "mData":"model", "sClass":"center" },
-        { "mData":null, "sClass":"center", "fnRender": function(obj){
-            return obj.aData.params? obj.aData.params.version || '' : '';
-        }},
-        { "mData":null, "sClass":"loc", "fnRender": function(obj){
-            // return obj.aData.activeGpsData ? new Date(obj.aData.activeGpsData.rcvTime).format("MM-dd hh:mm:ss"): ''
-            var desc = '';
-            if(obj.aData.activeGpsData){
-                var lon = i18next.language === 'zh' || i18next.language === 'zh-CN' ? obj.aData.activeGpsData.lon: obj.aData.activeGpsData.glon;
-                var lat = i18next.language === 'zh' || i18next.language === 'zh-CN' ? obj.aData.activeGpsData.lat: obj.aData.activeGpsData.glat;
-                desc = gpsFlagDesc[obj.aData.activeGpsData.gpsFlag];
-                desc += '<div style="width:260px;overflow:hidden;white-space:nowrap; text-overflow:ellipsis" id="loc' + obj.aData.did + '">(' + lon.toFixed(6) + ', ' + lat.toFixed(6) + ')</div>';
-                var interval = i18next.language === 'zh' || i18next.language === 'zh-CN' ? 300: obj.aData.index * 300;
-                setTimeout(function () {
-                    setLocation(0, lon, lat, $('#loc' + obj.aData.did), showLocation);
-                }, interval);
+        {
+            "mData": null, "sClass": "center did", "searchable": false, "bSortable": false, "fnRender": function (obj) {
+                return "<input type='checkbox' id='" + obj.aData.did + "' value='" + obj.aData.did + "'>";
             }
-            return desc;
-        }},
-        { "mData":null, "sClass":"", "fnRender": function(obj){
-            var desc = '';
-            if(obj.aData.activeGpsData){
-                desc = getOnLine(obj.aData) ? '<span class="online">' + i18next.t("system.online") +'</span>': '<span class="offline">' +   i18next.t("system.offline") +'</span>';
-                desc += '&nbsp;( <span title="' + new Date(obj.aData.activeGpsData.rcvTime).format("yyyy-MM-dd hh:mm:ss") + '">' + new Date(obj.aData.activeGpsData.rcvTime).beautify() + '</span> )&nbsp;';
+        },
+        { "mData": "did", "sClass": "" },
+        {
+            "mData": null, "sClass": "", "fnRender": function (obj) {
+                return obj.aData.vehicleName ? obj.aData.vehicleName : i18next.t("device.unbinded");
             }
-            return desc;
-        }},
-        { "mData":null, "sClass":"center", "fnRender": function(obj){
-            return new Date(obj.aData.createdAt).format("MM-dd hh:mm:ss");
-        }},
-        { "mData":null, "sClass":"center", "bSortable":false, "fnRender":function (obj) {
-            var op = "<a href='#' title='分配终端' data-i18n='[title]device.assign_device'><i class='icon-tag' obj_id='" + obj.aData._id + "' did='" + obj.aData.did + "' cust_id='" + obj.aData.uid + "'></i></a>";
-            var delOp = "&nbsp&nbsp<a href='#' title='编辑' data-i18n='[title]table.edit'><i class='icon-edit' obj_id='" + obj.aData._id + "' did='" + obj.aData.did + "'></i></a>&nbsp&nbsp<a href='#' title='删除' data-i18n='[title]table.delete'><i class='icon-remove' obj_id='" + obj.aData.objectId + "' did='" + obj.aData.did + "'></i></a>";
-            var dealer_type = parseInt($.cookie('dealer_type'));
-            if($("#__customer").length > 0) {
-                if (dealer_type === 1 || dealer_type === 2) {
-                    return op + delOp;
-                } else {
-                    return op;
+        },
+        {
+            "mData": null, "sClass": "", "fnRender": function (obj) {
+                return obj.aData.params ? obj.aData.params.iccid || '' : '';
+            }
+        },
+        { "mData": "model", "sClass": "center" },
+        {
+            "mData": null, "sClass": "center", "fnRender": function (obj) {
+                return obj.aData.params ? obj.aData.params.version || '' : '';
+            }
+        },
+        {
+            "mData": null, "sClass": "loc", "fnRender": function (obj) {
+                // return obj.aData.activeGpsData ? new Date(obj.aData.activeGpsData.rcvTime).format("MM-dd hh:mm:ss"): ''
+                var desc = '';
+                if (obj.aData.activeGpsData) {
+                    var lon = i18next.language === 'zh' || i18next.language === 'zh-CN' ? obj.aData.activeGpsData.lon : obj.aData.activeGpsData.glon;
+                    var lat = i18next.language === 'zh' || i18next.language === 'zh-CN' ? obj.aData.activeGpsData.lat : obj.aData.activeGpsData.glat;
+                    desc = gpsFlagDesc[obj.aData.activeGpsData.gpsFlag];
+                    desc += '<div style="width:260px;overflow:hidden;white-space:nowrap; text-overflow:ellipsis" id="loc' + obj.aData.did + '">(' + lon.toFixed(6) + ', ' + lat.toFixed(6) + ')</div>';
+                    var interval = i18next.language === 'zh' || i18next.language === 'zh-CN' ? 300 : obj.aData.index * 300;
+                    setTimeout(function () {
+                        setLocation(0, lon, lat, $('#loc' + obj.aData.did), showLocation);
+                    }, interval);
                 }
-            }else{
-                return '';
+                return desc;
             }
-        }
+        },
+        {
+            "mData": null, "sClass": "", "fnRender": function (obj) {
+                var desc = '';
+                if (obj.aData.activeGpsData) {
+                    desc = getOnLine(obj.aData) ? '<span class="online">' + i18next.t("system.online") + '</span>' : '<span class="offline">' + i18next.t("system.offline") + '</span>';
+                    desc += '&nbsp;( <span title="' + new Date(obj.aData.activeGpsData.rcvTime).format("yyyy-MM-dd hh:mm:ss") + '">' + new Date(obj.aData.activeGpsData.rcvTime).beautify() + '</span> )&nbsp;';
+                }
+                return desc;
+            }
+        },
+        {
+            "mData": null, "sClass": "center", "fnRender": function (obj) {
+                return new Date(obj.aData.createdAt).format("MM-dd hh:mm:ss");
+            }
+        },
+        {
+            "mData": null, "sClass": "center", "bSortable": false, "fnRender": function (obj) {
+                var op = "<a href='#' title='分配终端' data-i18n='[title]device.assign_device'><i class='icon-tag' obj_id='" + obj.aData._id + "' did='" + obj.aData.did + "' cust_id='" + obj.aData.uid + "'></i></a>";
+                var delOp = "&nbsp&nbsp<a href='#' title='编辑' data-i18n='[title]table.edit'><i class='icon-edit' obj_id='" + obj.aData._id + "' did='" + obj.aData.did + "'></i></a>&nbsp&nbsp<a href='#' title='删除' data-i18n='[title]table.delete'><i class='icon-remove' obj_id='" + obj.aData.objectId + "' did='" + obj.aData.did + "'></i></a>";
+                var dealer_type = parseInt($.cookie('dealer_type'));
+                if ($("#__customer").length > 0) {
+                    if (dealer_type === 1 || dealer_type === 2) {
+                        return op + delOp;
+                    } else {
+                        return op;
+                    }
+                } else {
+                    return '';
+                }
+            }
         }
     ];
     var lang = i18next.language || 'en';
@@ -535,7 +633,7 @@ var querySuccess = function(url) {
         "aoColumns": _columns,
         "sDom": "<'row'r>t<'row'<'pull-right'p>>",
         "sPaginationType": "bootstrap",
-        "oLanguage": {"sUrl": 'css/' + lang + '.txt'},
+        "oLanguage": { "sUrl": 'css/' + lang + '.txt' },
         "sAjaxSource": "",
         "fnServerData": retrieveData
     };
@@ -549,13 +647,13 @@ var querySuccess = function(url) {
     _table = $("#vehicle_list").dataTable(objTable);
 };
 
-var getDevices = function(){
+var getDevices = function () {
     var devices = $("#devices").val().split(/\s+/);
     var data = [];
-    for(var i = 0; i < devices.length; i++){
-        if(devices[i].trim() != ''){
+    for (var i = 0; i < devices.length; i++) {
+        if (devices[i].trim() != '') {
             var pid = $.cookie('parent_id');
-            var uids = pid === '829909845607059600' || pid === '' ? ['829909845607059600', uid]: ['829909845607059600', pid, uid];
+            var uids = pid === '829909845607059600' || pid === '' ? ['829909845607059600', uid] : ['829909845607059600', pid, uid];
             var create = {
                 uid: uids,
                 currentId: uid,
@@ -572,7 +670,7 @@ var getDevices = function(){
     };
 };
 
-var getAssignDevices = function(){
+var getAssignDevices = function () {
     var devices = $("#assginDevices").val().split(/\s+/);
     return {
         'did': devices.join('|')
@@ -580,8 +678,8 @@ var getAssignDevices = function(){
 };
 
 // 导入设备
-var deviceImport = function(){
-    if(uid === 0){
+var deviceImport = function () {
+    if (uid === 0) {
         _alert(i18next.t("system.select_customer"));
         return;
     }
@@ -589,18 +687,18 @@ var deviceImport = function(){
     wistorm_api._createBatch('_iotDevice', create_json, auth_code, true, addSuccess);
 };
 
-var addSuccess = function(json) {
-    if(json.status_code == 0){
+var addSuccess = function (json) {
+    if (json.status_code == 0) {
         $("#divDevice").dialog("close");
         _query(uid);
-    }else{
+    } else {
         _alert(i18next.t("device.msg_import_fail"), 3);
     }
 };
 
 // 分配设备
-var deviceAssign = function(){
-    if(assignUid == 0){
+var deviceAssign = function () {
+    if (assignUid == 0) {
         _alert(i18next.t("system.select_customer"));
         return;
     }
@@ -608,17 +706,17 @@ var deviceAssign = function(){
     var update_json = {
         'uid': '+' + assignUid
     };
-    wistorm_api._updatePost('_iotDevice', query_json, update_json, auth_code, true, function(json){
-        if(json.status_code == 0){
+    wistorm_api._updatePost('_iotDevice', query_json, update_json, auth_code, true, function (json) {
+        if (json.status_code == 0) {
             $("#divDeviceAssign").dialog("close");
-        }else{
+        } else {
             _alert(i18next.t("device.msg_assign_fail"), 3);
         }
     });
 };
 
 // 修改终端
-var _edit = function(){
+var _edit = function () {
     var auth_code = $.cookie('auth_code');
     var obj_name = $('#obj_name').val();             //车牌号码
     var annual_inspect_alert = 0;          //只针对手机客户端，是否年检提醒
@@ -670,17 +768,17 @@ var _edit = function(){
     wistorm_api._update('vehicle', query_json, update_json, auth_code, true, editSuccess);
 };
 
-var editSuccess = function(json) {
-    if(json.status_code == 0){
+var editSuccess = function (json) {
+    if (json.status_code == 0) {
         $("#divVehicle").dialog("close");
         _query(uid);
-    }else{
+    } else {
         _alert(i18next.t("device.msg_edit_fail"));
     }
 };
 
 // 删除设备
-var _delete = function(did){
+var _delete = function (did) {
     // if(uid === $.cookie('dealer_id')){
     //     var query_json = {
     //         did: did
@@ -697,16 +795,16 @@ var _delete = function(did){
     // }
 };
 
-var deleteSuccess = function(json) {
-    if(json.status_code === 0){
+var deleteSuccess = function (json) {
+    if (json.status_code === 0) {
         _query(uid);
-    }else{
+    } else {
         _alert(i18next.t("device.msg_delete_fail"));
     }
 };
 
 // 修改终端
-var deviceEdit = function(){
+var deviceEdit = function () {
     var auth_code = $.cookie('auth_code');
     var workType = $('#editWorkType').val();
     var model = $("#editModel").val();
@@ -717,11 +815,11 @@ var deviceEdit = function(){
         workType: workType,
         model: model
     };
-    wistorm_api._update('_iotDevice', query_json, update_json, auth_code, true, function(json){
-        if(json.status_code == 0){
+    wistorm_api._update('_iotDevice', query_json, update_json, auth_code, true, function (json) {
+        if (json.status_code == 0) {
             $("#divDeviceEdit").dialog("close");
             _query(uid);
-        }else{
+        } else {
             _alert(i18next.t("device.msg_edit_fail"));
         }
     });
@@ -742,7 +840,7 @@ var countAssign = 0;
 $(document).ready(function () {
     $("#alert").hide();
 
-    $('#assign').css('display', $('#__customer').length > 0? 'inline-block': 'none');
+    $('#assign').css('display', $('#__customer').length > 0 ? 'inline-block' : 'none');
 
     // Initialize placeholder
     // $.Placeholder.init();
@@ -765,7 +863,7 @@ $(document).ready(function () {
     $(document).on("click", "#vehicle_list .icon-remove", function () {
         var obj_id = parseInt($(this).attr("obj_id"));
         var did = $(this).attr("did");
-        if (CloseConfirm(i18next.t("device.msg_confirm_delete", {did: did}))) {
+        if (CloseConfirm(i18next.t("device.msg_confirm_delete", { did: did }))) {
             _delete(did);
         }
     });
@@ -786,17 +884,17 @@ $(document).ready(function () {
     //     _query(node.id);
     // });
 
-    $('#searchKey').keydown(function(e){
+    $('#searchKey').keydown(function (e) {
         var curKey = e.which;
-        if(curKey == 13){
+        if (curKey == 13) {
             customerQuery();
             return false;
         }
     });
 
 
-    var deviceId = setInterval(function(){
-        if(!i18nextLoaded){
+    var deviceId = setInterval(function () {
+        if (!i18nextLoaded) {
             return;
         }
         var buttons = {};
@@ -809,14 +907,14 @@ $(document).ready(function () {
         };
         // Dialog Simple
         $('#divDevice').dialog({
-            autoOpen:false,
-            width:480,
-            buttons:buttons
+            autoOpen: false,
+            width: 480,
+            buttons: buttons
         });
 
         $('#frmDevice').submit(function () {
             if ($('#frmDevice').valid()) {
-                if(CloseConfirm(i18next.t("device.msg_confirm_import", {count: count}))){
+                if (CloseConfirm(i18next.t("device.msg_confirm_import", { count: count }))) {
                     deviceImport();
                 }
             }
@@ -832,9 +930,9 @@ $(document).ready(function () {
             $(this).dialog("close");
         };
         $('#divDeviceAssign').dialog({
-            autoOpen:false,
-            width:480,
-            buttons:buttons
+            autoOpen: false,
+            width: 480,
+            buttons: buttons
         });
 
         var buttons = {};
@@ -846,9 +944,9 @@ $(document).ready(function () {
             $(this).dialog("close");
         };
         $('#divDeviceEdit').dialog({
-            autoOpen:false,
-            width:480,
-            buttons:buttons
+            autoOpen: false,
+            width: 480,
+            buttons: buttons
         });
         $('#frmDeviceEdit').submit(function () {
             if ($('#frmDeviceEdit').valid()) {
@@ -860,23 +958,23 @@ $(document).ready(function () {
         $('#frmDeviceAssign').submit(function () {
             if ($('#frmDeviceAssign').valid()) {
                 var count = $("#assginDevices").val().split(/\s+/).length;
-                if(CloseConfirm(i18next.t("device.msg_confirm_assign", {count: count, assignName:assignName}))){
+                if (CloseConfirm(i18next.t("device.msg_confirm_assign", { count: count, assignName: assignName }))) {
                     deviceAssign();
                 }
             }
             return false;
         });
 
-        $('#deviceKey').keydown(function(e){
+        $('#deviceKey').keydown(function (e) {
             var curKey = e.which;
-            if(curKey == 13){
+            if (curKey == 13) {
                 _query(uid, tree_path);
                 return false;
             }
         });
 
         $("#unbind").click(function () {
-            if(!CloseConfirm(i18next.t("device.msg_confirm_unbind"))){
+            if (!CloseConfirm(i18next.t("device.msg_confirm_unbind"))) {
                 return;
             }
             var query_json = {
@@ -885,25 +983,25 @@ $(document).ready(function () {
             var update_json = {
                 did: ''
             };
-            wistorm_api._update('vehicle', query_json, update_json, auth_code, true, function(json){
-                if(json.status_code == 0){
+            wistorm_api._update('vehicle', query_json, update_json, auth_code, true, function (json) {
+                if (json.status_code == 0) {
                     // 更新设置的vehicleId和vehicleName
                     var update = {
                         vehicleId: '',
                         vehicleName: '',
                         binded: false
                     };
-                    updateDevice(did, update, function(dev){
-                        if(dev.status_code == 0){
+                    updateDevice(did, update, function (dev) {
+                        if (dev.status_code == 0) {
                             _ok(i18next.t("device.msg_unbind_success"));
                             $('#editVehicleName').val('');
-                            $('#unbind').css("display","none");
+                            $('#unbind').css("display", "none");
                             _query(uid);
-                        }else{
+                        } else {
                             _alert(i18next.t("device.msg_unbind_fail"), 2);
                         }
                     });
-                }else{
+                } else {
                     _alert(i18next.t("device.msg_unbind_fail"), 2);
                 }
             });
@@ -911,22 +1009,22 @@ $(document).ready(function () {
 
         _validator = $('#frmDevice').validate(
             {
-                rules:{
-                    devices:{
-                        required:true
+                rules: {
+                    devices: {
+                        required: true
                     },
                     model: {
-                        required:true
+                        required: true
                     }
                 },
-                messages:{
-                    devices:{required:i18next.t("device.devices_required")},
-                    model:{required:i18next.t("device.model_required")}
+                messages: {
+                    devices: { required: i18next.t("device.devices_required") },
+                    model: { required: i18next.t("device.model_required") }
                 },
-                highlight:function (element) {
+                highlight: function (element) {
                     $(element).closest('.control-group').removeClass('success').addClass('error');
                 },
-                success:function (element) {
+                success: function (element) {
                     element
                         .text('OK!').addClass('valid')
                         .closest('.control-group').removeClass('error').addClass('success');
@@ -934,8 +1032,8 @@ $(document).ready(function () {
                 }
             });
 
-        $('#import').click(function(){
-            if(uid === 0){
+        $('#import').click(function () {
+            if (uid === 0) {
                 _alert(i18next.t("system.select_customer"));
                 return;
             }
@@ -943,7 +1041,7 @@ $(document).ready(function () {
             $("#divDevice").dialog("open");
         });
 
-        $('#assign').click(function(){
+        $('#assign').click(function () {
             var dids = $("[type='checkbox']:checked:not(#checkAll)");
             var checkDids = [];
             for (var i = 0; i < dids.length; i++) {
@@ -953,16 +1051,16 @@ $(document).ready(function () {
             vehicleDeviceList();
         });
 
-        $('#refresh').click(function(){
+        $('#refresh').click(function () {
             _query(uid);
         });
 
         $('#csvfile').change(function () {
-            $("input[name=csvfile]").csv2arr(function(arr){
-                console.log( arr );
+            $("input[name=csvfile]").csv2arr(function (arr) {
+                console.log(arr);
                 //something to do here
                 var str = '';
-                $.each( arr, function(i, line){
+                $.each(arr, function (i, line) {
                     str += line.join(',') + '\r';
                 });
                 $("#devices").val(str);
@@ -971,11 +1069,11 @@ $(document).ready(function () {
             });
         });
         $('#csvfileAssign').change(function () {
-            $("input[name=csvfileAssign]").csv2arr(function(arr){
-                console.log( arr );
+            $("input[name=csvfileAssign]").csv2arr(function (arr) {
+                console.log(arr);
                 //something to do here
                 var str = '';
-                $.each( arr, function(i, line){
+                $.each(arr, function (i, line) {
                     str += line.join(',') + '\r';
                 });
                 $("#assginDevices").val(str);

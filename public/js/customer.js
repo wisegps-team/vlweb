@@ -22,7 +22,7 @@ var assignTreePath = '';
 
 function windowResize() {
     var height = $(window).height() - 122;
-    $('#customerTree').css({"height": height + "px"});
+    $('#customerTree').css({ "height": height + "px" });
 }
 
 // 获取登陆用户的权限
@@ -32,9 +32,9 @@ var initRole = function () {
         uid: dealerId
     };
     $('#roleId').innerHTML = '';
-    wistorm_api._list('role', query_json, 'objectId,name,remark,createdAt', '-createdAt', '-createdAt', 0, 0, 1, -1, auth_code, false, function(roles){
-        if(roles.status_code === 0 && roles.total > 0){
-            for(var i = 0; i < roles.total; i++){
+    wistorm_api._list('role', query_json, 'objectId,name,remark,createdAt', '-createdAt', '-createdAt', 0, 0, 1, -1, auth_code, false, function (roles) {
+        if (roles.status_code === 0 && roles.total > 0) {
+            for (var i = 0; i < roles.total; i++) {
                 var option = document.createElement('option');
                 option.value = roles.data[i].objectId;
                 option.innerText = roles.data[i].name;
@@ -44,45 +44,45 @@ var initRole = function () {
     });
 };
 
-var setRole = function(uid, roleId, callback){
+var setRole = function (uid, roleId, callback) {
     var query_json = {
         users: uid.toString()
     };
     var update_json = {
         users: "-" + uid.toString()
     };
-    wistorm_api._update("role", query_json, update_json, auth_code, false, function(obj) {
+    wistorm_api._update("role", query_json, update_json, auth_code, false, function (obj) {
         query_json = {
             objectId: parseInt(roleId)
         };
         update_json = {
             users: "%2B" + uid
         };
-        wistorm_api._update("role", query_json, update_json, auth_code, false, function(obj) {
+        wistorm_api._update("role", query_json, update_json, auth_code, false, function (obj) {
             callback(obj);
         });
     });
 };
 
-var getRole = function(uid, callback){
+var getRole = function (uid, callback) {
     var query_json = {
         users: uid.toString()
     };
     wistorm_api._get("role", query_json, "objectId", auth_code, false, function (obj) {
-        if(obj.status_code == 0 && obj.data != null){
+        if (obj.status_code == 0 && obj.data != null) {
             callback(obj.data.objectId);
-        }else{
+        } else {
             callback('');
         }
     })
 };
 
-var updateCustomerTree = function(cust_id, treePath, callback){
+var updateCustomerTree = function (cust_id, treePath, callback) {
     wistorm_api.updateTree(cust_id, treePath, auth_code, callback);
 };
 
 // 车辆更换所属用户
-var customerChangeParent = function(obj_id, change_cust_id, changeTreePath){
+var customerChangeParent = function (obj_id, change_cust_id, changeTreePath) {
     var query_json = {
         uid: obj_id
     };
@@ -91,19 +91,19 @@ var customerChangeParent = function(obj_id, change_cust_id, changeTreePath){
         parentId: [change_cust_id],
         treePath: _treePath
     };
-    wistorm_api._update('customer', query_json, update_json, auth_code, true, function(json){
-        if(json.status_code === 0){
+    wistorm_api._update('customer', query_json, update_json, auth_code, true, function (json) {
+        if (json.status_code === 0) {
             $("#divCustomerAssign").dialog("close");
             updateCustomerCount(uid, tree_path);
             updateCustomerCount(assignUid, assignTreePath);
             customerQuery();
             getAllCustomer(uid);
-            updateCustomerTree(obj_id, _treePath, function(json){
-                if(json.status_code !== 0){
+            updateCustomerTree(obj_id, _treePath, function (json) {
+                if (json.status_code !== 0) {
                     _alert(i18next.t("customer.err_change_parent"));
                 }
             })
-        }else{
+        } else {
             _alert(i18next.t("customer.err_change_parent"));
         }
     });
@@ -117,8 +117,8 @@ $(document).ready(function () {
         windowResize();
     });
 
-    var id = setInterval(function(){
-        if(!i18nextLoaded){
+    var id = setInterval(function () {
+        if (!i18nextLoaded) {
             return;
         }
 
@@ -153,7 +153,7 @@ $(document).ready(function () {
 
         activeCustType = $("#2")[0];
         $(document).on("click", ".custType", function () {
-            if(activeCustType){
+            if (activeCustType) {
                 activeCustType.classList.remove("active");
             }
             $(this)[0].classList.add("active");
@@ -162,24 +162,24 @@ $(document).ready(function () {
             customerQuery();
         });
 
-        $('#searchKey').keydown(function(e){
+        $('#searchKey').keydown(function (e) {
             var curKey = e.which;
-            if(curKey == 13){
+            if (curKey == 13) {
                 customerQuery();
                 return false;
             }
         });
 
-        $('#customerKey').keydown(function(e){
+        $('#customerKey').keydown(function (e) {
             var curKey = e.which;
-            if(curKey == 13){
+            if (curKey == 13) {
                 getAllCustomer(uid);
                 return false;
             }
         });
 
         $("#addCustomer").click(function () {
-            if(uid === 0){
+            if (uid === 0) {
                 _alert(i18next.t("system.select_customer"));
                 return;
             }
@@ -189,7 +189,7 @@ $(document).ready(function () {
             $("#divCustomer").dialog("open");
         });
 
-        $("#addRole").click(function(){
+        $("#addRole").click(function () {
             window.open('/role');
         });
 
@@ -231,9 +231,9 @@ $(document).ready(function () {
         });
 
         $('#frmCustomerAssign').submit(function () {
-            var msg = i18next.t("customer.msg_change_parent", {cust_name: cust_name, assignName: assignName}); //'你确定将用户[' + cust_name + ']的上级用户更换为[' + assignName + ']吗?';
+            var msg = i18next.t("customer.msg_change_parent", { cust_name: cust_name, assignName: assignName }); //'你确定将用户[' + cust_name + ']的上级用户更换为[' + assignName + ']吗?';
             if (assignUid === $.cookie('parent_id')) {
-                msg = i18next.t("customer.msg_restore_parent", {cust_name: cust_name}); //'你确定将用户[' + cust_name + ']恢复到上级用户进行管理吗?';
+                msg = i18next.t("customer.msg_restore_parent", { cust_name: cust_name }); //'你确定将用户[' + cust_name + ']恢复到上级用户进行管理吗?';
             }
             if (cust_id.toString() === assignUid.toString()) {
                 msg = i18next.t("customer.err_assign_me");
@@ -314,11 +314,11 @@ $(document).ready(function () {
                     }
                 },
                 messages: {
-                    username: {minlength: i18next.t("customer.username_minlength"), required: i18next.t("customer.username_required"), remote: i18next.t("customer.username_remote")},
-                    password: {minlength: i18next.t("customer.password_minlength"), required: i18next.t("customer.password_required")},
-                    password2: {required: i18next.t("customer.password2_required"), minlength: i18next.t("customer.password2_minlength"), equalTo: i18next.t("customer.password2_equalTo")},
-                    cust_name: {minlength: i18next.t("customer.cust_name_minlength"), required: i18next.t("customer.cust_name_required"), remote: i18next.t("customer.cust_name_remote")},
-                    roleId: {required: i18next.t("customer.roleId_required")}
+                    username: { minlength: i18next.t("customer.username_minlength"), required: i18next.t("customer.username_required"), remote: i18next.t("customer.username_remote") },
+                    password: { minlength: i18next.t("customer.password_minlength"), required: i18next.t("customer.password_required") },
+                    password2: { required: i18next.t("customer.password2_required"), minlength: i18next.t("customer.password2_minlength"), equalTo: i18next.t("customer.password2_equalTo") },
+                    cust_name: { minlength: i18next.t("customer.cust_name_minlength"), required: i18next.t("customer.cust_name_required"), remote: i18next.t("customer.cust_name_remote") },
+                    roleId: { required: i18next.t("customer.roleId_required") }
                 },
                 highlight: function (element) {
                     $(element).closest('.control-group').removeClass('success').addClass('error');
@@ -340,19 +340,19 @@ $(document).ready(function () {
     }, 100);
 });
 
-function customerInfo(objectId){
+function customerInfo(objectId) {
     var query_json = {
         uid: objectId
     };
-    wistorm_api._get('customer', query_json, 'objectId,uid,name,custType,custTypeId,parentId,contact,tel,createdAt,updatedAt', auth_code, true, function(json){
+    wistorm_api._get('customer', query_json, 'objectId,uid,name,custType,custTypeId,parentId,contact,tel,createdAt,updatedAt', auth_code, true, function (json) {
         query_json = {
             objectId: json.data.uid
         };
-        wistorm_api.get(query_json, 'username,mobile,email,password,userType', auth_code, function(user){
+        wistorm_api.get(query_json, 'username,mobile,email,password,userType', auth_code, function (user) {
             json.data.username = user.data.username || user.data.mobile || user.data.email;
             json.data.password = '****************';
             json.data.userType = user.data.userType;
-            getRole(objectId, function(roleId){
+            getRole(objectId, function (roleId) {
                 json.data.roleId = roleId;
                 customerInfoSuccess(json.data);
             });
@@ -360,7 +360,7 @@ function customerInfo(objectId){
     });
 }
 
-var customerInfoSuccess = function(json) {
+var customerInfoSuccess = function (json) {
     //alert(json);
     validator_customer.resetForm();
     var create_time = new Date(json.createdAt);
@@ -370,7 +370,7 @@ var customerInfoSuccess = function(json) {
 };
 
 // 初始化客户信息窗体
-var initFrmCustomer = function(title, flag, username, password, cust_name, cust_type, contacter, contacter_tel, create_time, roleId){
+var initFrmCustomer = function (title, flag, username, password, cust_name, cust_type, contacter, contacter_tel, create_time, roleId) {
     $("#divCustomer").dialog("option", "title", title);
     customer_flag = flag;
     $('#username').val(username);
@@ -383,16 +383,16 @@ var initFrmCustomer = function(title, flag, username, password, cust_name, cust_
     $('#contacter').val(contacter);
     $('#contacter_tel').val(contacter_tel);
     $('#create_time').val(create_time);
-    if(customer_flag == 1){
+    if (customer_flag == 1) {
         $('#username').removeAttr("disabled");
         $('#password').removeAttr("disabled");
         $('#password_bar').show();
         $('#password_bar2').show();
         $('#create_time_bar').hide();
         $('#resetPassword').hide();
-    }else{
-        $('#username').attr("disabled","disabled");
-        $('#password').attr("disabled","disabled");
+    } else {
+        $('#username').attr("disabled", "disabled");
+        $('#password').attr("disabled", "disabled");
         $('#password_bar2').hide();
         $('#create_time_bar').show();
         $('#resetPassword').show();
@@ -435,7 +435,7 @@ function customerQuery() {
     var dealer_id = $.cookie('dealer_id');
     var tree_path = $.cookie('tree_path');
     var key = '';
-    if($('#searchKey').val() !== ''){
+    if ($('#searchKey').val() !== '') {
         key = $('#searchKey').val().trim();
     }
     var page_no = 1;
@@ -448,12 +448,12 @@ function customerQuery() {
     // }, error:OnError };
     // ajax_function(searchObj);
     var query_json;
-    if(key !== ""){
+    if (key !== "") {
         query_json = {
             treePath: '^' + tree_path,
             name: '^' + key
         };
-    }else{
+    } else {
         query_json = {
             treePath: '^' + tree_path
             // parentId: dealer_id
@@ -469,7 +469,7 @@ var treeIcon = {
     '8': '/img/company_icon.png'
 };
 
-var customerQuerySuccess = function(json) {
+var customerQuerySuccess = function (json) {
     var names = [];
     customers = json.data;
     if (json.data.length > 0) {
@@ -489,9 +489,9 @@ var customerQuerySuccess = function(json) {
         names.push(json.data[i].name);
     }
 
-    var onCustomerSelectClick = function(event, treeId, treeNode){
-//        alert(treeNode.tree_path);
-        if(parseInt(treeNode.id) > 100){
+    var onCustomerSelectClick = function (event, treeId, treeNode) {
+        //        alert(treeNode.tree_path);
+        if (parseInt(treeNode.id) > 100) {
             uid = treeNode.id;
             tree_path = treeNode.treePath;
             selectNode = treeNode;
@@ -502,38 +502,38 @@ var customerQuerySuccess = function(json) {
         }
     };
 
-    var onCustomerAssignClick = function(event, treeId, treeNode){
-//        alert(treeNode.tree_path);
-        if(parseInt(treeNode.id) > 100){
+    var onCustomerAssignClick = function (event, treeId, treeNode) {
+        //        alert(treeNode.tree_path);
+        if (parseInt(treeNode.id) > 100) {
             assignUid = treeNode.id;
             assignTreePath = treeNode.treePath;
             assignName = treeNode.name;
         }
     };
 
-    var onCustomerSelectDblClick = function(event, treeId, treeNode){
+    var onCustomerSelectDblClick = function (event, treeId, treeNode) {
         // var treeObj = $.fn.zTree.getZTreeObj("customerTree");
         // if(treeNode.id !== $.cookie('dealer_id')){
         //     loadSubNode(treeObj, treeNode);
         // }
     };
 
-    var onCustomerAssignDblClick = function(event, treeId, treeNode){
+    var onCustomerAssignDblClick = function (event, treeId, treeNode) {
         // var treeObj = $.fn.zTree.getZTreeObj("customerTreeAssign");
         // loadSubNode(treeObj, treeNode);
     };
 
     var setting = {
-        view: {showIcon: true},
-        check: {enable: false, chkStyle: "checkbox"},
-        data: {simpleData: {enable: true}},
-        callback: {onClick: onCustomerSelectClick, onDblClick: onCustomerSelectDblClick}
+        view: { showIcon: true },
+        check: { enable: false, chkStyle: "checkbox" },
+        data: { simpleData: { enable: true } },
+        callback: { onClick: onCustomerSelectClick, onDblClick: onCustomerSelectDblClick }
     };
     var settingAssign = {
-        view: {showIcon: true},
-        check: {enable: false, chkStyle: "checkbox"},
-        data: {simpleData: {enable: true}},
-        callback: {onClick: onCustomerAssignClick, onDblClick: onCustomerAssignDblClick}
+        view: { showIcon: true },
+        check: { enable: false, chkStyle: "checkbox" },
+        data: { simpleData: { enable: true } },
+        callback: { onClick: onCustomerAssignClick, onDblClick: onCustomerAssignDblClick }
     };
 
     var customerArray = [];
@@ -628,8 +628,8 @@ var customerQuerySuccess = function(json) {
         // json.data[i]['pId'] = json.data[i]['custType'];
         // json.data[i]['name'] = json.data[i]['name'];
         // json.data[i]['icon'] = '/img/customer.png';
-        var childCount = json.data[i]['other'] ? (json.data[i]['other']['childCount'] || 0): 0;
-        var vehicleCount = json.data[i]['other'] ? (json.data[i]['other']['vehicleCount'] || 0): 0;
+        var childCount = json.data[i]['other'] ? (json.data[i]['other']['childCount'] || 0) : 0;
+        var vehicleCount = json.data[i]['other'] ? (json.data[i]['other']['vehicleCount'] || 0) : 0;
         customerArray.push({
             open: false,
             id: json.data[i]['uid'],
@@ -656,17 +656,17 @@ var customerQuerySuccess = function(json) {
     $.fn.zTree.init($("#customerTree"), setting, customerArray);
     $.fn.zTree.init($("#customerTreeAssign"), settingAssign, selectArray);
 
-    $('#customerKey').typeahead({source:names});
+    $('#customerKey').typeahead({ source: names });
 
-    if(uid > 0){
+    if (uid > 0) {
         var treeObj = $.fn.zTree.getZTreeObj("customerTree");
         var node = treeObj.getNodeByParam("id", uid, null);
-        if(node){
+        if (node) {
             tree_path = node.treePath;
             cust_name = node.name;
             $('#selCustName').html(cust_name);
             treeObj.selectNode(node);
-        }else{
+        } else {
             uid = $.cookie('dealer_id');
             tree_path = $.cookie('tree_path');
             node = treeObj.getNodeByParam("id", uid, null);
@@ -675,7 +675,7 @@ var customerQuerySuccess = function(json) {
             $('#selCustName').html(cust_name);
             treeObj.selectNode(node);
         }
-        if(typeof getAllCustomer != "undefined"){
+        if (typeof getAllCustomer != "undefined") {
             getAllCustomer(uid);
         }
     }
@@ -683,13 +683,13 @@ var customerQuerySuccess = function(json) {
 
 var getAllCustomer = function (uid) {
     var key = '';
-    if($('#customerKey').val() !== ''){
+    if ($('#customerKey').val() !== '') {
         key = $('#customerKey').val().trim();
     }
     var query_json;
-    if(key !== ""){
+    if (key !== "") {
         var searchType = $('#searchType').val();
-        if($('#allNode').is(':checked')) {
+        if ($('#allNode').is(':checked')) {
             query_json = {
                 treePath: '^' + tree_path
             };
@@ -706,27 +706,72 @@ var getAllCustomer = function (uid) {
                 query_json[searchType] = '^' + key;
                 wistorm_api._list('customer', query_json, 'custType,uid,name,other,createdAt,contact,tel,parentId', 'custType,name', '-createdAt', 0, 0, 1, -1, auth_code, true, querySuccess);
             });
-        }else{
+        } else {
             query_json = {
                 parentId: uid
             };
             query_json[searchType] = '^' + key;
         }
-    }else{
+    } else {
         query_json = {
             parentId: uid
         };
     }
     // wistorm_api._list('customer', query_json, 'objectId,name,treePath,parentId,uid,custType,other', 'custType,name', '-createdAt', 0, 0, 1, -1, auth_code, true, customerQuerySuccess)
     wistorm_api._list('customer', query_json, 'custType,uid,name,other,createdAt,contact,tel,parentId', 'custType,name', '-createdAt', 0, 0, 1, -1, auth_code, true, querySuccess);
+    exportCustomer('customer', query_json)
+
 };
 
-var querySuccess = function(json) {
+var exportUrl = '';
+var exportCustomer = function (tableName, query_json) {
+    var query = query_json;
     var custTypeDesc = {
         '2': i18next.t("system.dealer"),
         '7': i18next.t("system.personal"),
         '8': i18next.t("system.company")
     };
+    var custTypeString = 'enum' + JSON.stringify(custTypeDesc);
+    var childCount = function () {
+        return v.childCount
+    }
+    var vehicleCount = function () {
+        return v.vehicleCount
+    }
+    var typeChangeFn = function () {
+        if (typeof v == 'undefined') {
+            return ''
+        } else if (typeof v == 'string' || typeof v == 'number') {
+            return v
+        }
+    }
+    var exportObj = {
+        map: 'BAIDU',
+        fields: ["name", "custType", "contact", "tel", "other", "other", "createdAt"],
+        titles: [i18next.t('customer.name'), i18next.t('customer.cust_type'), i18next.t('customer.contact'), i18next.t('customer.tel'), i18next.t('customer.vehicle_count'), i18next.t('customer.cust_count'), i18next.t('customer.create_date')],
+        displays: ["s", custTypeString, typeChangeFn.toString(), typeChangeFn.toString(), vehicleCount.toString(), childCount.toString(), 'd']
+    };
+
+    exportUrl = wistorm_api._exportUrl(tableName, query, exportObj.fields.join(','), exportObj.titles.join(','), exportObj.displays.join('#'), '-createdAt', '-createdAt', exportObj.map || 'BAIDU', auth_code);
+
+}
+
+$('#export').on('click', function () {
+    location.href = exportUrl;
+})
+
+var querySuccess = function (json) {
+    var custTypeDesc = {
+        '2': i18next.t("system.dealer"),
+        '7': i18next.t("system.personal"),
+        '8': i18next.t("system.company")
+    };
+    // debugger;
+    if (json.total) {
+        $('#export').show()
+    } else {
+        $('#export').hide()
+    }
     var j, _j, UnContacter, Uncontacter_tel;
     // 更新选中node显示
     // if(json.status_code === 0 && selectNode && selectNode.id !== $.cookie('dealer_id')){
@@ -741,8 +786,8 @@ var querySuccess = function(json) {
         json.data[i].custTypeDesc = custTypeDesc[json.data[i].custType];
         json.data[i].contact = json.data[i].contact || '';
         json.data[i].tel = json.data[i].tel || '';
-        json.data[i].childCount = json.data[i].other ? json.data[i].other.childCount || 0: 0;
-        json.data[i].vehicleCount = json.data[i].other ? json.data[i].other.vehicleCount || 0: 0;
+        json.data[i].childCount = json.data[i].other ? json.data[i].other.childCount || 0 : 0;
+        json.data[i].vehicleCount = json.data[i].other ? json.data[i].other.vehicleCount || 0 : 0;
         names.push(json.data[i].name);
     }
 
@@ -751,31 +796,32 @@ var querySuccess = function(json) {
         //     return "<input type='checkbox' value='" + obj.aData.objectId + "'>";
         // }
         // },
-        { "mData":"name", "sClass":"ms_left" },
-        { "mData":"custTypeDesc", "sClass":"center" },
-        { "mData":"contact", "sClass":"center" },
-        { "mData":"tel", "sClass":"center" },
-        { "mData":"childCount", "sClass":"center" },
-        { "mData":"vehicleCount", "sClass":"center" },
-        { "mData":"createdAt", "sClass":"center"},
-        { "mData":null, "sClass":"center", "bSortable":false, "fnRender":function (obj) {
-            return "<a href='#' title='" + i18next.t("table.edit") + "'><i class='icon-edit' cust_id='" + obj.aData.uid + "'></i></a>&nbsp&nbsp<a href='#' title='" + i18next.t("table.change_parent") + "'><i class='icon-retweet' cust_id='" + obj.aData.uid + "' cust_name='" + obj.aData.name + "'></i></a>&nbsp&nbsp<a href='#' title='" + i18next.t("table.delete") + "'><i class='icon-remove' cust_id='" +
-                obj.aData.uid + "' cust_name='" + obj.aData.name + "'></i></a>";
-        }
+        { "mData": "name", "sClass": "ms_left" },
+        { "mData": "custTypeDesc", "sClass": "center" },
+        { "mData": "contact", "sClass": "center" },
+        { "mData": "tel", "sClass": "center" },
+        { "mData": "childCount", "sClass": "center" },
+        { "mData": "vehicleCount", "sClass": "center" },
+        { "mData": "createdAt", "sClass": "center" },
+        {
+            "mData": null, "sClass": "center", "bSortable": false, "fnRender": function (obj) {
+                return "<a href='#' title='" + i18next.t("table.edit") + "'><i class='icon-edit' cust_id='" + obj.aData.uid + "'></i></a>&nbsp&nbsp<a href='#' title='" + i18next.t("table.change_parent") + "'><i class='icon-retweet' cust_id='" + obj.aData.uid + "' cust_name='" + obj.aData.name + "'></i></a>&nbsp&nbsp<a href='#' title='" + i18next.t("table.delete") + "'><i class='icon-remove' cust_id='" +
+                    obj.aData.uid + "' cust_name='" + obj.aData.name + "'></i></a>";
+            }
         }
     ];
     var lang = i18next.language || 'en';
     var objTable = {
-        "bInfo":false,
-        "bLengthChange":false,
-        "bProcessing":true,
-        "bServerSide":false,
-        "bFilter":false,
-        "aaData":json.data,
-        "aoColumns":_columns,
-        "sDom":"<'row'r>t<'row'<'pull-right'p>>",
-        "sPaginationType":"bootstrap",
-        "oLanguage":{"sUrl":'css/' + lang + '.txt'}
+        "bInfo": false,
+        "bLengthChange": false,
+        "bProcessing": true,
+        "bServerSide": false,
+        "bFilter": false,
+        "aaData": json.data,
+        "aoColumns": _columns,
+        "sDom": "<'row'r>t<'row'<'pull-right'p>>",
+        "sPaginationType": "bootstrap",
+        "oLanguage": { "sUrl": 'css/' + lang + '.txt' }
     };
     //$('#vehicleKey').typeahead({source:names});
 
@@ -794,10 +840,10 @@ var querySuccess = function(json) {
         localize('.table');
     }
 
-    if($("#customerKey").val() !== '' && json.data.length === 1){
+    if ($("#customerKey").val() !== '' && json.data.length === 1) {
         var treeObj = $.fn.zTree.getZTreeObj("customerTree");
         var node = treeObj.getNodeByParam("id", json.data[0].parentId[0], null);
-        if(node){
+        if (node) {
             cust_name = node.name;
             $('#selCustName').html(cust_name);
             treeObj.selectNode(node);
@@ -805,17 +851,17 @@ var querySuccess = function(json) {
     }
 };
 
-var getStyle = function(level){
+var getStyle = function (level) {
     var style = "padding-left: " + (level - 1) * 10 + "px";
     return style;
 };
 
 // 新增客户
-var customerAdd = function(){
-    if(doing){
+var customerAdd = function () {
+    if (doing) {
         return;
     }
-    if(uid === 0){
+    if (uid === 0) {
         msgShow($.t("system.select_customer"));
         return;
     }
@@ -825,7 +871,7 @@ var customerAdd = function(){
     var parent_cust_id = 1;
     var parent_tree_path = ",1,";
     var parent_level = 0;
-    if(parent_cust){
+    if (parent_cust) {
         parent_cust_id = parent_cust.cust_id;
         parent_tree_path = parent_cust.tree_path;
         parent_level = parent_cust.level;
@@ -857,7 +903,7 @@ var customerAdd = function(){
     // }, error:OnError };
     // ajax_function(sendObj);
     wistorm_api.create(username, username, '', password, cust_type, 2, uid, {}, auth_code, function (obj) {
-        if(obj.status_code == 0 && obj.uid){
+        if (obj.status_code == 0 && obj.uid) {
             var create_json = {
                 name: cust_name,
                 parentId: [uid.toString()],
@@ -868,35 +914,35 @@ var customerAdd = function(){
                 uid: obj.uid
             };
             wistorm_api._create('customer', create_json, auth_code, true, customerAddSuccess);
-            setRole(obj.uid, roleId, function(obj){
+            setRole(obj.uid, roleId, function (obj) {
             });
             // 更新下级用户数
             updateCustomerCount(uid.toString(), tree_path);
-        }else{
+        } else {
             _alert(i18next.t("customer.msg_add_fail"));
             doing = false;
         }
     });
 };
 
-var customerAddSuccess = function(json) {
-    if(json.status_code == 0){
+var customerAddSuccess = function (json) {
+    if (json.status_code == 0) {
         $("#divCustomer").dialog("close");
         getAllCustomer(uid);
-    }else{
+    } else {
         _alert(i18next.t("customer.msg_add_fail"));
     }
     doing = false;
 };
 
 // 编辑客户
-var customerEdit = function(){
+var customerEdit = function () {
     var auth_code = $.cookie('auth_code');
     var parent_cust = getLocalCustomerInfo($('#parent_cust_id').val());
     var parent_cust_id = 1;
     var parent_tree_path = ",1,";
     var parent_level = 0;
-    if(parent_cust){
+    if (parent_cust) {
         parent_cust_id = parent_cust.cust_id;
         parent_tree_path = parent_cust.tree_path;
         parent_level = parent_cust.level;
@@ -938,37 +984,37 @@ var customerEdit = function(){
         contact: contacter,
         tel: contacter_tel
     };
-    wistorm_api._update('customer', query_json, update_json, auth_code, true, function(json){
-        if(json.status_code === 0){
+    wistorm_api._update('customer', query_json, update_json, auth_code, true, function (json) {
+        if (json.status_code === 0) {
             var query_json = {
                 objectId: cust_id
             };
             var update_json = {
                 userType: cust_type
             };
-            if(password !== '****************'){
+            if (password !== '****************') {
                 update_json.password = password;
             }
             wistorm_api.update(query_json, update_json, auth_code, customerEditSuccess);
-        }else{
+        } else {
             _alert(i18next.t("customer.msg_edit_fail"));
         }
     });
-    setRole(cust_id, roleId, function(obj){
+    setRole(cust_id, roleId, function (obj) {
     });
 };
 
-var customerEditSuccess = function(json) {
-    if(json.status_code == 0){
+var customerEditSuccess = function (json) {
+    if (json.status_code == 0) {
         $("#divCustomer").dialog("close");
         getAllCustomer(uid);
-    }else{
+    } else {
         _alert(i18next.t("customer.msg_edit_fail"));
     }
 };
 
 // 删除客户
-var customerDelete = function(cust_id, uid){
+var customerDelete = function (cust_id, uid) {
     // var auth_code = $.cookie('auth_code');
     // var sendUrl = $.cookie('Host') + "customer/" + cust_id + "?access_token=" + auth_code;
     // var sendData = { tree_path: tree_path };
@@ -980,59 +1026,59 @@ var customerDelete = function(cust_id, uid){
     var query_json = {
         parentId: cust_id
     };
-    wistorm_api._count('customer', query_json, auth_code, true, function(obj){
-       if(obj.count > 0){
-           _alert(i18next.t("customer.msg_have_customer"));
-       }else{
-           //判断下属是否有车辆，如果有，不能删除用户
-           var query_json = {
-               uid: cust_id
-           };
-           wistorm_api._count('vehicle', query_json, auth_code, true, function(obj){
-               if(obj.count > 0){
-                   _alert(i18next.t("customer.msg_have_vehicle"));
-               }else{
-                   wistorm_api._delete('customer', query_json, auth_code, true, function(obj){
-                       if(obj.status_code == 0){
-                           var query_json = {
-                               objectId: cust_id
-                           };
-                           wistorm_api.delete(query_json, auth_code, customerDeleteSuccess);
-                           // 更新下级用户数
-                           updateCustomerCount(uid, tree_path);
-                       }
-                   });
-               }
-           });
-       }
+    wistorm_api._count('customer', query_json, auth_code, true, function (obj) {
+        if (obj.count > 0) {
+            _alert(i18next.t("customer.msg_have_customer"));
+        } else {
+            //判断下属是否有车辆，如果有，不能删除用户
+            var query_json = {
+                uid: cust_id
+            };
+            wistorm_api._count('vehicle', query_json, auth_code, true, function (obj) {
+                if (obj.count > 0) {
+                    _alert(i18next.t("customer.msg_have_vehicle"));
+                } else {
+                    wistorm_api._delete('customer', query_json, auth_code, true, function (obj) {
+                        if (obj.status_code == 0) {
+                            var query_json = {
+                                objectId: cust_id
+                            };
+                            wistorm_api.delete(query_json, auth_code, customerDeleteSuccess);
+                            // 更新下级用户数
+                            updateCustomerCount(uid, tree_path);
+                        }
+                    });
+                }
+            });
+        }
     });
 };
 
-var customerDeleteSuccess = function(json) {
-    if(json.status_code == 0){
+var customerDeleteSuccess = function (json) {
+    if (json.status_code == 0) {
         getAllCustomer(uid);
-    }else if(json.status_code == 7){
+    } else if (json.status_code == 7) {
         _alert(i18next.t("customer.msg_have_vehicle"));
-    }else{
+    } else {
         _alert(i18next.t("customer.msg_delete_fail"));
     }
 };
 
 // 获取客户信息
-var getLocalCustomerInfo = function(cust_id){
+var getLocalCustomerInfo = function (cust_id) {
     var customer = {};
     for (var i = 0; i < customers.length; i++) {
-        if(customers[i].objectId == cust_id){
+        if (customers[i].objectId == cust_id) {
             customer = customers[i];
             return customer;
         }
     }
 };
 
-var searchLocalCustomerInfoByName = function(cust_name){
+var searchLocalCustomerInfoByName = function (cust_name) {
     var customer = {};
     for (var i = 0; i < customers.length; i++) {
-        if(customers[i].cust_name.indexOf(cust_name) > -1){
+        if (customers[i].cust_name.indexOf(cust_name) > -1) {
             customer = customers[i];
             return customer;
         }
