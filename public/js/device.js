@@ -149,7 +149,7 @@ var customerQuerySuccess = function (json) {
         if (treeNode.pId) {
             assignUid = treeNode.id;
             assignTreePath = treeNode.treePath;
-            assignName = treeNode.name;
+            assignName = treeNode._name;
         }
     };
 
@@ -265,6 +265,7 @@ var customerQuerySuccess = function (json) {
             treePath: json.data[i]['treePath'],
             pId: json.data[i]['parentId'][0],
             name: json.data[i]['name'] + '(' + vehicleCount + ')',
+            _name: json.data[i]['name'],
             icon: treeIcon[json.data[i]['custType']]
         });
         selectArray.push({
@@ -273,6 +274,7 @@ var customerQuerySuccess = function (json) {
             treePath: json.data[i]['treePath'],
             pId: json.data[i]['parentId'][0],
             name: json.data[i]['name'] + '(' + vehicleCount + ')',
+            _name: json.data[i]['name'],
             icon: treeIcon[json.data[i]['custType']]
         });
     }
@@ -333,7 +335,6 @@ function _query(cust_id) {
 var names = [];
 
 function retrieveData(sSource, aoData, fnCallback) {
-    // debugger;
     var key = $('#deviceKey').val().trim();
     var query_json;
     if (key != "") {
@@ -360,7 +361,6 @@ function retrieveData(sSource, aoData, fnCallback) {
                 "dataType": "json",
                 "data": null, //以json格式传递
                 "success": function (json) {
-                    debugger;
                     json.sEcho = aoData[0].value;
                     json.iTotalRecords = json.total;
                     json.iTotalDisplayRecords = json.total;
@@ -408,7 +408,6 @@ function retrieveData(sSource, aoData, fnCallback) {
         "dataType": "json",
         "data": null, //以json格式传递
         "success": function (json) {
-            debugger;
             json.sEcho = aoData[0].value;
             json.iTotalRecords = json.total;
             json.iTotalDisplayRecords = json.total;
@@ -850,7 +849,7 @@ $(document).ready(function () {
     });
 
     $("#checkAll").click(function () {
-        $("[type='checkbox']").prop("checked", $('#checkAll').prop("checked"));//全选
+        $("[type='checkbox'][id!=allNode]").prop("checked", $('#checkAll').prop("checked"));//全选
     });
 
     $(document).on("click", "#vehicle_list .icon-tag", function () {

@@ -41,6 +41,7 @@
  *
  * 开发者访问自定义表时需传入开发者devKey, 该key在注册成开发者的时候自动生成
  */
+
 var _get = function (path, callback) {
     var obj = {
         type: "GET", url: path, data: {}, success: function (obj) {
@@ -49,7 +50,17 @@ var _get = function (path, callback) {
             callback(null);
         }
     };
-    ajax_function(obj);
+    var datas = JSON.stringify(obj.data);
+    $.ajax({
+        url: obj.url,
+        type: obj.type,
+        dataType: "json",
+        data: obj.data,
+        async: true,
+        timeout: 10000,
+        success: obj.success,
+        error: obj.error
+    });
 };
 
 var _post = function (path, data, callback) {

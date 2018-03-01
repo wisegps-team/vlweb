@@ -525,7 +525,7 @@ var makeReport = function (type, uid, vid) {
                 updateLoc();
             });
             break;
-        case 5:
+            case 5:
             var fields = [
                 {
                     title: i18next.t('monitor.run_time'),

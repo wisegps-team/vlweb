@@ -8,17 +8,9 @@
 
 var auth_code = $.cookie('auth_code');
 
-var typeDesc = [i18next.t("setting.send_rightnow"),i18next.t("setting.send_offline")];
-var sendFlagDesc = [i18next.t("setting.flag_waiting"),i18next.t("setting.flag_success"),i18next.t("setting.flag_fail")];
-var cmdTypeDesc = {
-    '33027': i18next.t("setting.device_set_param"),
-    '33029': i18next.t("setting.device_control"),
-    '33028': i18next.t("setting.device_get_param"),
-    '33031': i18next.t("setting.device_get_prop"),
-    '33032': i18next.t("setting.remote_upgrade"),
-    '35072': i18next.t("setting.long_device_set"),
-    '34048': i18next.t("setting.vehicle_control")
-};
+var typeDesc;
+var sendFlagDesc;
+var cmdTypeDesc = {};
 var _cmdType = 1;
 var _did = '';
 var t;

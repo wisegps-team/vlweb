@@ -399,7 +399,7 @@ var updateVehicleCount = function (callback) {
     query.isDepart = is_depart ? 1: 0;
 
     wistorm_api._count('vehicle2', query, auth_code, true, function (obj) {
-        console.log(obj,'updateVehicleCount');
+        console.log(obj);
         $('#onlineStatus').find('a')[0].innerHTML = _counts['1'] + '(' + (obj.online || 0) + ')';
         $('#offlineStatus').find('a')[0].innerHTML = _counts['2'] + '(' + (obj.offline || 0) + ')';
         $('#alertStatus').find('a')[0].innerHTML = _counts['3'] + '(' + (obj.alert || 0) + ')';
@@ -703,7 +703,6 @@ function _clearTimeout(){
 }
 
 function retrieveData( sSource, aoData, fnCallback ) {
-    // debugger;
     if(uid === 0){
         var json = {};
         json.aaData = [];
@@ -875,7 +874,7 @@ function windowResize() {
     $('#map_canvas').css({"height": windowHeight + "px"});
     // 修改车辆列表高度
     var height = $(window).height() - $('#accordion2').height() - 210;
-    $('.dataTables_scrollBody').css({"height": height + "px"});
+    // $('.dataTables_scrollBody').css({"height": height + "px"});
 }
 
 var addVehicle = function (did) {
@@ -889,6 +888,7 @@ var addVehicle = function (did) {
     }
 };
 
+// 加载车辆
 var addVehicles = function () {
     var checked = $('#checkAll').prop("checked");
     if (!checked) {
@@ -912,6 +912,19 @@ var addVehicles = function () {
     // }
     console.log(checkDids.join('|'));
     $.cookie('checkDids', checkDids.join('|'));
+};
+
+var loadPois = function(){
+    wimap.clearPoi();
+    var query_json = {
+        uid: dealer_id,
+        type: 1
+    };
+    wistorm_api._list('ovelay', query_json, 'objectId,name,type,opt,points', 'name', 'name', 0, 0, 1, -1, auth_code, true, function(json){
+        if(json.status_code === 0 && json.total > 0){
+            wimap.addPois(json.data);
+        }
+    });
 };
 
 // 车辆跟踪
@@ -975,13 +988,13 @@ var refreshVehicles = function () {
                 }
             }
         }
-        wimap.addVehicles(vehicles, false, false, false); //bmap.js
+        wimap.addVehicles(vehicles, false, false, false);
         if(devices.total > 0){
             updateVehicleCount();
         }
     });
 };
-//清除选择
+
 var clearVehicles = function () {
     $(":checkbox").attr("checked", false);
     uid = 0;
@@ -995,7 +1008,7 @@ var clearVehicles = function () {
     // interval = 10;
     // updateTime = new Date(0);
 };
-//有车辆时定时刷新
+
 var interval = 10;
 var intervalId;
 var refreshLocation = function () {
@@ -1155,6 +1168,8 @@ $(document).ready(function () {
 
         customerQuery();
         getAllDepart();
+        // 加载兴趣点
+        loadPois();
         clearInterval(mtId);
     }, 100);
 });

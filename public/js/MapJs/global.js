@@ -169,7 +169,7 @@ function getIconStatus(vehicle, if_playback) {
 }
 
 function getIconName(vehicle) {
-    var icon_name = "normal"; //vehicleType
+    var icon_name = "normal";
     // if (vehicle.obj_type == 0) {
     //     icon_name = "normal";
     // }
@@ -185,14 +185,16 @@ function getIcon(vehicle, map_type, if_playback) {
     var _if_playback = if_playback || false;
     switch (map_type) {
         case MAP_TYPE_GOOGLE:
-            var icon = new google.maps.MarkerImage(); //标注
+            var icon = {}; //标注
             var icon_name = getIconName(vehicle);
             var icon_status = getIconStatus(vehicle, _if_playback);
             icon_direct = getDirect(vehicle.activeGpsData.direct);
             //icon.size = new google.maps.Size(20, 20);
-            icon.anchor = new google.maps.Point(14, 14);
+            icon.labelOrigin = new google.maps.Point(60, 10);
             //icon.url = "../../Content/MapImages/" + icon_name + "_" + icon_status + "_" + icon_direct + ".png";
-            icon.url = "./objects/" + icon_name + "_" + icon_status + "_" + icon_direct + ".gif";
+            // icon.url = "./objects/" + icon_name + "_" + icon_status + "_" + icon_direct + ".gif";
+            icon.url = "./objects/" + icon_name + "_" + icon_status + "_1.svg";
+            icon.rotation = vehicle.activeGpsData.direct;
             return icon;
             break;
         case MAP_TYPE_BAIDU:
@@ -208,13 +210,13 @@ function getIcon(vehicle, map_type, if_playback) {
 function getPoiIcon(poi, map_type) {
     switch (map_type) {
         case MAP_TYPE_GOOGLE:
-            var icon = new google.maps.MarkerImage(); //标注
-            icon.anchor = new google.maps.Point(0, 0);
-            icon.url = "/img/service.png";
+            var icon = {}; //标注
+            icon.labelOrigin = new google.maps.Point(55, 10);
+            icon.url = "poi/" + poi.opt.type + ".png";
             return icon;
             break;
         case MAP_TYPE_BAIDU:
-            var icon = new BMap.Icon("/img/service.png", new BMap.Size(24, 24));
+            var icon = new BMap.Icon("poi/" + poi.opt.type + ".png", new BMap.Size(24, 24));
             icon.anchor = 0;
             return icon;
             break;

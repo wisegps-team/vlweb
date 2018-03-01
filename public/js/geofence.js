@@ -6,14 +6,17 @@
  * To change this template use File | Settings | File Templates.
  */
 
-if ($.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN') {
-    document.write('<script type="text/javascript" src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js"></script>');
-}
+// if ($.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN') {
+//     $.getScript('js/DrawingManager.js');
+// }
 
 var _flag = 1;   //1: 新增  2: 修改
 var _validator;
 var _table;
 var _tableGeofence;
+var _tablePoi;
+var _tableCheckPoint;
+var _tableRoute;
 var _id = 0;
 var _name = '';
 var _createdAt = '';
@@ -27,56 +30,113 @@ var names = [];
 var vehicles = [];
 var _vehicles = {};
 var _firstLoad = true;
+var _overlayType = '1';
+var _actionType = 1;
 var typeDesc; // = ['', '兴趣点', '多边形', '折线', '圆形'];
 var actionDesc; // = ['进出', '进', '出'];
 var map_type = MAP_TYPE_BAIDU;
 var map_engine = 'BAIDU';
+var _clickTotal = 0;
+var checkTotal;
+var _editing = false;
+var toggleEdit;
 
 // 围栏查询
-function _queryGeofence(key) {
+function _queryGeofence(key, type) {
     var query_json;
     if(key && key != ""){
         query_json = {
             uid: $.cookie('dealer_id'),
+            type: type || '2|4',
             name: '^' + key
         };
     }else{
         query_json = {
-            uid: $.cookie('dealer_id')
+            uid: $.cookie('dealer_id'),
+            type: type || '2|4'
         };
     }
     wistorm_api._list('overlay', query_json, 'objectId,name,type,remark,createdAt,vehicleCount', '-createdAt', '-createdAt', 0, 0, 1, -1, auth_code, true, function(json){
-        var _columns = [
-            {
-                "searchable": false,
-                "data": null,
-                "className": "center did",
-                "bSortable": false,
-                "render": function (obj) {
-                    return "<input type='checkbox' id='" + obj.objectId + "' value='" + obj.objectId + "' name='" + obj.name + "' title='" + i18next.t("geofence.check") +"'>";
+        if(type === '2|4'){
+            var _columns = [
+                {
+                    "searchable": false,
+                    "data": null,
+                    "className": "center did",
+                    "bSortable": false,
+                    "render": function (obj) {
+                        return "<input type='checkbox' id='" + obj.objectId + "' value='" + obj.objectId + "' name='" + obj.name + "' title='" + i18next.t("geofence.check") +"'>";
+                    }
+                },
+                {"searchable": false, "data": null, "className": "", "render": function (obj) {
+                    return '<span class="name" title="' + i18next.t("geofence.dblclick_edit") +'">' + obj.name + '</span>';
+                }},
+                {
+                    "searchable": false, "data": null, "className": "center", "render": function (obj) {
+                    return '<span title="' + i18next.t("geofence.dblclick_edit") +'">' + typeDesc[obj.type] + '</span>';
                 }
-            },
-            {"searchable": false, "data": null, "className": "", "render": function (obj) {
-                return '<span class="name" title="' + i18next.t("geofence.dblclick_edit") +'">' + obj.name + '</span>';
-            }},
-            {
-                "searchable": false, "data": null, "className": "center", "render": function (obj) {
-                return '<span title="' + i18next.t("geofence.dblclick_edit") +'">' + typeDesc[obj.type] + '</span>';
-            }
-            },
-            {
-                "searchable": false, "data": null, "className": "center", "render": function (obj) {
-                return '<span title="' + i18next.t("geofence.dblclick_edit") +'">' + new Date(obj.createdAt).format('yyyy-MM-dd') + '</span>';
-            }
-            },
-            {
-                "searchable": false, "data": null, "className": "center", "render": function (obj) {
+                },
+                {
+                    "searchable": false, "data": null, "className": "center", "render": function (obj) {
+                    return '<span title="' + i18next.t("geofence.dblclick_edit") +'">' + new Date(obj.createdAt).format('yyyy-MM-dd') + '</span>';
+                }
+                },
+                {
+                    "searchable": false, "data": null, "className": "center", "render": function (obj) {
                     var vehicleCount = obj.vehicleCount || 0;
-                return '<a class="vehicleCount" id="' + obj.objectId + '" name="' + obj.name +'" title="' + i18next.t("geofence.click_bind") +'">' + vehicleCount +'</a>';
-            }
-            }
-        ];
-        var lang = i18next.language || 'en';
+                    return '<a class="vehicleCount" id="' + obj.objectId + '" name="' + obj.name +'" title="' + i18next.t("geofence.click_bind") +'">' + vehicleCount +'</a>';
+                }
+                }
+            ];
+        }else if(type === '1'){
+            var _columns = [
+                {
+                    "searchable": false,
+                    "data": null,
+                    "className": "center did",
+                    "bSortable": false,
+                    "render": function (obj) {
+                        return "<input type='checkbox' id='" + obj.objectId + "' value='" + obj.objectId + "' name='" + obj.name + "' title='" + i18next.t("geofence.check") +"'>";
+                    }
+                },
+                {"searchable": false, "data": null, "className": "", "render": function (obj) {
+                    return '<span class="name" title="' + i18next.t("geofence.dblclick_edit") +'">' + obj.name + '</span>';
+                }},
+                {
+                    "searchable": false, "data": null, "className": "center", "render": function (obj) {
+                    return '<span title="' + i18next.t("geofence.dblclick_edit") +'">' + new Date(obj.createdAt).format('yyyy-MM-dd') + '</span>';
+                }
+                }
+            ];
+        }else{
+            var _columns = [
+                {
+                    "searchable": false,
+                    "data": null,
+                    "className": "center did",
+                    "bSortable": false,
+                    "render": function (obj) {
+                        return "<input type='checkbox' id='" + obj.objectId + "' value='" + obj.objectId + "' name='" + obj.name + "' title='" + i18next.t("geofence.check") +"'>";
+                    }
+                },
+                {"searchable": false, "data": null, "className": "", "render": function (obj) {
+                    return '<span class="name" title="' + i18next.t("geofence.dblclick_edit") +'">' + obj.name + '</span>';
+                }},
+                {
+                    "searchable": false, "data": null, "className": "center", "render": function (obj) {
+                    return '<span title="' + i18next.t("geofence.dblclick_edit") +'">' + new Date(obj.createdAt).format('yyyy-MM-dd') + '</span>';
+                }
+                },
+                {
+                    "searchable": false, "data": null, "className": "center", "render": function (obj) {
+                    var vehicleCount = obj.vehicleCount || 0;
+                    return '<a class="vehicleCount" id="' + obj.objectId + '" name="' + obj.name +'" title="' + i18next.t("geofence.click_bind") +'">' + vehicleCount +'</a>';
+                }
+                }
+            ];
+        }
+
+        var lang = i18next.language || 'zh-CN';
         var objTable = {
             "bInfo": false,
             "bLengthChange": false,
@@ -92,19 +152,45 @@ function _queryGeofence(key) {
             "oLanguage": {"sUrl": 'css/' + lang + '.txt'}
         };
 
-        if (_tableGeofence) {
-            _tableGeofence.fnClearTable();
+        var __table;
+        var __html;
+        var __var;
+        switch(type){
+            case '2|4':
+                __var = '_tableGeofence';
+                __table = _tableGeofence;
+                __html = "#geofenceList";
+                break;
+            case '1':
+                __var = '_tablePoi';
+                __table = _tablePoi;
+                __html = "#poiList";
+                break;
+            case '3':
+                __var = '_tableRoute';
+                __table = _tableRoute;
+                __html = "#routeList";
+                break;
+            case '5':
+                __var = '_tableCheckPoint';
+                __table = _tableCheckPoint;
+                __html = "#checkPointList";
+        }
+
+        if (__table) {
+            __table.fnClearTable();
             if (json.data.length > 0) {
-                _tableGeofence.fnAddData(json.data);
+                __table.fnAddData(json.data);
             }
         } else {
-            _tableGeofence = $("#geofenceList").dataTable(objTable);
-            $('#geofenceList tbody').on('click', 'tr', function () {
+            window[__var] = $(__html).dataTable(objTable);
+            __table = window[__var];
+            $(__html + ' tbody').on('click', 'tr', function () {
                 if ($(this).hasClass('selected')) {
                     // $(this).removeClass('selected');
                 }
                 else {
-                    _tableGeofence.$('tr.selected').removeClass('selected');
+                    __table.$('tr.selected').removeClass('selected');
                     $(this).addClass('selected');
                 }
                 _id = $(this).find(".did [type='checkbox']").val();
@@ -114,7 +200,7 @@ function _queryGeofence(key) {
                 setAssignButton();
                 _query();
             });
-            $('#geofenceList tbody').on('click', 'tr', function () {
+            $(__html + ' tbody').on('click', 'tr', function () {
                 if ($(this).hasClass('selected')) {
                     // $(this).removeClass('selected');
                 }
@@ -124,36 +210,41 @@ function _queryGeofence(key) {
                 }
                 _id = $(this).find(".did [type='checkbox']").val();
                 _name = $(this).find(".name").html();
-                findGeofence(_id);
+                findGeofence(_id, type);
             });
-            $('#geofenceList tbody').on('mouseover', 'tr', function () {
+            $(__html + ' tbody').on('mouseover', 'tr', function () {
                 $(this).css("cursor","pointer");
             });
-            $('#geofenceList tbody').on('mouseout', 'tr', function () {
+            $(__html + ' tbody').on('mouseout', 'tr', function () {
                 $(this).css("cursor","default");
             });
         }
     });
 }
 
-function findGeofence(id) {
+function findGeofence(id, type) {
     _id = id;
     var query_json = {
-        objectId: id
+        objectId: id,
+        type: type || '2|4'
     };
     wistorm_api._get('overlay', query_json, 'objectId,type,name,points,remark,opt,createdAt', auth_code, true, function(json){
         if(json.data){
             var radius = json.data.opt ? json.data.opt.radius || 0 : 0;
             var points = json.data.points;
+            var name = json.data.name;
+            var opt = json.data.opt;
             _type = json.data.type;
             _overlay = wimap.addOverlay(_type, points, radius, function(type, target){
                 //'半径：' + type.target.getRadius().toFixed(0) + '米'
                 $('#typeInfo').html(i18next.t("geofence.radius", {radius: type.target.getRadius().toFixed(0)}));
-            });
+            }, opt, name);
             var cp;
-            if(_type === 4){
+            if(_type === 1){
+                cp = _overlay.getPosition();
+            }else if(_type === 4){
                 cp = _overlay.getCenter();
-            }else if(_type === 2){
+            }else if(_type === 2 || _type === 3 || _type === 5){
                 if(map_type === MAP_TYPE_BAIDU){
                     cp = _overlay.getBounds().getCenter();
                 }else {
@@ -185,6 +276,7 @@ function findGeofence(id) {
             _name = json.data.name;
             _createdAt = json.data.createdAt;
             _remark = json.data.remark;
+            _opt = json.data.opt;
         }
     });
 }
@@ -221,6 +313,13 @@ var isBinded = function(geofences, id){
     return s.indexOf(id) > -1;
 };
 
+var getActionType = function(geofences, id){
+  var obj = geofences.find(function(item){
+      return item.id === id;
+  });
+  return obj.type;
+};
+
 var querySuccess = function(json) {
     var j, _j, UnContacter, Uncontacter_tel;
     // vehicles = json.data;
@@ -252,7 +351,7 @@ var querySuccess = function(json) {
         }
         },
         {"searchable": false, "data": null, "className": "center", "render": function (obj) {
-            return isBinded(obj.geofences, _id) ? actionDesc[obj.geofences[0].type] : '';
+            return isBinded(obj.geofences, _id) ? actionDesc[getActionType(obj.geofences, _id)] : '';
         }
         },
         {"searchable": false, "data": null, "className": "center", "render": function (obj) {
@@ -260,10 +359,10 @@ var querySuccess = function(json) {
             return '<a class="geoCount" id="' + obj.did + '" name="' + obj.vehicleName +'" title="' + i18next.t("geofence.click_geofence") +'">' + geoCount +'</a>';
         }},
         {"searchable": false, "data": null, "className": "center", "render": function (obj) {
-            return isBinded(obj.geofences, _id) ? '<i did="' + obj.did +'" actionType="' + obj.geofences[0].type +'" class="unbinded icon-remove" title="' + i18next.t("geofence.delete_bind") +'"></i>': '';
+            return isBinded(obj.geofences, _id) ? '<i did="' + obj.did +'" actionType="' + getActionType(obj.geofences, _id) +'" class="unbinded icon-remove" title="' + i18next.t("geofence.delete_bind") +'"></i>': '';
         }}
     ];
-    var lang = i18next.language || 'en';
+    var lang = i18next.language || 'zh-CN';
     var objTable = {
         "bInfo": false,
         "bLengthChange": false,
@@ -327,18 +426,30 @@ function windowResize() {
 }
 
 // 初始化车辆信息窗体
-var initFrmGeofence = function (title, flag, name, type, remark, createdAt) {
+var initFrmGeofence = function (title, flag, name, type, remark, createdAt, opt) {
     $("#divGeofence").dialog("option", "title", title);
     _flag = flag;
     $('#name').val(name);
     $('#type').val(type);
+    $('#poiType').val(opt ? opt.type || '1': '1');
+    $('#width').val(opt ? opt.width || '0': '0');
     $('#remark').val(remark);
-    if (_flag == 1) {
+    if (_flag === 1) {
         $('#pnlDate').hide();
     } else {
         $('#createdAt').val(createdAt);
         $('#createdAt').attr("disabled", "disabled");
         $('#pnlDate').show();
+    }
+    $('#divPoiType').hide();
+    $('#divGeofenceType').hide();
+    $('#divWidth').hide();
+    if(_actionType === 1){
+        $('#divPoiType').show();
+    }else if(_actionType === 2){
+        $('#divGeofenceType').show();
+    }else if(_actionType === 3){
+        $('#divWidth').show();
     }
 };
 
@@ -347,6 +458,9 @@ var initFrmGeofenceAssign = function (title, overlayName, assginDevices) {
     $("#divGeofenceAssign").dialog("option", "title", title);
     $('#overlayName').val(overlayName);
     $('#assginDevices').val(assginDevices);
+    var titleDesc = ['', i18next.t("geofence.poi"), i18next.t("geofence.geofence"), i18next.t("geofence.route"), i18next.t("geofence.geofence"), i18next.t("geofence.checkpoint")];
+    var title = titleDesc[_actionType];
+    $('#lblSelect').html(i18next.t("geofence.select_geofence", {type: title}));
 };
 
 // 新增围栏
@@ -355,12 +469,23 @@ var _add = function () {
     var name = $("#name").val();
     var remark = $("#remark").val();
     var type = _type;
+    var poiType = $('#poiType').val();
+    var width = parseInt($('#width').val() || 0);
     var points = [];
     var _points = [];
     var loc = {};
     var opt = {};
     opt.mapType = map_engine;
-    if(type == 4){
+    if(type === 1){
+        opt.type = poiType;
+        if(map_type === MAP_TYPE_BAIDU){
+            loc = { type: "Point", coordinates: [ _overlay.getPosition().lng, _overlay.getPosition().lat ] };
+            _points.push([ _overlay.getPosition().lng, _overlay.getPosition().lat ]);
+        }else{
+            loc = { type: "Point", coordinates: [ _overlay.getPosition().lng(), _overlay.getPosition().lat() ] };
+            _points.push([ _overlay.getPosition().lng(), _overlay.getPosition().lat() ]);
+        }
+    }else if(type === 4){
         opt.radius = _overlay.getRadius();
         if(map_type === MAP_TYPE_BAIDU){
             loc = { type: "Point", coordinates: [ _overlay.getCenter().lng, _overlay.getCenter().lat ] };
@@ -369,26 +494,50 @@ var _add = function () {
             loc = { type: "Point", coordinates: [ _overlay.getCenter().lng(), _overlay.getCenter().lat() ] };
             _points.push([ _overlay.getCenter().lng(), _overlay.getCenter().lat() ]);
         }
-    }else if(type === 2) {
+    }else if(type === 2 || type === 3 || type === 5) {
         points = _overlay.getPath();
         if (map_type === MAP_TYPE_BAIDU) {
-            for (var i = 0; i < points.length; i++) {
-                _points.push([points[i].lng, points[i].lat]);
+            if(type === 5){
+                for (var i = 0; i < 2; i++) {
+                    _points.push([points[i].lng, points[i].lat]);
+                }
+            }else{
+                for (var i = 0; i < points.length; i++) {
+                    _points.push([points[i].lng, points[i].lat]);
+                }
             }
         }else{
             points = points.getArray();
-            for (var i = 0; i < points.length; i++) {
-                _points.push([points[i].lng(), points[i].lat()]);
+            if(type === 5){
+                for (var i = 0; i < 2; i++) {
+                    _points.push([points[i].lng(), points[i].lat()]);
+                }
+            }else{
+                for (var i = 0; i < points.length; i++) {
+                    _points.push([points[i].lng(), points[i].lat()]);
+                }
             }
         }
-        if(map_type === MAP_TYPE_BAIDU) {
-            _points.push([points[0].lng, points[0].lat]);
+
+        if(type === 2){
+            if(map_type === MAP_TYPE_BAIDU) {
+                _points.push([points[0].lng, points[0].lat]);
+            }else{
+                _points.push([points[0].lng(), points[0].lat()]);
+            }
+            loc = {
+                type: "Polygon",
+                coordinates: [ _points ]
+            }
         }else{
-            _points.push([points[0].lng(), points[0].lat()]);
+            loc = {
+                type: "LineString",
+                coordinates: _points
+            }
         }
-        loc = {
-            type: "Polygon",
-            coordinates: [ _points ]
+
+        if(type === 3){
+            opt.width = width;
         }
     }
     // var wistorm_api = new WiStormAPI(app_key, app_secret, 'json', '2.0', 'md5', dev_key);
@@ -410,7 +559,7 @@ var _add = function () {
                 wimap.removeOverlay(_overlay);
             }
             drawingManager.hide();
-            _queryGeofence();
+            _queryGeofence('', _overlayType);
         } else {
             _alert(i18next.t("geofence.msg_add_fail"));
         }
@@ -422,12 +571,23 @@ var _edit = function () {
     var name = $("#name").val();
     var remark = $("#remark").val();
     var type = _type;
+    var poiType = $('#poiType').val();
+    var width = parseInt($('#width').val() || 0);
     var points = [];
     var _points = [];
     var loc = {};
     var opt = {};
     opt.mapType = map_engine;
-    if(type == 4){
+    if(type === 1){
+        opt.type = poiType;
+        if(map_type === MAP_TYPE_BAIDU){
+            loc = { type: "Point", coordinates: [ _overlay.getPosition().lng, _overlay.getPosition().lat ] };
+            _points.push([ _overlay.getPosition().lng, _overlay.getPosition().lat ]);
+        }else{
+            loc = { type: "Point", coordinates: [ _overlay.getPosition().lng(), _overlay.getPosition().lat() ] };
+            _points.push([ _overlay.getPosition().lng(), _overlay.getPosition().lat() ]);
+        }
+    }else if(type === 4){
         opt.radius = _overlay.getRadius();
         if(map_type === MAP_TYPE_BAIDU){
             loc = { type: "Point", coordinates: [ _overlay.getCenter().lng, _overlay.getCenter().lat ] };
@@ -436,7 +596,7 @@ var _edit = function () {
             loc = { type: "Point", coordinates: [ _overlay.getCenter().lng(), _overlay.getCenter().lat() ] };
             _points.push([ _overlay.getCenter().lng(), _overlay.getCenter().lat() ]);
         }
-    }else if(type === 2){
+    }else if(type === 2 || type === 3 || type === 5){
         points = _overlay.getPath();
         if (map_type === MAP_TYPE_BAIDU) {
             for (var i = 0; i < points.length; i++) {
@@ -448,12 +608,24 @@ var _edit = function () {
                 _points.push([points[i].lng(), points[i].lat()]);
             }
         }
-        if(map_type === MAP_TYPE_BAIDU) {
-            _points.push([points[0].lng, points[0].lat]);
+        if(type === 2){
+            if(map_type === MAP_TYPE_BAIDU) {
+                _points.push([points[0].lng, points[0].lat]);
+            }else{
+                _points.push([points[0].lng(), points[0].lat()]);
+            }
+            loc = {
+                type: "Polygon",
+                coordinates: [ _points ]
+            }
+        }else{
+            loc = {
+                type: "LineString",
+                coordinates: _points
+            }
         }
-        loc = {
-            type: "Polygon",
-            coordinates: [ _points ]
+        if(type === 3){
+            opt.width = width;
         }
     }
     var updatedAt = new Date();
@@ -478,7 +650,7 @@ var _edit = function () {
                 wimap.removeOverlay(_overlay);
             }
             drawingManager.hide();
-            _queryGeofence();
+            _queryGeofence('', _overlayType);
         } else {
             _alert(i18next.t("geofence.msg_edit_fail"));
         }
@@ -509,7 +681,7 @@ var _delete = function (_id) {
                 if(_overlay){
                     wimap.removeOverlay(_overlay);
                 }
-                _queryGeofence();
+                _queryGeofence('', _overlayType);
                 _query();
             });
         } else {
@@ -658,16 +830,41 @@ function windowResize() {
 }
 
 function setButtonMode(mode){
+    var __add = '#addPoi';
+    var __edit = '#editPoi';
+    var __delete = '#delPoi';
+    switch(_actionType){
+        case 1:
+            __add = '#addPoi';
+            __edit = '#editPoi';
+            __delete = '#delPoi';
+            break;
+        case 2:
+            __add = '#addGeofence';
+            __edit = '#editGeofence';
+            __delete = '#delGeofence';
+            break;
+        case 3:
+            __add = '#addRoute';
+            __edit = '#editRoute';
+            __delete = '#delRoute';
+            break;
+        case 5:
+            __add = '#addCheckPoint';
+            __edit = '#editCheckPoint';
+            __delete = '#delCheckPoint';
+            break;
+    }
     switch (mode){
         case 0: //缺省
-            $("#addGeofence").attr('disabled', false);
-            $("#editGeofence").attr('disabled', false);
-            $("#delGeofence").attr('disabled', false);
+            $(__add).attr('disabled', false);
+            $(__edit).attr('disabled', false);
+            $(__delete).attr('disabled', false);
             break;
         case 1: //新增
-            $("#addGeofence").attr('disabled', true);
-            $("#editGeofence").attr('disabled', true);
-            $("#delGeofence").attr('disabled', true);
+            $(__add).attr('disabled', true);
+            $(__edit).attr('disabled', true);
+            $(__delete).attr('disabled', true);
             if(map_type === MAP_TYPE_BAIDU) {
                 wimap.map.clearOverlays();
             }else{
@@ -678,12 +875,32 @@ function setButtonMode(mode){
             _drawed = false;
             break;
         case 2: //修改
-            $("#addGeofence").attr('disabled', true);
-            $("#editGeofence").attr('disabled', true);
-            $("#delGeofence").attr('disabled', true);
+            $(__add).attr('disabled', true);
+            $(__edit).attr('disabled', true);
+            $(__delete).attr('disabled', true);
             _drawed = true;
             break;
     }
+}
+
+function getBoundary(area){
+    var bdary = new BMap.Boundary();
+    bdary.get(area, function(rs){       //获取行政区域
+        map.clearOverlays();        //清除地图覆盖物
+        var count = rs.boundaries.length; //行政区域的点有多少个
+        if (count === 0) {
+            alert('未能获取当前输入行政区域');
+            return ;
+        }
+        var pointArray = [];
+        for (var i = 0; i < count; i++) {
+            _overlay = new BMap.Polygon(rs.boundaries[i], {strokeWeight: 2, strokeColor: "#ff0000"}); //建立多边形覆盖物
+            _type = 2;
+            map.addOverlay(_overlay);  //添加覆盖物
+            pointArray = pointArray.concat(_overlay.getPath());
+        }
+        map.setViewport(pointArray);    //调整视野
+    });
 }
 
 $(document).ready(function () {
@@ -693,9 +910,12 @@ $(document).ready(function () {
     map_engine = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? 'BAIDU' : 'GOOGLE';
 
     var geoId = setInterval(function(){
+        $("#accordion-icon").hide();
+        console.log('geo interval');
         if(!i18nextLoaded){
             return;
         }
+        clearInterval(geoId);
 
         $('#geofenceType a').click(function (e) {
             e.preventDefault();
@@ -704,25 +924,45 @@ $(document).ready(function () {
 
         windowResize();
 
-        typeDesc = ['', i18next.t("geofence.poi"), i18next.t("geofence.polygon"), i18next.t("geofence.polyline"), i18next.t("geofence.circle")];
+        typeDesc = ['', i18next.t("geofence.poi"), i18next.t("geofence.polygon"), i18next.t("geofence.route"), i18next.t("geofence.circle"), i18next.t("geofence.checkpoint")];
+        titleDesc = ['', i18next.t("geofence.poi"), i18next.t("geofence.geofence"), i18next.t("geofence.route"), i18next.t("geofence.geofence"), i18next.t("geofence.checkpoint")];
         actionDesc = [i18next.t("geofence.in_out"), i18next.t("geofence.in"), i18next.t("geofence.out")];
+        buttonType = {
+            'addPoi': 1,
+            'addGeofence': 2,
+            'addRoute': 3,
+            'addCheckPoint': 5,
+            'editPoi': 1,
+            'editGeofence': 2,
+            'editRoute': 3,
+            'editCheckPoint': 5
+        };
         // customerQuery();
-        _queryGeofence();
+        _queryGeofence('', _overlayType);
         _query();
 
-        $("#addGeofence").click(function () {
-            initFrmGeofence(i18next.t("geofence.add_geofence"), 1, "", "");
+        $("#addGeofence, #addPoi, #addCheckPoint, #addRoute").click(function () {
+            _actionType = buttonType[$(this).attr('id')];
+            var title = titleDesc[_actionType];
+            initFrmGeofence(i18next.t("geofence.add_geofence", {type: title}), 1, "", "");
             _validator.resetForm();
             $("#divGeofence").dialog("open");
             // 打开绘图工具
             drawingManager.show();
             setButtonMode(1);
         });
+        
+        $("#poiType").change(function(){
+            var type = $(this).val();
+            $("#poiIcon").attr("src", 'poi/' + type + '.png');
+        });
 
-        $("#editGeofence").click(function () {
+        $("#editGeofence, #editPoi, #editCheckPoint, #editRoute").click(function () {
+            _actionType = buttonType[$(this).attr('id')];
+            var title = titleDesc[_actionType];
             var createdAt = new Date(_createdAt).format('yyyy-MM-dd hh:mm:ss');
-            initFrmGeofence(i18next.t("geofence.edit_geofence"), 2, _name, '', _remark, createdAt);
-            if(_overlay){
+            initFrmGeofence(i18next.t("geofence.edit_geofence", {type: title}), 2, _name, '', _remark, createdAt, _opt);
+            if(_overlay && _actionType !== 3){
                 wimap.setEditable(_overlay);
             }
             if(_type === 4){
@@ -744,9 +984,6 @@ $(document).ready(function () {
             }else{
                 $("#vehiclePanel").hide();
             }
-            if (_table) {
-                _table.fnSort([[1, "asc"]]);
-            }
         });
 
         $("#deviceListClose").click(function () {
@@ -754,8 +991,9 @@ $(document).ready(function () {
             $("#vehiclePanel").hide();
         });
 
-        $("#delGeofence").click(function () {
-            var selected = $("#geofenceList [type='checkbox']:checked:not([id='checkAll'])");
+        $("#delGeofence, #delPoi, #delCheckPoint, #delRoute").click(function () {
+            var __list = ['', '#poiList', '#geofenceList', '#routeList', '#geofenceList', '#checkPointList'];
+            var selected = $(__list[_actionType] + " [type='checkbox']:checked:not([id='checkAll'])");
             if(selected.length === 0){
                 _alert(i18next.t("geofence.msg_select_geofence"), 3);
                 return;
@@ -823,7 +1061,8 @@ $(document).ready(function () {
         $('#frmGeofence').submit(function () {
             if ($('#frmGeofence').valid()) {
                 if(!_drawed){
-                    _alert(i18next.t("geofence.msg_draw_geofence"), 3);
+                    var typeDesc = ['', i18next.t("geofence.poi"), i18next.t("geofence.geofence"), i18next.t("geofence.route"), i18next.t("geofence.geofence"), i18next.t("geofence.checkpoint")];
+                    _alert(i18next.t("geofence.msg_draw_geofence", {type: typeDesc[_actionType]}), 3);
                     return false;
                 }
                 if (_flag === 1) {
@@ -880,12 +1119,6 @@ $(document).ready(function () {
             $("#vehicleList [type='checkbox']").prop("checked", $('#checkAll2').prop("checked"));//全选
         });
 
-        $("#deviceList").click(function () {
-            if (_table) {
-                _table.fnSort([[1, "asc"]]);
-            }
-        });
-
         $(document).on("click", "#vehicle-status li", function () {
             statusSelected.removeClass("active");
             $(this).addClass("active");
@@ -906,9 +1139,6 @@ $(document).ready(function () {
 
         $(document).on("click", "#geofenceList .vehicleCount", function () {
             $("#vehiclePanel").show();
-            if (_table) {
-                _table.fnSort([[1, "asc"]]);
-            }
         });
 
         //浏览器高度变化菜单栏对应改变
@@ -943,6 +1173,7 @@ $(document).ready(function () {
                 drawingManager.close();
                 _drawed = true;
             };
+
             var polygoncomplete = function (e, overlay) {
                 // lon = overlay.getPosition().lng;
                 // lat = overlay.getPosition().lat;
@@ -954,6 +1185,28 @@ $(document).ready(function () {
                 drawingManager.close();
                 _drawed = true;
             };
+            var polylinecomplete = function (e, overlay) {
+                // lon = overlay.getPosition().lng;
+                // lat = overlay.getPosition().lat;
+                // alert(overlay.getRadius());
+                _overlay = overlay;
+                _type = _actionType;
+                overlay.enableEditing();
+                drawingManager.close();
+                _drawed = true;
+            };
+            var markercomplete = function (e, overlay) {
+                // lon = overlay.getPosition().lng;
+                // lat = overlay.getPosition().lat;
+                // alert(overlay.getRadius());
+                if(_overlay){
+                    wimap.removeOverlay(_overlay);
+                }
+                _overlay = overlay;
+                _type = 1;
+                // drawingManager.close();
+                _drawed = true;
+            };
             var styleOptions = {
                 strokeColor: "red",    //边线颜色。
                 fillColor: "red",      //填充颜色。当参数为空时，圆形将没有填充效果。
@@ -962,34 +1215,98 @@ $(document).ready(function () {
                 fillOpacity: 0.6,      //填充的透明度，取值范围0 - 1。
                 strokeStyle: 'solid' //边线的样式，solid或dashed。
             };
-            //实例化鼠标绘制工具
-            drawingManager = new BMapLib.DrawingManager(wimap.map, {
-                isOpen: false, //是否开启绘制模式
-                enableDrawingTool: true, //是否显示工具栏
-                enableCalculate: false,
-                drawingToolOptions: {
-                    anchor: BMAP_ANCHOR_TOP_LEFT, //位置
-                    offset: new BMap.Size(75, 10), //偏离值
-                    drawingModes : [
-                        BMAP_DRAWING_CIRCLE,
-                        BMAP_DRAWING_POLYGON,
-                        BMAP_DRAWING_POLYLINE
-                    ]
-                },
-                circleOptions: styleOptions, //圆的样式
-                polylineOptions: styleOptions, //线的样式
-                polygonOptions: styleOptions, //多边形的样式
-                rectangleOptions: styleOptions //矩形的样式
-            });
-            //添加鼠标绘制工具监听事件，用于获取绘制结果
-            drawingManager.addEventListener('polygoncomplete', polygoncomplete);
-            drawingManager.addEventListener('circlecomplete', circlecomplete);
-            drawingManager.show = function(){
-                $('.BMapLib_Drawing_panel').show();
+
+            var initDrawingManager = function(){
+                if(BMapLib.DrawingManager){
+                    //实例化鼠标绘制工具
+                    drawingManager = new BMapLib.DrawingManager(wimap.map, {
+                        isOpen: false, //是否开启绘制模式
+                        enableDrawingTool: true, //是否显示工具栏
+                        enableCalculate: false,
+                        drawingToolOptions: {
+                            anchor: BMAP_ANCHOR_TOP_LEFT, //位置
+                            offset: new BMap.Size(75, 10), //偏离值
+                            drawingModes : [
+                                // BMAP_DRAWING_MARKER,
+                                BMAP_DRAWING_CIRCLE,
+                                BMAP_DRAWING_POLYGON
+                                // BMAP_DRAWING_POLYLINE
+                            ]
+                        },
+                        circleOptions: styleOptions, //圆的样式
+                        polylineOptions: styleOptions, //线的样式
+                        polygonOptions: styleOptions, //多边形的样式
+                        rectangleOptions: styleOptions //矩形的样式
+                    });
+                    //添加鼠标绘制工具监听事件，用于获取绘制结果
+                    drawingManager.addEventListener('polygoncomplete', polygoncomplete);
+                    drawingManager.addEventListener('circlecomplete', circlecomplete);
+                    drawingManager.addEventListener('polylinecomplete', polylinecomplete);
+                    drawingManager.addEventListener('markercomplete', markercomplete);
+                    drawingManager.show = function(){
+                        drawingManager.close();
+                        switch(_actionType){
+                            case 1:
+                                drawingManager.setDrawingMode(BMAP_DRAWING_MARKER);
+                                setTimeout(function(){
+                                    drawingManager.open();
+                                }, 100);
+                                break;
+                            case 2:
+                                $('.BMapLib_Drawing_panel').show();
+                                break;
+                            case 3:
+                                toggleEdit = function(type, target, point, pixel){
+                                    _editing = !_editing;
+                                    if(_editing){
+                                        wimap.setEditable(_overlay);
+                                    }else{
+                                        wimap.setDisable(_overlay);
+                                    }
+                                    event.stopPropagation();
+                                };
+                                setTimeout(function(){
+                                    if(_flag == 1){
+                                        drawingManager.open();
+                                        drawingManager.setDrawingMode(BMAP_DRAWING_POLYLINE);
+                                    }else{
+                                        drawingManager.open();
+                                        var path = _overlay.getPath();
+                                        _overlay.addEventListener("dblclick", toggleEdit);
+                                        drawingManager.setDrawingMode(BMAP_DRAWING_POLYLINE, path);
+                                    }
+                                }, 100);
+                                break;
+                            case 5:
+                                _clickTotal = 0;
+                                checkTotal = function(){
+                                    _clickTotal++;
+                                    if(_clickTotal === 2){
+                                        var evt = document.createEvent('MouseEvents');
+                                        evt.initEvent('dblclick',true,true);
+                                        drawingManager._isCheckPoint = true;
+                                        drawingManager._mask.dispatchEvent(evt);
+                                        drawingManager._isCheckPoint = false;
+                                        wimap.map.removeEventListener("click", checkTotal);
+                                    }
+                                };
+                                wimap.map.addEventListener("click", checkTotal);
+                                drawingManager.setDrawingMode(BMAP_DRAWING_POLYLINE);
+                                setTimeout(function(){
+                                    drawingManager.open();
+                                }, 100);
+                                break;
+                        }
+                    };
+                    drawingManager.hide = function(){
+                        $('.BMapLib_Drawing_panel').hide();
+                    };
+                }else{
+                    setTimeout(initDrawingManager, 100);
+                }
             };
-            drawingManager.hide = function(){
-                $('.BMapLib_Drawing_panel').hide();
-            };
+
+            initDrawingManager();
         }else{
             // 多边形和矩形绘制
             var circlecomplete = function (overlay) {
@@ -1028,6 +1345,30 @@ $(document).ready(function () {
                 });
                 _drawed = true;
             };
+            var polylinecomplete = function (overlay) {
+                // lon = overlay.getPosition().lng;
+                // lat = overlay.getPosition().lat;
+                // alert(overlay.getRadius());
+                // alert('polyline');
+                _overlay = overlay;
+                _type = _actionType;
+                drawingManager.setOptions({
+                    drawingMode: null
+                });
+                _drawed = true;
+            };
+            var markercomplete = function (overlay) {
+                // lon = overlay.getPosition().lng;
+                // lat = overlay.getPosition().lat;
+                // alert('marker');
+                if(_overlay){
+                    wimap.removeOverlay(_overlay);
+                }
+                _overlay = overlay;
+                _type = 1;
+                // drawingManager.close();
+                _drawed = true;
+            };
             var styleOptions = {
                 fillColor: 'red',
                 fillOpacity: 0.6,
@@ -1041,18 +1382,67 @@ $(document).ready(function () {
                 drawingControl: false,
                 drawingControlOptions: {
                     position: google.maps.ControlPosition.TOP_LEFT,
-                    drawingModes: ['circle', 'polygon', 'polyline']
+                    drawingModes: ['circle', 'polygon']
                 },
                 circleOptions: styleOptions, //圆的样式
-                polygonOptions: styleOptions //线的样式
+                polygonOptions: styleOptions, //线的样式
+                polylineOptions: styleOptions
             });
             drawingManager.setMap(wimap.map);
             google.maps.event.addListener(drawingManager, 'polygoncomplete', polygoncomplete);
             google.maps.event.addListener(drawingManager, 'circlecomplete', circlecomplete);
+            google.maps.event.addListener(drawingManager, 'markercomplete', markercomplete);
+            google.maps.event.addListener(drawingManager, 'polylinecomplete', polylinecomplete);
+            // drawingManager.show = function(){
+            //     drawingManager.setOptions({
+            //         drawingControl: true
+            //     });
+            // };
             drawingManager.show = function(){
-                drawingManager.setOptions({
-                    drawingControl: true
-                });
+                switch(_actionType){
+                    case 1:
+                        drawingManager.setDrawingMode(google.maps.drawing.OverlayType.MARKER);
+                        break;
+                    case 2:
+                        drawingManager.setOptions({
+                            drawingControl: true
+                        });
+                        break;
+                    case 3:
+                        toggleEdit = function(type, target, point, pixel){
+                            _editing = !_editing;
+                            if(_editing){
+                                wimap.setEditable(_overlay);
+                            }else{
+                                wimap.setDisable(_overlay);
+                            }
+                            event.stopPropagation();
+                        };
+                        setTimeout(function(){
+                            if(_flag == 1){
+                                drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+                            }else{
+                                var path = _overlay.getPath();
+                                _overlay.addEventListener("dblclick", toggleEdit);
+                                drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE, path);
+                            }
+                        }, 100);
+                        break;
+                    case 5:
+                        _clickTotal = 0;
+                        checkTotal = function(){
+                            _clickTotal++;
+                            alert(_clickTotal);
+                            // if(_clickTotal === 2){
+                            //     drawingManager.setDrawingMode('null');
+                            // }else{
+                            //     alert(_clickTotal);
+                            // }
+                        };
+                        drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+                        // wimap.map.addListener("click", checkTotal);
+                        break;
+                }
             };
             drawingManager.hide = function(){
                 drawingManager.setOptions({
@@ -1060,6 +1450,28 @@ $(document).ready(function () {
                 });
             };
         }
+
+        $(document).on("click", "#geofenceType li", function () {
+            _overlayType = $(this).attr('type');
+            $("#accordion-icon").hide();
+            switch(_overlayType){
+                case '2|4':
+                    _actionType = 2;
+                    $("#accordion-icon").show();
+                    break;
+                case '1':
+                    _actionType = 1;
+                    break;
+                case '3':
+                    _actionType = 3;
+                    $("#accordion-icon").show();
+                    break;
+                case '5':
+                    _actionType = 5;
+                    $("#accordion-icon").show();
+            }
+            _queryGeofence('', _overlayType);
+        });
 
         $('#searchVehicle').keydown(function(e){
             var curKey = e.which;
@@ -1082,7 +1494,7 @@ $(document).ready(function () {
                     key = $('#searchGeofence').val();
                 }
                 clearGeofences();
-                _queryGeofence(key);
+                _queryGeofence(key, _overlayType);
                 return false;
             }
         });
@@ -1107,9 +1519,7 @@ $(document).ready(function () {
                     //alert('success');
                 }
             });
-
-        clearInterval(geoId);
-    }, 100);
+    }, 10);
 });
 
 

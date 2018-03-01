@@ -23,6 +23,7 @@ var parent_cust_id = 0;
 var cust_name = "";
 var user_name = "";
 var obj_id = 0;
+var obj_name = '';
 var did = '';
 var tree_path = '';
 var is_depart = false;
@@ -149,7 +150,6 @@ function getAllDepart() {
         uid: dealer_id
     };
     wistorm_api._list('department', query_json, 'objectId,name,parentId,uid', 'name', 'name', 0, 0, 1, -1, auth_code, true, function (json) {
-        console.log(json, 'alldepart')
         var onCustomerAssignClick = function (event, treeId, treeNode) {
             if (parseInt(treeNode.id) > -1) {
                 assignDepartId = treeNode.id;
@@ -316,7 +316,7 @@ var customerQuerySuccess = function (json) {
         if (parseInt(treeNode.id) > -1) {
             assignUid = treeNode.id;
             assignTreePath = treeNode.treePath;
-            assignName = treeNode.name;
+            assignName = treeNode._name;
         }
     };
 
@@ -552,9 +552,8 @@ function vehicleQuery(cust_id, tree_path, is_depart) {
         }
     }
     setLoading("vehicle_list");
-    // debugger;
     wistorm_api._list('vehicle', query_json, 'objectId,name,model,did,sim,serviceRegDate,serviceExpireIn,contact,tel', '-createdAt', '-createdAt', 0, 0, 1, -1, auth_code, true, vehicleQuerySuccess)
-
+    
     wistorm_api._list('department', { uid: cust_id }, '', '-createdAt', '-createdAt', 0, 0, 1, -1, auth_code, true, function (json) {
         var departmentData = {};
         if (json.total) {
@@ -675,6 +674,11 @@ var vehicleQuerySuccess = function (json) {
     }
 
     var _columns = [
+        {
+            "mData": null, "sClass": "center", "bSortable": false, "fnRender": function (obj) {
+                return "<input type='checkbox' value='" + obj.aData.objectId + "'>";
+            }
+        },
         { "mData": "name", "sClass": "ms_left" },
         { "mData": "did", "sClass": "center" },
         // { "mData":"serial", "sClass":"center" },
@@ -685,7 +689,7 @@ var vehicleQuerySuccess = function (json) {
         { "mData": "serviceExpireIn", "sClass": "center" },
         {
             "mData": null, "sClass": "center", "bSortable": false, "fnRender": function (obj) {
-                return "<a href='#' title='编辑' data-i18n='[title]table.edit'><i class='icon-edit' obj_id='" + obj.aData.objectId + "' did='" + obj.aData.did + "'></i></a>&nbsp&nbsp<a href='#' title='更换用户' data-i18n='[title]table.change_parent'><i class='icon-retweet' obj_id='" + obj.aData.objectId + "' obj_name='" + obj.aData.name + "' did='" + obj.aData.did + "'></i></a>&nbsp&nbsp<a href='#' title='删除' data-i18n='[title]table.delete'><i class='icon-remove' obj_id='" +
+                return "<a href='#' title='编辑' data-i18n='[title]table.edit'><i class='icon-edit' obj_id='" + obj.aData.objectId + "' did='" + obj.aData.did + "'></i></a>&nbsp&nbsp<a href='#' title='更换用户' data-i18n='[title]vehicle.change_parent'><i class='icon-retweet' obj_id='" + obj.aData.objectId + "' obj_name='" + obj.aData.name + "' did='" + obj.aData.did + "'></i></a>&nbsp&nbsp<a href='#' title='删除' data-i18n='[title]table.delete'><i class='icon-remove' obj_id='" +
                     obj.aData.objectId + "' obj_name='" + obj.aData.name + "' did='" + obj.aData.did + "'></i></a>";
             }
         }
@@ -790,7 +794,7 @@ var vehicleAdd = function () {
     var maintainExpireIn = $('#maintainExpireIn').val();
     var inspectExpireIn = $('#inspectExpireIn').val();
     var maintainMileage = $('#maintainMileage').val();
-
+    
     var sim_type = 1;                      //SIM卡类型，保留
     var mobile_operator = "";              //运营商，保留
     var op_mobile = "";                    //主号，当前手机号，保留
@@ -1163,6 +1167,23 @@ $(document).ready(function () {
             $("#divCustomerAssign").dialog("open");
         });
 
+        $("#changeParent").click(function () {
+            var ids = $("[type='checkbox']:checked:not(#checkAll)");
+            if (ids.length === 0) {
+                _alert(i18next.t("system.select_vehicle"));
+                return;
+            }
+            obj_id = [];
+            for (var i = 0; i < ids.length; i++) {
+                obj_id.push($(ids[i]).val());
+            }
+            obj_id = obj_id.join("|");
+            obj_name = i18next.t("vehicle.selected_vehicle", { count: ids.length });
+            var title = i18next.t("vehicle.change_parent");
+            $("#divCustomerAssign").dialog("option", "title", title);
+            $("#divCustomerAssign").dialog("open");
+        });
+
         //$(document).on("dblclick", "#customer_list li", function () {
         //    // 获取客户信息
         //    cust_id = parseInt($(this).attr("cust_id"));
@@ -1180,7 +1201,7 @@ $(document).ready(function () {
 
         $("#checkAll").click(function () {
             //alert($('#checkAll').prop("checked"));
-            $("[type='checkbox']").prop("checked", $('#checkAll').prop("checked"));//全选
+            $("[type='checkbox'][id!=allNode]").prop("checked", $('#checkAll').prop("checked"));//全选
         });
 
         $("#searchVehicle").click(function () {

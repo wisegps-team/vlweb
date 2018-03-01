@@ -86,7 +86,6 @@ var is_firstVoice = sessionStorage.getItem('is_firstVoice') == 'false' ? false :
 var is_voice = sessionStorage.getItem('is_voice') == 'false' ? false : true;
 
 var getAlertCount = function () {
-    // debugger;
     var dealerId = $.cookie('dealer_id');
     undealAlert(dealerId, function (count) {
         console.log('alert count: ' + count);

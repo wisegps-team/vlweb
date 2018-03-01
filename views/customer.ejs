@@ -119,10 +119,10 @@
                 </select>
                 <input id="customerKey" class="input-medium" type="text" data-provide="typeahead" data-items="5" autocomplete="off" data-source="" placeholder="<%= t('customer.search') %>" data-i18n="[placeholder]customer.search">
                 <button class="btn btn-primary" type="button" id="addCustomer" data-i18n="customer.new"><%= t('customer.new') %></button>
-                <button class="btn btn-primary" type="button" id="export" data-i18n="report.export" style="display:none;margin-left:10px">
+                 <button class="btn" type="button" id="changeParent" data-i18n="customer.change_parent"><%= t('customer.change_parent') %></button>
+                 <button class="btn btn-primary" type="button" id="export" data-i18n="report.export" style="display:none;margin-left:10px">
                     <%= t('report.export') %>
                 </button>
-                <!-- <button class="btn" type="button" id="searchVehicle">搜索</button> -->
                 <!-- <button class="btn btn-primary" type="button" id="delVehicle">删除</button> -->
                 <!-- <a href="#frmVehicle" role="button" class="btn" data-toggle="modal"><i class="icon-plus"></i> 新增</a>
                 <a href="#" role="button" class="btn"><i class="icon-remove"></i> 删除</a> -->
@@ -135,7 +135,7 @@
                        cellspacing="0" border="0" id="customer_list">
                     <thead>
                     <tr class="tops">
-                        <!--<th width="20px" style="text-align: center !important;"><input id="checkAll" type="checkbox"></th>-->
+                        <th width="20px" style="text-align: center !important;"><input id="checkAll" type="checkbox"></th>
                         <th style="" data-i18n="customer.name"><%= t('customer.name') %></th>
                         <th width="90px" data-i18n="customer.cust_type"><%= t('customer.cust_type') %></th>
                         <th width="90px" data-i18n="customer.contact"><%= t('customer.contact') %></th>
@@ -185,13 +185,12 @@
 <script type="text/javascript" src="js/zTree/js/jquery.ztree.excheck-3.4.min.js"></script>
 <script src='js/md5.js'></script>
 <script src="js/system.js"></script>
+<script src="js/locales.js" ></script>
 <script src="js/wistorm/md5.js"></script>
 <script src="js/wistorm/define.js"></script>
 <script src="js/wistorm/wistorm.js"></script>
 <script src="js/json.js"></script>
 <!--<script src="js/index.js"></script>-->
-<script src="js/table.js"></script>
-<script src="js/locales.js" ></script>
 <script src="js/customer.js"></script>
 <script src="js/account.js"></script>
 

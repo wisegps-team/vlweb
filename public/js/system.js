@@ -1017,15 +1017,15 @@ function useCarJosn(json) {
 /*
 *显示地址
 */
-var showLocation = function (address) {
-    if (address != "") {
-        _location.attr("name", address);
-        if (address.length > 10) {
-            address = address.substring(0, 10) + "......";
-        }
-        _location.html(address);
-    }
-}
+// var showLocation = function (address) {
+//     if (address != "") {
+//         _location.attr("name", address);
+//         if (address.length > 10) {
+//             address = address.substring(0, 10) + "......";
+//         }
+//         _location.html(address);
+//     }
+// }
 
 /*
 *查看位置

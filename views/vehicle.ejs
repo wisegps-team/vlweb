@@ -145,6 +145,9 @@
                         <button class="btn btn-primary" type="button" id="addVehicle" data-i18n="vehicle.new">
                             <%= t('vehicle.new') %>
                         </button>
+                        <button class="btn" type="button" id="changeParent" data-i18n="vehicle.change_parent">
+                            <%= t('vehicle.change_parent') %>
+                        </button>
                         <button class="btn btn-primary" type="button" id="export" data-i18n="report.export" style="display:none;margin-left:10px">
                             <%= t('report.export') %>
                         </button>
@@ -162,7 +165,9 @@
                         <table class="table table-hover table-striped table-bordered" width="100%" cellpadding="0" cellspacing="0" border="0" id="vehicle_list">
                             <thead>
                                 <tr class="tops">
-                                    <!-- <th width="20px" style="text-align: center !important;"><input id="checkAll" type="checkbox"></th> -->
+                                    <th width="20px" style="text-align: center !important;">
+                                        <input id="checkAll" type="checkbox">
+                                    </th>
                                     <th style="text-align: center !important;" data-i18n="vehicle.name">
                                         <%= t('vehicle.name') %>
                                     </th>

@@ -113,7 +113,7 @@ IOT_ALERT.ALERT_NOTIFY = 0x3015;  //通知公告提醒
 var IOT_ALERT_DESC = {};
 var IOT_ALERT_STATUS_DESC = {};
 var defineId = setInterval(function() {
-    if (!i18nextLoaded) {
+    if ("undefined" === typeof i18nextLoaded || !i18nextLoaded) {
         return;
     }
     IOT_ALERT_DESC[IOT_ALERT.ALERT_SOS.toString()] = i18next.t("alert.sos");

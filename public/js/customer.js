@@ -109,6 +109,30 @@ var customerChangeParent = function (obj_id, change_cust_id, changeTreePath) {
     });
 };
 
+var customerChangeParent2 = function (obj_id, change_cust_id, changeTreePath, callNext) {
+    var query_json = {
+        uid: obj_id
+    };
+    var _treePath = changeTreePath + obj_id + ',';
+    var update_json = {
+        parentId: [change_cust_id],
+        treePath: _treePath
+    };
+    wistorm_api._update('customer', query_json, update_json, auth_code, true, function (json) {
+        if (json.status_code === 0) {
+            updateCustomerTree(obj_id, _treePath, function (json) {
+                if (json.status_code !== 0) {
+                    callNext(false);
+                } else {
+                    callNext(true);
+                }
+            })
+        } else {
+            callNext(false);
+        }
+    });
+};
+
 $(document).ready(function () {
     // Initialize placeholder
     // $.Placeholder.init();
@@ -123,7 +147,7 @@ $(document).ready(function () {
         }
 
         $("#checkAll").click(function () {
-            $("[type='checkbox']").prop("checked", $('#checkAll').prop("checked"));//全选
+            $("[type='checkbox'][id!=allNode]").prop("checked", $('#checkAll').prop("checked"));//全选
         });
 
         $(document).on("click", "#customer_list .icon-remove", function () {
@@ -189,6 +213,22 @@ $(document).ready(function () {
             $("#divCustomer").dialog("open");
         });
 
+        $("#changeParent").click(function () {
+            var ids = $("[type='checkbox']:checked:not(#checkAll)");
+            if (ids.length === 0) {
+                _alert(i18next.t("system.select_customer"));
+                return;
+            }
+            cust_id = [];
+            for (var i = 0; i < ids.length; i++) {
+                cust_id.push($(ids[i]).val());
+            }
+            cust_name = i18next.t("customer.selected_customer", { count: ids.length });
+            var title = i18next.t("customer.change_parent");
+            $("#divCustomerAssign").dialog("option", "title", title);
+            $("#divCustomerAssign").dialog("open");
+        });
+
         $("#addRole").click(function () {
             window.open('/role');
         });
@@ -235,14 +275,47 @@ $(document).ready(function () {
             if (assignUid === $.cookie('parent_id')) {
                 msg = i18next.t("customer.msg_restore_parent", { cust_name: cust_name }); //'你确定将用户[' + cust_name + ']恢复到上级用户进行管理吗?';
             }
-            if (cust_id.toString() === assignUid.toString()) {
-                msg = i18next.t("customer.err_assign_me");
-                _alert(msg, 3000);
-                return false;
-            }
-            if (CloseConfirm(msg)) {
-                // customerAssign();
-                customerChangeParent(cust_id, assignUid, assignTreePath);
+            if (typeof cust_id === 'object') {
+                if (cust_id.indexOf(assignUid) > -1) {
+                    msg = i18next.t("customer.err_assign_me");
+                    _alert(msg, 3000);
+                    return false;
+                }
+                if (CloseConfirm(msg)) {
+                    // customerAssign();
+                    var p = 0;
+                    var _call = function () {
+                        if (p < cust_id.length) {
+                            customerChangeParent2(cust_id[p], assignUid, assignTreePath, function (flag) {
+                                if (flag) {
+                                    _call();
+                                } else {
+                                    _alert(i18next.t("customer.err_change_parent"));
+                                }
+                            });
+                            p++;
+                        } else {
+                            $("#divCustomerAssign").dialog("close");
+                            updateCustomerCount(uid, tree_path);
+                            updateCustomerCount(assignUid, assignTreePath);
+                            customerQuery();
+                            getAllCustomer(uid);
+                            showLoading(false);
+                        }
+                    };
+                    showLoading(true, i18next.t("system.dealing"), ICON_LOADING);
+                    _call();
+                }
+            } else {
+                if (cust_id.toString() === assignUid.toString()) {
+                    msg = i18next.t("customer.err_assign_me");
+                    _alert(msg, 3000);
+                    return false;
+                }
+                if (CloseConfirm(msg)) {
+                    // customerAssign();
+                    customerChangeParent(cust_id, assignUid, assignTreePath);
+                }
             }
             return false;
         });
@@ -507,7 +580,7 @@ var customerQuerySuccess = function (json) {
         if (parseInt(treeNode.id) > 100) {
             assignUid = treeNode.id;
             assignTreePath = treeNode.treePath;
-            assignName = treeNode.name;
+            assignName = treeNode._name;
         }
     };
 
@@ -792,10 +865,11 @@ var querySuccess = function (json) {
     }
 
     var _columns = [
-        // { "mData":null, "sClass":"center", "bSortable":false, "fnRender": function(obj){
-        //     return "<input type='checkbox' value='" + obj.aData.objectId + "'>";
-        // }
-        // },
+        {
+            "mData": null, "sClass": "center", "bSortable": false, "fnRender": function (obj) {
+                return "<input type='checkbox' value='" + obj.aData.uid + "'>";
+            }
+        },
         { "mData": "name", "sClass": "ms_left" },
         { "mData": "custTypeDesc", "sClass": "center" },
         { "mData": "contact", "sClass": "center" },

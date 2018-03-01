@@ -48,7 +48,7 @@ function gmap(div_map, center_point, zoom) {
     this.geos = [];
     this.markers = [];
     this.poi_markers = [];
-    this.markerClusterer = null;
+    // this.markerClusterer = null;
     this.showLocation = null;
     this.mapClick = null;
 }
@@ -94,11 +94,11 @@ function vehicleMarker(vehicle, if_track, if_show_line, if_show_win) {
 }
 
 function poiMarker(poi) {
-    this.poi_id = poi.poi_id;
-    this.poi_name = poi.poi_name;
-    this.poi_type = poi.poi_type;
-    this.lon = poi.lon;
-    this.lat = poi.lat;
+    this.poi_id = poi.objectId;
+    this.poi_name = poi.name;
+    this.poi_type = poi.opt.type;
+    this.lon = poi.points[0][0];
+    this.lat = poi.points[0][1];
     this.remark = poi.remark;
     this.marker_ = null;
 }
@@ -118,27 +118,32 @@ gmap.prototype.addVehicles = function (vehicles, is_track, is_playback, if_open_
             if (v != null) {
                 this.updateVehicle(vehicles[i], is_track, is_track, _is_open_win, '#FF0000', 3, is_playback);
             } else {
-                //                if (this.map.getMapTypeId() == google.maps.MapTypeId.SATELLITE || this.map.getMapTypeId() == google.maps.MapTypeId.HYBRID) {
-                //                    latLng = new google.maps.LatLng(vehicles[i].active_gps_data.lat, vehicles[i].active_gps_data.lon);
-                //                } else {
                 latLng = new google.maps.LatLng(vehicles[i].activeGpsData.lat, vehicles[i].activeGpsData.lon);
-                //                }
                 v = new vehicleMarker(vehicles[i], false, false);
                 icon = getIcon(vehicles[i], MAP_TYPE_GOOGLE, _is_playback);
                 title = vehicles[i].name + "（" + getStatusDesc(vehicles[i], 2) + "）";
-                v.marker_ = new MarkerWithLabel({
-                    title: title,
+                // v.marker_ = new MarkerWithLabel({
+                //     title: title,
+                //     position: latLng,
+                //     icon: icon,
+                //     draggable: false,
+                //     raiseOnDrag: false,
+                //     //map: this.map,
+                //     labelContent: vehicles[i].name,
+                //     labelAnchor: new google.maps.Point(0, 20),
+                //     labelClass: "labels", // the CSS class for the label
+                //     labelStyle: { opacity: 0.75 }
+                // });
+                var label = {
+                    text: vehicles[i].name,
+                    color: '#666666',
+                    fontSize: '12px'
+                };
+                v.marker_ = new google.maps.Marker({
                     position: latLng,
-                    icon: icon,
-                    draggable: false,
-                    raiseOnDrag: false,
-                    //map: this.map,
-                    labelContent: vehicles[i].name,
-                    labelAnchor: new google.maps.Point(0, 20),
-                    labelClass: "labels", // the CSS class for the label
-                    labelStyle: { opacity: 0.75 }
+                    label: label,
+                    icon: icon
                 });
-
                 if(!_is_playback){
                     content = getMapContent(vehicles[i]);
                     //打开该车辆的信息窗体
@@ -159,16 +164,17 @@ gmap.prototype.addVehicles = function (vehicles, is_track, is_playback, if_open_
                 }
                 this.vehicles[vehicles[i].did] = v;
                 this.markers.push(v.marker_);
+                v.marker_.setMap(this.map);
             }
         }
     }
 
-    if (this.markerClusterer == null) {
-        //        this.markerClusterer = new MarkerClusterer(this.map, this.markers);
-        this.markerClusterer = new MarkerClusterer(this.map, this.markers, { minimumClusterSize: 5, maxZoom: 20 });
-    } else {
-        this.markerClusterer.addMarkers(this.markers);
-    }
+    // if (this.markerClusterer == null) {
+    //     //        this.markerClusterer = new MarkerClusterer(this.map, this.markers);
+    //     this.markerClusterer = new MarkerClusterer(this.map, this.markers, { minimumClusterSize: 5, maxZoom: 20 });
+    // } else {
+    //     this.markerClusterer.addMarkers(this.markers);
+    // }
 
     if(is_track){
         // var vp = this.map.getViewport(points, {
@@ -423,7 +429,8 @@ gmap.prototype.deleteVehicle = function (obj_id) {
         // 从数组中删除对象
         this.vehicles[obj_id] = null;
         this.markers.pop(v.marker_);
-        this.markerClusterer.removeMarker(v.marker_);
+        v.marker_.setMap(null);
+        // this.markerClusterer.removeMarker(v.marker_);
         if (v.track_lines) {
             for (var i = 0; i < v.track_lines.length; i++) {
                 v.track_lines[i].setMap(null);
@@ -433,11 +440,14 @@ gmap.prototype.deleteVehicle = function (obj_id) {
 };
 
 gmap.prototype.clearVehicle = function () {
+    for (var i = this.markers.length - 1; i >= 0 ; i--) {
+        var m = this.markers[i];
+        if (m) {
+            m.setMap(null);
+        }
+    }
     this.vehicles = [];
     this.markers = [];
-    if(this.markerClusterer){
-        this.markerClusterer.clearMarkers();
-    }
 };
 
 
@@ -643,35 +653,26 @@ gmap.prototype.addPoi = function (poi) {
     var latLng = null;
     var icon = "";
     var title = "";
-    var p = this.pois[poi.poi_id];
+    var p = this.pois[poi.objectId];
     // 判断兴趣点是否存在，存在则更新数据，不存在则添加
-    if (p != null) {
-        this.updatePoi(poi);
-    } else {
-        //        if (this.map.getMapTypeId() == google.maps.MapTypeId.SATELLITE || this.map.getMapTypeId() == google.maps.MapTypeId.HYBRID) {
-        //            latLng = new google.maps.LatLng(poi.lat, poi.lon);
-        //        } else {
-        latLng = new google.maps.LatLng(poi.rev_lat, poi.rev_lon);
-        //        }
+    if (p === null) {
+        latLng = new google.maps.LatLng(poi.points[0][1], poi.points[0][0]);
         p = new poiMarker(poi);
         icon = getPoiIcon(poi, MAP_TYPE_GOOGLE);
-        title = poi.poi_name;
-        p.marker_ = new MarkerWithLabel({
-            title: title,
+        var label = {
+            text: poi.name,
+            color: '#666666',
+            fontSize: '12px'
+        };
+        p.marker_ = new google.maps.Marker({
             position: latLng,
-            icon: icon,
+            label: label,
             map: this.map,
-            draggable: false,
-            raiseOnDrag: false,
-            labelContent: poi.poi_name,
-            labelAnchor: new google.maps.Point(50, -10),
-            labelClass: "labels", // the CSS class for the label
-            labelStyle: { opacity: 0.75 }
+            icon: icon
         });
-        this.pois[poi.poi_id] = p;
+        this.pois[poi.objectId] = p;
         this.poi_markers.push(p.marker_);
     }
-
 }
 
 gmap.prototype.findPoi = function (poi_id) {
@@ -718,38 +719,6 @@ gmap.prototype.editPoi = function (div_content, poi_id, callback) {
         current_infowin.open(this.map, current_marker);
         //current_marker = p.marker_;
         this.setTool(TOOL_TYPE_POI, p.poi_name, div_content, callback);
-    }
-}
-
-gmap.prototype.updatePoi = function (poi) {
-    var p = this.pois[poi.poi_id];
-    var content = "";
-    if (p != null) {
-        //        if (this.map.getMapTypeId() == google.maps.MapTypeId.SATELLITE || this.map.getMapTypeId() == google.maps.MapTypeId.HYBRID) {
-        //            latLng = new google.maps.LatLng(poi.lat, poi.lon);
-        //        } else {
-        latLng = new google.maps.LatLng(poi.rev_lat, poi.rev_lon);
-        //        }
-        p.poi_name = poi.poi_name;
-        p.poi_type = poi.poi_type;
-        p.lon = poi.lon;
-        p.lat = poi.lat;
-        p.rev_lon = poi.rev_lon;
-        p.rev_lat = poi.rev_lat;
-        p.remark = poi.remark;
-        var icon = getPoiIcon(poi, MAP_TYPE_GOOGLE);
-        p.marker_.setIcon(icon);
-        var latLng;
-        //        if (this.map.getMapTypeId() == google.maps.MapTypeId.SATELLITE || this.map.getMapTypeId() == google.maps.MapTypeId.HYBRID) {
-        //            latLng = new google.maps.LatLng(poi.lat, poi.lon);
-        //        } else {
-        latLng = new google.maps.LatLng(poi.rev_lat, poi.rev_lon);
-        //        }
-        p.marker_.setPosition(latLng);
-        p.marker_.label.marker_.labelContent = poi.poi_name;
-        p.marker_.label.setContent();
-        p.marker_.label.marker_.labelAnchor = new google.maps.Point(50, -10),
-        p.marker_.label.setAnchor();
     }
 }
 
@@ -889,7 +858,7 @@ gmap.prototype.addStartMarker = function (lon, lat, content) {
     });
 };
 
-gmap.prototype.addOverlay = function (type, points, radius, editingCallback) {
+gmap.prototype.addOverlay = function (type, points, radius, editingCallback, opt, name) {
     if (current_overlay) {
         current_overlay.setMap(null);
     }
@@ -901,7 +870,25 @@ gmap.prototype.addOverlay = function (type, points, radius, editingCallback) {
         fillOpacity: 0.6,      //填充的透明度，取值范围0 - 1。
         strokeStyle: 'solid' //边线的样式，solid或dashed。
     };
-    if(type === 4){
+    if(type === 1){
+        var latLng = new google.maps.LatLng(points[0][1], points[0][0]);
+        // var icon = new google.maps.MarkerImage(); //标注
+        var icon = {
+            url: "poi/" + opt.type + ".png",
+            labelOrigin: new google.maps.Point(55, 10)
+        };
+        var label = {
+            text: name,
+            color: '#666666',
+            fontSize: '12px'
+        };
+        current_overlay = new google.maps.Marker({
+            position: latLng,
+            label: label,
+            // map: this.map,
+            icon: icon
+        });
+    }else if(type === 4){
         styleOptions.center = new google.maps.LatLng(points[0][1], points[0][0]);
         styleOptions.radius = radius;
         current_overlay = new google.maps.Circle(styleOptions);
@@ -912,6 +899,13 @@ gmap.prototype.addOverlay = function (type, points, radius, editingCallback) {
         }
         styleOptions.paths = paths;
         current_overlay = new google.maps.Polygon(styleOptions);
+    }else if(type === 3 || type === 5){
+        var paths = [];
+        for(var i = 0; i < points.length; i++){
+            paths.push(new google.maps.LatLng(points[i][1], points[i][0]));
+        }
+        styleOptions.path = paths;
+        current_overlay = new google.maps.Polyline(styleOptions);
     }
     current_overlay.setMap(this.map);
     // current_overlay.setEditable(true);
@@ -930,8 +924,14 @@ gmap.prototype.addOverlay = function (type, points, radius, editingCallback) {
 };
 
 gmap.prototype.setEditable = function(overlay){
-    if(overlay){
+    if(overlay && overlay.setEditable){
         overlay.setEditable(true);
+    }
+};
+
+gmap.prototype.setDisable = function(overlay){
+    if(overlay && overlay.setEditable){
+        overlay.setEditable(false);
     }
 };
 

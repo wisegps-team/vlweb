@@ -7,8 +7,6 @@ var current_retangle = null;
 var currentIdle = null;
 var baidumap;
 
-//document.write('<script src="http://api.map.baidu.com/api?v=1.4" type="text/javascript"></script>');
-
 var EARTH_RADIUS = 6378.137; //地球半径，单位为公里
 function rad(d) {   //计算弧度
     return d * Math.PI / 180.0;
@@ -99,11 +97,11 @@ function vehicleMarker(vehicle, if_track, if_show_line, if_show_win) {
 }
 
 function poiMarker(poi) {
-    this.poi_id = poi.poi_id;
-    this.poi_name = poi.poi_name;
-    this.poi_type = poi.poi_type;
-    this.lon = poi.lon;
-    this.lat = poi.lat;
+    this.poi_id = poi.objectId;
+    this.poi_name = poi.name;
+    this.poi_type = poi.opt.type;
+    this.lon = poi.points[0][0];
+    this.lat = poi.points[0][1];
     this.remark = poi.remark;
     this.marker_ = null;
 }
@@ -599,21 +597,20 @@ bmap.prototype.addPoi = function (poi) {
     var latLng = null;
     var icon = "";
     var title = "";
-    var p = this.pois[poi.poi_id];
+    var p = this.pois[poi.objectId];
     // 判断兴趣点是否存在，存在则更新数据，不存在则添加
-    if (p != null) {
-        this.updatePoi(poi);
-    } else {
-        latLng = new BMap.Point(poi.lon, poi.lon);
+    if (p === null) {
+        latLng = new BMap.Point(poi.points[0][0], poi.points[0][1]);
         p = new poiMarker(poi);
         icon = getPoiIcon(poi, MAP_TYPE_BAIDU);
         title = poi.poi_name;
         p.marker_ = new BMap.Marker(latLng, { icon: icon });
+        p.marker_.setLabel(new BMap.Label(title, {offset: new BMap.Size(26, 0)}));
+        p.marker_.getLabel().setStyle({border: "0px solid red", backgroundColor: 'rgba(255, 255, 255, 0)', fontWeight: "bold", fontFamily: "微软雅黑", fontSize: "13px", textShadow: "#fff 1px 0 0,#fff 0 1px 0,#fff -1px 0 0,#fff 0 -1px 0"});
         this.map.addOverlay(p.marker_);
-        this.pois[poi.poi_id] = p;
+        this.pois[poi.objectId] = p;
         this.poi_markers.push(p.marker_);
     }
-
 }
 
 bmap.prototype.addBranches = function (branches) {
@@ -854,7 +851,7 @@ bmap.prototype.addMarker = function (lon, lat, content) {
     this.map.addOverlay(current_marker);
 };
 
-bmap.prototype.addOverlay = function (type, points, radius, editingCallback) {
+bmap.prototype.addOverlay = function (type, points, radius, editingCallback, opt, name) {
     if (current_overlay) {
         this.map.removeOverlay(current_overlay);
     }
@@ -866,7 +863,13 @@ bmap.prototype.addOverlay = function (type, points, radius, editingCallback) {
         fillOpacity: 0.6,      //填充的透明度，取值范围0 - 1。
         strokeStyle: 'solid' //边线的样式，solid或dashed。
     };
-    if(type === 4){
+    if(type === 1){
+        var icon = new BMap.Icon("poi/" + opt.type + ".png", new BMap.Size(24, 24));
+        var latLng = new BMap.Point(points[0][0], points[0][1]);
+        current_overlay = new BMap.Marker(latLng, {icon: icon});
+        current_overlay.setLabel(new BMap.Label(name, {offset: new BMap.Size(26, 0)}));
+        current_overlay.getLabel().setStyle({border: "0px solid red", backgroundColor: 'rgba(255, 255, 255, 0)', fontWeight: "bold", fontFamily: "微软雅黑", fontSize: "13px", textShadow: "#fff 1px 0 0,#fff 0 1px 0,#fff -1px 0 0,#fff 0 -1px 0"});
+    }else if(type === 4){
         var cp = new BMap.Point(points[0][0], points[0][1]);
         current_overlay = new BMap.Circle(cp, radius, styleOptions);
     }else if(type === 2){
@@ -875,6 +878,12 @@ bmap.prototype.addOverlay = function (type, points, radius, editingCallback) {
             paths.push(new BMap.Point(points[i][0], points[i][1]));
         }
         current_overlay = new BMap.Polygon(paths, styleOptions);
+    }else if(type === 3 || type === 5){
+        var paths = [];
+        for(var i = 0; i < points.length; i++){
+            paths.push(new BMap.Point(points[i][0], points[i][1]));
+        }
+        current_overlay = new BMap.Polyline(paths, styleOptions);
     }
     this.map.addOverlay(current_overlay);
     // current_overlay.enableEditing();
@@ -888,8 +897,14 @@ bmap.prototype.addOverlay = function (type, points, radius, editingCallback) {
 };
 
 bmap.prototype.setEditable = function(overlay){
-    if(overlay){
+    if(overlay && overlay.enableEditing){
         overlay.enableEditing();
+    }
+};
+
+bmap.prototype.setDisable = function(overlay){
+    if(overlay && overlay.disableEditing){
+        overlay.disableEditing();
     }
 };
 

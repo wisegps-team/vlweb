@@ -20,16 +20,23 @@ $(document).ready(function () {
     // $(window).resize(function () {
     //     windowResize();
     // });
-    $(window).resize(function() {
+
+    var htmlChange = function () {
         var height = $(window).height() - 80;
-        $('#appArea').css({"height": height + "px"});
+        $('#appArea').css({ "height": height + "px" });
+    }
+    htmlChange();
+    $(window).resize(function () {
+        htmlChange();
         statChart.resize();
         onlineChart.resize();
         statusChart.resize();
     });
 
-    var id = setInterval(function(){
-        if(!i18nextLoaded){
+
+
+    var id = setInterval(function () {
+        if (!i18nextLoaded) {
             return;
         }
         loadCounter();
@@ -41,29 +48,29 @@ $(document).ready(function () {
 });
 
 // 加载计数
-var loadCounter = function(){
+var loadCounter = function () {
     // 客户数
-    var query = {treePath: '^' + tree_path};
+    var query = { treePath: '^' + tree_path };
     wistorm_api._count('customer', query, auth_code, true, function (json) {
-       $('#customerCounter').html((json.count - 1) || 0);
+        $('#customerCounter').html((json.count - 1) || 0);
     });
     // 部门数
-    var query = ['9', '12'].indexOf(dealer_type) > -1 ? {uid: dealer_id, parentId: login_depart_id}: {uid: dealer_id};
+    var query = ['9', '12'].indexOf(dealer_type) > -1 ? { uid: dealer_id, parentId: login_depart_id } : { uid: dealer_id };
     wistorm_api._count('department', query, auth_code, true, function (json) {
         $('#departCounter').html(json.count || 0);
     });
     // 成员数
-    var query = ['9', '12'].indexOf(dealer_type) > -1 ? {companyId: dealer_id, departId: login_depart_id}: {companyId: dealer_id};
+    var query = ['9', '12'].indexOf(dealer_type) > -1 ? { companyId: dealer_id, departId: login_depart_id } : { companyId: dealer_id };
     wistorm_api._count('employee', query, auth_code, true, function (json) {
         $('#employeeCounter').html(json.count || 0);
     });
     // 车辆数
-    var query = ['9', '12'].indexOf(dealer_type) > -1 ? {uid: dealer_id, departId: login_depart_id}: {uid: dealer_id};
+    var query = ['9', '12'].indexOf(dealer_type) > -1 ? { uid: dealer_id, departId: login_depart_id } : { uid: dealer_id };
     wistorm_api._count('vehicle', query, auth_code, true, function (json) {
         $('#vehicleCounter').html(json.count || 0);
     });
     // 设备数
-    var query = ['9', '12'].indexOf(dealer_type) > -1 ? {uid: 'none'}: {uid: dealer_id};
+    var query = ['9', '12'].indexOf(dealer_type) > -1 ? { uid: 'none' } : { uid: dealer_id };
     wistorm_api._count('_iotDevice', query, auth_code, true, function (json) {
         $('#deviceCounter').html(json.count || 0);
     });
@@ -94,10 +101,10 @@ var drawStatChart = function (dateArray, mileArray, fuelArray) {
         toolbox: {
             show: true,
             feature: {
-                dataView: {show: true, readOnly: false},
-                magicType: {show: true, type: ['line', 'bar']},
-                restore: {show: true},
-                saveAsImage: {show: true}
+                dataView: { show: true, readOnly: false },
+                magicType: { show: true, type: ['line', 'bar'] },
+                restore: { show: true },
+                saveAsImage: { show: true }
             }
         },
         legend: {
@@ -208,9 +215,9 @@ var drawStatChart = function (dateArray, mileArray, fuelArray) {
 };
 var getTripData = function (query_json) {
     var group = {
-        _id: {year: "$year", month: "$month", day: "$day"},
-        distance: {$sum: "$distance"},
-        fuel: {$sum: "$fuel"}
+        _id: { year: "$year", month: "$month", day: "$day" },
+        distance: { $sum: "$distance" },
+        fuel: { $sum: "$fuel" }
     };
     var sorts = '_id.year,_id.month,_id.day';
 
@@ -229,17 +236,17 @@ var getTripData = function (query_json) {
         }
     });
 };
-var loadStatChart = function(){
+var loadStatChart = function () {
     var endTime = new Date();
     endTime.setDate(endTime.getDate() - 1);
     var startTime = new Date();
     startTime.setMonth(endTime.getMonth() - 1);
-    if(['9', '12'].indexOf(dealer_type) > -1){
-        var query = {uid: dealer_id, departId: login_depart_id};
-        wistorm_api._list('vehicle', query, 'did', 'did', 'did', 0, 0, 1, -1, auth_code, true, function(vehicles){
+    if (['9', '12'].indexOf(dealer_type) > -1) {
+        var query = { uid: dealer_id, departId: login_depart_id };
+        wistorm_api._list('vehicle', query, 'did', 'did', 'did', 0, 0, 1, -1, auth_code, true, function (vehicles) {
             var dids = [];
-            for(var i = 0; i < vehicles.total; i++){
-                if(vehicles.data[i].did !== ''){
+            for (var i = 0; i < vehicles.total; i++) {
+                if (vehicles.data[i].did !== '') {
                     dids.push(vehicles.data[i].did);
                 }
             }
@@ -249,7 +256,7 @@ var loadStatChart = function(){
             };
             getTripData(query_json);
         });
-    }else{
+    } else {
         var query_json = {
             uid: dealer_id.toString(),
             endTime: startTime.format("yyyy-MM-dd") + "@" + endTime.format("yyyy-MM-dd") + ' 23:59:59'
@@ -264,11 +271,11 @@ var loadStatChart = function(){
  */
 var drawOnlineChart = function (dataArray) {
     dataArray = dataArray || [
-            {value: 10, name: '在线'},
-            {value: 200, name: '离线'},
-            {value: 9, name: '报警'}
-        ];
-// 基于准备好的dom，初始化echarts实例
+        { value: 10, name: '在线' },
+        { value: 200, name: '离线' },
+        { value: 9, name: '报警' }
+    ];
+    // 基于准备好的dom，初始化echarts实例
     onlineChart = echarts.init(document.getElementById('online'));
 
     // 指定图表的配置项和数据
@@ -309,7 +316,7 @@ var drawOnlineChart = function (dataArray) {
     // 使用刚指定的配置项和数据显示图表。
     onlineChart.setOption(option);
 };
-var loadOnlineChart = function(){
+var loadOnlineChart = function () {
     var query = {
         uid: dealer_id
     };
@@ -320,9 +327,9 @@ var loadOnlineChart = function(){
     wistorm_api._count('vehicle2', query, auth_code, true, function (obj) {
         console.log(obj);
         drawOnlineChart([
-            {value: obj.online || 0, name: '在线'},
-            {value: obj.offline || 0, name: '离线'},
-            {value: obj.alert || 0, name: '报警'}
+            { value: obj.online || 0, name: '在线' },
+            { value: obj.offline || 0, name: '离线' },
+            { value: obj.alert || 0, name: '报警' }
         ]);
     });
 };
@@ -333,11 +340,11 @@ var loadOnlineChart = function(){
  */
 var drawStatusChart = function (dataArray) {
     dataArray = dataArray || [
-            {value: 1548, name: '空闲'},
-            {value: 535, name: '出车'},
-            {value: 535, name: '维保'}
-        ];
-// 基于准备好的dom，初始化echarts实例
+        { value: 1548, name: '空闲' },
+        { value: 535, name: '出车' },
+        { value: 535, name: '维保' }
+    ];
+    // 基于准备好的dom，初始化echarts实例
     statusChart = echarts.init(document.getElementById('status'));
 
     // 指定图表的配置项和数据
@@ -378,7 +385,7 @@ var drawStatusChart = function (dataArray) {
     // 使用刚指定的配置项和数据显示图表。
     statusChart.setOption(option);
 };
-var loadStatusChart = function(){
+var loadStatusChart = function () {
     var query = {
         uid: dealer_id
     };
@@ -386,8 +393,8 @@ var loadStatusChart = function(){
         query['departId'] = login_depart_id;
     }
     var group = {
-        _id: {status: "$status"},
-        total: {$sum: 1}
+        _id: { status: "$status" },
+        total: { $sum: 1 }
     };
     var sorts = '_id.status';
 
@@ -397,19 +404,19 @@ var loadStatusChart = function(){
         var used = 0;
         var maintain = 0;
         if (obj.status_code === 0) {
-            for(var i = 0; i < obj.data.length; i++){
-                if(obj.data[i]._id.status === 0){
+            for (var i = 0; i < obj.data.length; i++) {
+                if (obj.data[i]._id.status === 0) {
                     free = obj.data[i].total;
-                }else if(obj.data[i]._id.status === 1){
+                } else if (obj.data[i]._id.status === 1) {
                     used = obj.data[i].total;
-                }if(obj.data[i]._id.status === 2){
+                } if (obj.data[i]._id.status === 2) {
                     maintain = obj.data[i].total;
                 }
             }
             var dataArray = [
-                {value: free, name: '空闲'},
-                {value: used, name: '出车'},
-                {value: maintain, name: '维保'}
+                { value: free, name: '空闲' },
+                { value: used, name: '出车' },
+                { value: maintain, name: '维保' }
             ];
             drawStatusChart(dataArray);
         }
