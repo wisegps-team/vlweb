@@ -252,14 +252,16 @@ var loadStatChart = function () {
             }
             var query_json = {
                 did: dids.join("|"),
-                endTime: startTime.format("yyyy-MM-dd") + "@" + endTime.format("yyyy-MM-dd") + ' 23:59:59'
+                endTime: startTime.format("yyyy-MM-dd") + "@" + endTime.format("yyyy-MM-dd") + ' 23:59:59',
+                distance: '>0'
             };
             getTripData(query_json);
         });
     } else {
         var query_json = {
             uid: dealer_id.toString(),
-            endTime: startTime.format("yyyy-MM-dd") + "@" + endTime.format("yyyy-MM-dd") + ' 23:59:59'
+            endTime: startTime.format("yyyy-MM-dd") + "@" + endTime.format("yyyy-MM-dd") + ' 23:59:59',
+            distance: '>0'
         };
         getTripData(query_json);
     }

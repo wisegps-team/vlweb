@@ -39,8 +39,8 @@ vehicleSelector.prototype.init = function(){
 
     //给input框绑定时间
     var _this = this;
-    this.input.click(function () {
-        event=window.event||arguments.callee.caller.arguments[0];
+    this.input.click(function (event) {
+        event = event || window.event;
         event.stopPropagation();
         _this.div.style.left = _this.input.offset().left + 'px';
         _this.div.style.top = _this.input.offset().top + _this.input.height() + 11 + 'px';
@@ -101,7 +101,7 @@ vehicleSelector.prototype.init = function(){
     });
 
     $(_this.div).click(function(event){
-        event=window.event||arguments.callee.caller.arguments[0];
+        event = event || window.event;
         event.stopPropagation();
     });
 
