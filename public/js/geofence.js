@@ -551,7 +551,7 @@ var _add = function () {
         remark: remark,
         createdAt: new Date()
     };
-    wistorm_api._create('overlay', create_json, auth_code, true, function(json){
+    wistorm_api._createPost('overlay', create_json, auth_code, true, function(json){
         if (json.status_code == 0) {
             $("#divGeofence").dialog("close");
             // wimap.map.clearOverlays();
@@ -642,7 +642,7 @@ var _edit = function () {
         remark: remark,
         updatedAt: updatedAt
     };
-    wistorm_api._update('overlay', query_json, update_json, auth_code, true, function(json){
+    wistorm_api._updatePost('overlay', query_json, update_json, auth_code, true, function(json){
         if (json.status_code == 0) {
             $("#divGeofence").dialog("close");
             // wimap.map.clearOverlays();
@@ -886,20 +886,23 @@ function setButtonMode(mode){
 function getBoundary(area){
     var bdary = new BMap.Boundary();
     bdary.get(area, function(rs){       //获取行政区域
-        map.clearOverlays();        //清除地图覆盖物
+        wimap.map.clearOverlays();        //清除地图覆盖物
         var count = rs.boundaries.length; //行政区域的点有多少个
         if (count === 0) {
-            alert('未能获取当前输入行政区域');
-            return ;
+            // alert('未能获取当前输入行政区域');
+            return;
         }
         var pointArray = [];
         for (var i = 0; i < count; i++) {
             _overlay = new BMap.Polygon(rs.boundaries[i], {strokeWeight: 2, strokeColor: "#ff0000"}); //建立多边形覆盖物
-            _type = 2;
-            map.addOverlay(_overlay);  //添加覆盖物
+            wimap.map.addOverlay(_overlay);  //添加覆盖物
             pointArray = pointArray.concat(_overlay.getPath());
         }
-        map.setViewport(pointArray);    //调整视野
+        wimap.map.setViewport(pointArray);    //调整视野
+        _type = 2;
+        $('#name').val(area);
+        $('#type').val('行政区域');
+        _drawed = true;
     });
 }
 
@@ -1155,6 +1158,14 @@ $(document).ready(function () {
         wimap = new wiseMap(map_type, document.getElementById('map_canvas'), center_point, 15);
 
         if(map_type === MAP_TYPE_BAIDU){
+            var cityList = new BMapLib.CityList({
+                container: 'city_list',
+                map: wimap.map
+            });
+            cityList.addEventListener("cityclick", function (e) {
+                // alert(e.area_name);
+                getBoundary(e.area_name);
+            });
             // 多边形和矩形绘制
             var circlecomplete = function (e, overlay) {
                 // lon = overlay.getPosition().lng;
@@ -1254,6 +1265,7 @@ $(document).ready(function () {
                                 break;
                             case 2:
                                 $('.BMapLib_Drawing_panel').show();
+                                $('#city_list').show();
                                 break;
                             case 3:
                                 toggleEdit = function(type, target, point, pixel){
@@ -1300,6 +1312,7 @@ $(document).ready(function () {
                     };
                     drawingManager.hide = function(){
                         $('.BMapLib_Drawing_panel').hide();
+                        $('#city_list').hide();
                     };
                 }else{
                     setTimeout(initDrawingManager, 100);

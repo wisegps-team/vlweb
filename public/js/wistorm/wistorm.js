@@ -64,18 +64,28 @@ var _get = function (path, callback) {
 };
 
 var _post = function (path, data, callback) {
-    // var obj = {
-    //     type: "POST", url: path, data: data, success: function (obj) {
-    //         callback(obj);
-    //     }, error: function (obj) {
-    //         callback(obj);
-    //     }
-    // };
+    var obj = {
+        type: "POST", url: path, data: data, success: function (obj) {
+            callback(obj);
+        }, error: function (obj) {
+            callback(obj);
+        }
+    };
+    var datas = JSON.stringify(obj.data);
+    $.ajax({
+        url: obj.url,
+        type: obj.type,
+        dataType: "json",
+        data: datas,
+        contentType: "application/json; charset=utf-8",
+        async: true,
+        timeout: 10000,
+        success: obj.success,
+        error: obj.error
+    });
     // ajax_function(obj);
-    $.post(path, data, callback);
+    // $.post(path, data, callback);
 };
-
-
 
 var download = function (path, data, callback) {
     var url = path;
@@ -676,6 +686,21 @@ WiStormAPI.prototype._create = function (table, create_json, access_token, is_de
     var params = raw2(this.sign_obj);
     var path = API_URL + "/router/rest?" + params;
     _get(path, function (obj) {
+        callback(obj);
+    });
+};
+
+WiStormAPI.prototype._createPost = function (table, create_json, access_token, is_dev_key, callback) {
+    this.init();
+    this.sign_obj.method = 'wicare.' + table + '.create';
+    if (is_dev_key) {
+        this.sign_obj.dev_key = this.dev_key;
+    }
+    this.sign_obj.access_token = access_token;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    _post(path, create_json, function (obj) {
         callback(obj);
     });
 };

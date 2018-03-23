@@ -1,6 +1,7 @@
 ﻿if ($.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN') {
     document.write('<script type="text/javascript" src="http://api.map.baidu.com/getscript?v=2.0&ak=B40b712d90ffc5e40854d259b2e627cd&services=&t=20180201111639"></script>');
-    document.write('<script src="js/DrawingManager.js"></script>')
+    document.write('<script type="text/javascript" src="js/MapJs/CityList.js"></script>');
+    document.write('<script src="js/DrawingManager.js"></script>');
     document.write('<script src="js/MapJs/define.js"></script>');
     document.write('<script src="js/MapJs/bmap.js"></script>');
     // $.getScript("http://api.map.baidu.com/getscript?v=2.0&ak=B40b712d90ffc5e40854d259b2e627cd&services=&t=20180201111639");
