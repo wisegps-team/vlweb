@@ -153,7 +153,7 @@ var articleAdd = function () {
         content: content,
         createdAt: createdAt
     };
-    wistorm_api._create('article', create_json, auth_code, true, articleAddSuccess);
+    wistorm_api._createPost('article', create_json, auth_code, true, articleAddSuccess);
 };
 
 var articleAddSuccess = function (json) {
@@ -188,7 +188,7 @@ var articleEdit = function () {
         content: content,
         updatedAt: createdAt
     };
-    wistorm_api._update('article', query_json, update_json, auth_code, true, articleEditSuccess);
+    wistorm_api._updatePost('article', query_json, update_json, auth_code, true, articleEditSuccess);
 };
 
 var articleEditSuccess = function (json) {
