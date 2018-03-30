@@ -106,14 +106,16 @@
             <a class="brand" href="#"><%= opt.title %></a>
             <div class="nav-collapse collapse">
                 <p class="navbar-text">
+                    <% if(opt.mobileResource) {%>
                     <li class="dropdown pull-right">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">车联在线APP<b class="caret"></b></a>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown"><%= opt.mobileResource.title %><b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li>
-                                <img src="img/scancode.png">
+                                <img src="<%= opt.mobileResource.qrcode %>">
                             </li>
                         </ul>
                     </li>
+                    <% } %>
                 </p>
             </div>
             <!--/.nav-collapse -->

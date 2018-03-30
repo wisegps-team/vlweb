@@ -33,7 +33,7 @@ exports.login = function (req, res) {
         var query_json = {
             domainName: obj[0]
         };
-        wistorm_api._get('app', query_json, 'objectId,devId,appKey,appSecret,nameLocale,copyrightLocale,version,logoLocale', access_token, false, function(obj){
+        wistorm_api._get('app', query_json, 'objectId,devId,appKey,appSecret,nameLocale,copyrightLocale,version,logoLocale,mobileResource', access_token, false, function(obj){
             if(obj.status_code == 0 && obj.data != null){
                 var opt = {};
                 opt.app_key = obj.data.appKey;
@@ -47,6 +47,9 @@ exports.login = function (req, res) {
                 }
                 if(obj.data.version && obj.data.version != ''){
                     opt.version = obj.data.version;
+                }
+                if(obj.data.mobileResource){
+                    opt.mobileResource = obj.data.mobileResource;
                 }
                 query_json = {
                     objectId: obj.data.devId
