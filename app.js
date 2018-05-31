@@ -7,33 +7,51 @@ var express = require('express');
 var session = require('express-session');
 var routes = require('./routes');
 var user = require('./routes/user');
+// var mysql_api = require('./routes/mysql_api');
 var http = require('http');
 var path = require('path');
 var i18next = require('i18next');
 var i18nextMiddleware = require('i18next-express-middleware');
 var Backend = require('i18next-node-fs-backend');
 var MemcachedStore = require('connect-memcached')(session);
+var mysql = require("mysql");
 
 var app = express();
 
+
+
+// var mysql = require("mysql");
+// var con = mysql.createPool({
+//   host: "582c1a40635ca.sh.cdb.myqcloud.com",
+//   port: '5079',
+//   user: "ruian",
+//   password: "ruian123",
+//   database: "ruian"
+// });
+// app.use(function (req, res, next) {
+//   req.con = con;
+//   next();
+// });
+
+
 i18next
-    .use(Backend)
-    .use(i18nextMiddleware.LanguageDetector)
-    .init({
-        backend: {
-            loadPath: __dirname + '/locales/{{lng}}/{{ns}}.json',
-            addPath: __dirname + '/locales/{{lng}}/{{ns}}.missing.json'
-        },
-        detection: {
-            // order and from where user language should be detected
-            order: ['querystring', 'cookie', 'localStorage','navigator', 'htmlTag'],
-            // keys or params to lookup language from
-            lookupQuerystring: 'lang'
-        },
-        fallbackLng: 'zh-CN',
-        preload: ['en', 'zh', 'zh-CN'],
-        saveMissing: true
-    });
+  .use(Backend)
+  .use(i18nextMiddleware.LanguageDetector)
+  .init({
+    backend: {
+      loadPath: __dirname + '/locales/{{lng}}/{{ns}}.json',
+      addPath: __dirname + '/locales/{{lng}}/{{ns}}.missing.json'
+    },
+    detection: {
+      // order and from where user language should be detected
+      order: ['querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag'],
+      // keys or params to lookup language from
+      lookupQuerystring: 'lang'
+    },
+    fallbackLng: 'zh-CN',
+    preload: ['en', 'zh', 'zh-CN'],
+    saveMissing: true
+  });
 
 // all environments
 app.set('port', process.env.PORT || 8097);
@@ -48,15 +66,15 @@ app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(express.cookieParser('bdcws'));
 app.use(session({
-    resave: true,
-    saveUninitialized: false,
-    secret  : 'CatOnKeyboard'
-    , key     : 'test'
-    , proxy   : 'true'
-    , store   : new MemcachedStore({
-        hosts: [process.env.CACHE_SERVER],
-        secret: '123, easy as ABC. ABC, easy as 123' // Optionally use transparent encryption for memcache session data
-    })
+  resave: true,
+  saveUninitialized: false,
+  secret: 'CatOnKeyboard'
+  , key: 'test'
+  , proxy: 'true'
+  , store: new MemcachedStore({
+    hosts: [process.env.CACHE_SERVER],
+    secret: '123, easy as ABC. ABC, easy as 123' // Optionally use transparent encryption for memcache session data
+  })
 }));
 // app.use(express.cookieSession());
 app.use(app.router);
@@ -84,6 +102,7 @@ app.get('/report', routes.report);
 app.get('/alert', routes.alert);
 app.get('/command', routes.command);
 app.get('/customer', routes.customer);
+app.get('/member', routes.member)
 app.get('/summary', routes.summary);
 app.get('/depart', routes.depart);
 app.get('/employee', routes.employee);
@@ -98,9 +117,26 @@ app.get('/booking', routes.booking);
 app.get('/branch', routes.branch);
 app.get('/callback', routes.callback);
 app.get('/exists', routes.exists);
-app.get('/restart', function(req, res){
-    process.exit(0);
+app.get('/cardManagement',routes.cardManagement)
+app.get('/restart', function (req, res) {
+  process.exit(0);
 });
+
+
+
+// app.get('/usecar', routes.usecar);
+// app.get('/repair_car', routes.repaircar);
+// app.get('/usecar_detail', routes.usecar_detail);
+// app.get('/usecar_apply', routes.usecar_apply);
+// app.get('/repaircar_detail', routes.repaircar_detail);
+// app.get('/repaircar_apply', routes.repaircar_apply);
+// app.get('/repair_accident', routes.repair_accident);
+
+// app.get('/mysql_api/list', mysql_api.list);
+// app.get('/mysql_api/update', mysql_api.update);
+// app.get('/mysql_api/create', mysql_api.create);
+// app.get('/mysql_api/delete', mysql_api.delete);
+
 
 if (process.env.NODE_ENV == "development") {
   http.createServer(app).listen(app.get('port'), function () {
@@ -116,7 +152,7 @@ if (process.env.NODE_ENV == "development") {
     // As workers come up.
     cl.on('listening', function (worker, address) {
       console.log("A worker with #" + worker.id + " is now connected to " +
-          address.address + ":" + address.port);
+        address.address + ":" + address.port);
     });
 
     cl.on('exit', function (worker, code, signal) {

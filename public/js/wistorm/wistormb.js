@@ -42,10 +42,73 @@
  * 开发者访问自定义表时需传入开发者devKey, 该key在注册成开发者的时候自动生成
  */
 
-var url = require("url");
-var define = require("./define.js");
-var http = require("http");
-var util = require('./util.js');
+var _get = function (path, callback) {
+    var obj = {
+        type: "GET", url: path, data: {}, success: function (obj) {
+            callback(obj);
+        }, error: function (obj) {
+            callback(null);
+        }
+    };
+    var datas = JSON.stringify(obj.data);
+    $.ajax({
+        url: obj.url,
+        type: obj.type,
+        dataType: "json",
+        data: obj.data,
+        async: true,
+        timeout: 30000,
+        success: obj.success,
+        error: obj.error
+    });
+};
+
+var _post = function (path, data, callback) {
+    var obj = {
+        type: "POST", url: path, data: data, success: function (obj) {
+            callback(obj);
+        }, error: function (obj) {
+            callback(obj);
+        }
+    };
+    var datas = JSON.stringify(obj.data);
+    $.ajax({
+        url: obj.url,
+        type: obj.type,
+        dataType: "json",
+        data: datas,
+        contentType: "application/json; charset=utf-8",
+        async: true,
+        timeout: 30000,
+        success: obj.success,
+        error: obj.error
+    });
+    // ajax_function(obj);
+    // $.post(path, data, callback);
+};
+
+var download = function (path, data, callback) {
+    var url = path;
+    var xhr = new XMLHttpRequest();
+    var dataSting = JSON.stringify(data);
+
+    xhr.open('POST', url, true);    // 也可以使用POST方式，根据接口
+
+    xhr.responseType = "blob";  // 返回类型blob
+    // 定义请求完成的处理函数，请求前也可以增加加载框/禁用下载按钮逻辑
+    xhr.onload = function () {
+        // 请求完成
+        console.log(this)
+        if (this.status === 200) {
+            // 返回200
+            callback(this.response)
+        }
+    };
+    // 发送ajax请求
+    xhr.setRequestHeader("Content-type", "application/json");
+    xhr.send(dataSting)
+}
+
 
 Date.prototype.format = function (format) {
     var o = {
@@ -59,7 +122,7 @@ Date.prototype.format = function (format) {
     };
     if (/(y+)/.test(format)) format = format.replace(RegExp.$1,
         (this.getFullYear() + "").substr(4 - RegExp.$1.length));
-    for (var k in o)if (new RegExp("(" + k + ")").test(format))
+    for (var k in o) if (new RegExp("(" + k + ")").test(format))
         format = format.replace(RegExp.$1,
             RegExp.$1.length == 1 ? o[k] :
                 ("00" + o[k]).substr(("" + o[k]).length));
@@ -77,9 +140,9 @@ var raw = function (args) {
     var string = '';
     for (var k in newArgs) {
         if (k != 'sign') {
-            if(typeof(args[k]) == 'object'){
+            if (typeof (args[k]) == 'object') {
                 string += k + JSON.stringify(newArgs[k]);
-            }else{
+            } else {
                 string += k + newArgs[k];
             }
         }
@@ -91,9 +154,9 @@ var raw = function (args) {
 var raw2 = function (args) {
     var string = '';
     for (var k in args) {
-        if(typeof(args[k]) == 'object'){
+        if (typeof (args[k]) == 'object') {
             string += '&' + k + '=' + encodeURIComponent(JSON.stringify(args[k]));
-        }else{
+        } else {
             string += '&' + k + '=' + encodeURIComponent(args[k]);
         }
     }
@@ -122,9 +185,16 @@ function WiStormAPI(app_key, app_secret, format, v, sign_method, dev_key) {
     };
 }
 
-WiStormAPI.prototype.init = function(){
+WiStormAPI.prototype.sign = function () {
+    var s = raw(this.sign_obj);
+    var sign = hex_md5(encodeURI(this.app_secret + s + this.app_secret));
+    sign = sign.toUpperCase();
+    return sign;
+};
+
+WiStormAPI.prototype.init = function () {
     var timestamp = new Date();
-    timestamp = timestamp.format("yyyy-MM-dd hh:mm:00");
+    timestamp = timestamp.format("yyyy-MM-dd hh:mm:ss");
     this.timestamp = timestamp;
     this.sign_obj = {
         timestamp: timestamp,            	  //时间戳yyyy-mm-dd hh:nn:ss
@@ -133,13 +203,6 @@ WiStormAPI.prototype.init = function(){
         v: this.v,                            //接口版本
         sign_method: this.sign_method         //签名方式
     };
-};
-
-WiStormAPI.prototype.sign = function () {
-    var s = raw(this.sign_obj);
-    var sign = util.md5(encodeURI(this.app_secret + s + this.app_secret));
-    sign = sign.toUpperCase();
-    return sign;
 };
 
 // 注册
@@ -161,10 +224,55 @@ WiStormAPI.prototype.register = function (mobile, email, login_id, password, use
     this.sign_obj.valid_code = valid_code;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
+};
+
+// 创建用户
+// 参数:
+//    mobile: 手机(手机或者邮箱选其一)
+//    email: 邮箱(手机或者邮箱选其一)
+//    login_id: 微信登陆id
+//    password: 加密密码(md5加密)
+// 返回：
+//    cust_id: 用户id
+WiStormAPI.prototype.create = function (username, mobile, email, password, user_type, account_type, parent_id, auth_data, access_token, callback) {
+    this.init();
+    this.sign_obj.method = 'wicare.user.create';
+    this.sign_obj.access_token = access_token;
+    this.sign_obj.username = username;
+    this.sign_obj.mobile = mobile;
+    this.sign_obj.mobileVerified = false;
+    this.sign_obj.email = email;
+    this.sign_obj.emailVerified = false;
+    this.sign_obj.password = password;
+    this.sign_obj.userType = user_type;
+    this.sign_obj.account_type = account_type;
+    this.sign_obj.parentId = parent_id;
+    this.sign_obj.parent_id = parent_id;
+    this.sign_obj.authData = auth_data;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
+        callback(obj);
+    });
+};
+
+// 上传文件
+// 参数:
+// 返回：
+//    cust_id: 用户id
+WiStormAPI.prototype.upload = function (callbackurl) {
+    this.init();
+    this.sign_obj.method = 'wicare.file.upload';
+    this.sign_obj.callbackurl = callbackurl;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    return path;
 };
 
 // 获取令牌
@@ -181,8 +289,8 @@ WiStormAPI.prototype.getToken = function (account, password, type, callback) {
     this.sign_obj.type = type;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -199,8 +307,8 @@ WiStormAPI.prototype.login = function (account, password, callback) {
     this.sign_obj.password = password;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -219,8 +327,8 @@ WiStormAPI.prototype.resetPassword = function (account, password, valid_type, va
     this.sign_obj.valid_code = valid_code;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -238,7 +346,7 @@ WiStormAPI.prototype.resetPassword = function (account, password, valid_type, va
 //    按fields返回数据列表
 WiStormAPI.prototype.getUserList = function (query_json, fields, sorts, page, min_id, max_id, limit, access_token, callback) {
     this.init();
-    this.sign_obj.method = 'wicare.users.list';
+    this.sign_obj.method = 'wicare.user.list';
     this.sign_obj.access_token = access_token;
     for (var key in query_json) {
         this.sign_obj[key] = query_json[key];
@@ -251,8 +359,8 @@ WiStormAPI.prototype.getUserList = function (query_json, fields, sorts, page, mi
     this.sign_obj.limit = limit;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -276,8 +384,8 @@ WiStormAPI.prototype.update = function (query_json, update_json, access_token, c
     }
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -302,8 +410,8 @@ WiStormAPI.prototype.updateMe = function (query_json, update_json, access_token,
     }
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -325,8 +433,28 @@ WiStormAPI.prototype.get = function (query_json, fields, access_token, callback)
     this.sign_obj.fields = fields;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
+        callback(obj);
+    });
+};
+
+// 删除用户
+// 参数:
+//    obj_id: 目标ID
+// 返回:
+//    status_code: 状态码
+WiStormAPI.prototype.delete = function (query_json, access_token, callback) {
+    this.init();
+    this.sign_obj.method = 'wicare.user.delete';
+    this.sign_obj.access_token = access_token;
+    for (var key in query_json) {
+        this.sign_obj[key] = query_json[key];
+    }
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -346,8 +474,8 @@ WiStormAPI.prototype.exists = function (query_json, fields, callback) {
     this.sign_obj.fields = fields;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -370,8 +498,8 @@ WiStormAPI.prototype.sendSMS = function (mobile, type, content, callback) {
     this.sign_obj.content = content;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -395,8 +523,8 @@ WiStormAPI.prototype.sendPush = function (cid, title, content, img, data, callba
     this.sign_obj.data = data;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -418,8 +546,8 @@ WiStormAPI.prototype.validCode = function (mobile, email, valid_type, valid_code
     this.sign_obj.valid_code = valid_code;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -431,17 +559,34 @@ WiStormAPI.prototype.validCode = function (mobile, email, valid_type, valid_code
 //   params: 对应参数;
 // 返回：
 //    status_code: 状态码
-WiStormAPI.prototype.createCommand = function (did, cmd_type, params, access_token, callback) {
-    this.init();
+// WiStormAPI.prototype.createCommand = function (did, cmd_type, params, access_token, callback) {
+//     this.init();
+//     this.sign_obj.method = 'wicare._iotCommand.create';
+//     this.sign_obj.access_token = access_token;
+//     this.sign_obj.did = did;
+//     this.sign_obj.cmd_type = cmd_type;
+//     this.sign_obj.params = params;
+//     this.sign_obj.sign = this.sign();
+//     var params = raw2(this.sign_obj);
+//     var path = API_URL + "/router/rest?" + params;
+//     _get(path, function (obj) {
+//         callback(obj);
+//     });
+// };
+WiStormAPI.prototype.createCommand = function (did, cmd_type, params, type, remark, access_token, callback) {
     this.sign_obj.method = 'wicare._iotCommand.create';
+    this.sign_obj.dev_key = dev_key;
     this.sign_obj.access_token = access_token;
     this.sign_obj.did = did;
     this.sign_obj.cmd_type = cmd_type;
     this.sign_obj.params = params;
+    this.sign_obj.remark = remark;
+    this.sign_obj.type = type;
+    this.sign_obj.duration = 8;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -470,7 +615,7 @@ WiStormAPI.prototype.createOrderAndPay = function (cust_id, open_id, trade_type,
     this.init();
     this.sign_obj.method = 'wicare.pay.buy';
     this.sign_obj.cust_id = cust_id;
-    if(trade_type == "JSAPI"){
+    if (trade_type == "JSAPI") {
         this.sign_obj.open_id = open_id;
     }
     this.sign_obj.trade_type = trade_type;
@@ -489,8 +634,8 @@ WiStormAPI.prototype.createOrderAndPay = function (cust_id, open_id, trade_type,
     this.sign_obj.act_pay = act_pay;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -507,7 +652,7 @@ WiStormAPI.prototype.createOrderAndPay = function (cust_id, open_id, trade_type,
 WiStormAPI.prototype.payWeixin = function (open_id, order_id, trade_type, product_name, remark, total_price, callback) {
     this.init();
     this.sign_obj.method = 'wicare.pay.weixin';
-    if(trade_type == "JSAPI"){
+    if (trade_type == "JSAPI") {
         this.sign_obj.open_id = open_id;
     }
     this.sign_obj.order_id = order_id;
@@ -517,8 +662,8 @@ WiStormAPI.prototype.payWeixin = function (open_id, order_id, trade_type, produc
     this.sign_obj.total_price = total_price;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -531,7 +676,7 @@ WiStormAPI.prototype.payWeixin = function (open_id, order_id, trade_type, produc
 WiStormAPI.prototype._create = function (table, create_json, access_token, is_dev_key, callback) {
     this.init();
     this.sign_obj.method = 'wicare.' + table + '.create';
-    if(is_dev_key){
+    if (is_dev_key) {
         this.sign_obj.dev_key = this.dev_key;
     }
     this.sign_obj.access_token = access_token;
@@ -540,8 +685,23 @@ WiStormAPI.prototype._create = function (table, create_json, access_token, is_de
     }
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
+        callback(obj);
+    });
+};
+
+WiStormAPI.prototype._createPost = function (table, create_json, access_token, is_dev_key, callback) {
+    this.init();
+    this.sign_obj.method = 'wicare.' + table + '.create';
+    if (is_dev_key) {
+        this.sign_obj.dev_key = this.dev_key;
+    }
+    this.sign_obj.access_token = access_token;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    _post(path, create_json, function (obj) {
         callback(obj);
     });
 };
@@ -554,14 +714,14 @@ WiStormAPI.prototype._create = function (table, create_json, access_token, is_de
 WiStormAPI.prototype._createBatch = function (table, create_json, access_token, is_dev_key, callback) {
     this.init();
     this.sign_obj.method = 'wicare.' + table + '.createBatch';
-    if(is_dev_key){
+    if (is_dev_key) {
         this.sign_obj.dev_key = this.dev_key;
     }
     this.sign_obj.access_token = access_token;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._post(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _post(path, create_json, function (obj) {
         callback(obj);
     });
 };
@@ -574,7 +734,7 @@ WiStormAPI.prototype._createBatch = function (table, create_json, access_token, 
 WiStormAPI.prototype._update = function (table, query_json, update_json, access_token, is_dev_key, callback) {
     this.init();
     this.sign_obj.method = 'wicare.' + table + '.update';
-    if(is_dev_key){
+    if (is_dev_key) {
         this.sign_obj.dev_key = this.dev_key;
     }
     this.sign_obj.access_token = access_token;
@@ -587,31 +747,20 @@ WiStormAPI.prototype._update = function (table, query_json, update_json, access_
     }
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
 
-// 更新对象
-// 参数:
-//    business表里面的除了business_id, arrive_time之外的所有字段
-// 返回：
-//    status_code: 状态码
 WiStormAPI.prototype._updatePost = function (table, query_json, update_json, access_token, is_dev_key, callback) {
     this.init();
     this.sign_obj.method = 'wicare.' + table + '.update';
-    if(is_dev_key){
+    if (is_dev_key) {
         this.sign_obj.dev_key = this.dev_key;
     }
     this.sign_obj.access_token = access_token;
     //this.sign_obj.obj_id = obj_id;
-    // for (var key in query_json) {
-    //     this.sign_obj["_" + key] = query_json[key];
-    // }
-    // for (var key in update_json) {
-    //     this.sign_obj[key] = update_json[key];
-    // }
     var data = {};
     for (var key in query_json) {
         data["_" + key] = query_json[key];
@@ -621,8 +770,8 @@ WiStormAPI.prototype._updatePost = function (table, query_json, update_json, acc
     }
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._post(path, data, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _post(path, data, function (obj) {
         callback(obj);
     });
 };
@@ -639,8 +788,8 @@ WiStormAPI.prototype._refreshTable = function (access_token, callback) {
     this.sign_obj.access_token = access_token;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -653,7 +802,7 @@ WiStormAPI.prototype._refreshTable = function (access_token, callback) {
 WiStormAPI.prototype._get = function (table, query_json, fields, access_token, is_dev_key, callback) {
     this.init();
     this.sign_obj.method = 'wicare.' + table + '.get';
-    if(is_dev_key){
+    if (is_dev_key) {
         this.sign_obj.dev_key = this.dev_key;
     }
     this.sign_obj.access_token = access_token;
@@ -663,9 +812,8 @@ WiStormAPI.prototype._get = function (table, query_json, fields, access_token, i
     this.sign_obj.fields = fields;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    console.log(path);
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -678,7 +826,7 @@ WiStormAPI.prototype._get = function (table, query_json, fields, access_token, i
 WiStormAPI.prototype._delete = function (table, query_json, access_token, is_dev_key, callback) {
     this.init();
     this.sign_obj.method = 'wicare.' + table + '.delete';
-    if(is_dev_key){
+    if (is_dev_key) {
         this.sign_obj.dev_key = this.dev_key;
     }
     this.sign_obj.access_token = access_token;
@@ -687,33 +835,72 @@ WiStormAPI.prototype._delete = function (table, query_json, access_token, is_dev
     }
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
 
-// 获取统计计数
+// 获取关联对象列表
 // 参数:
-//    query_json: 查询结构体
-// 返回:
-//    status_code: 状态码
-WiStormAPI.prototype._count = function (table, query_json, access_token, is_dev_key, callback) {
+//    query_json: 查询json;
+//    fields: 返回字段
+//    sorts: 排序字段,如果倒序,在字段前面加-
+//    page: 分页字段
+//    page_no:页数
+//    limit: 返回条数;
+// 返回：
+//    按fields返回数据列表
+WiStormAPI.prototype._lookup = function (table, lookup, query_json, fields, sorts, page, page_no, limit, access_token, is_dev_key, callback) {
     this.init();
-    this.sign_obj.method = 'wicare.' + table + '.count';
-    if(is_dev_key){
+    this.sign_obj.method = 'wicare.' + table + '.lookup';
+    if (is_dev_key) {
         this.sign_obj.dev_key = this.dev_key;
     }
     this.sign_obj.access_token = access_token;
     for (var key in query_json) {
         this.sign_obj[key] = query_json[key];
     }
+    this.sign_obj.lookup = lookup;
+    this.sign_obj.fields = fields;
+    this.sign_obj.sorts = sorts;
+    this.sign_obj.page = page;
+    this.sign_obj.page_no = page_no;
+    this.sign_obj.iDisplayStart = page_no;
+    this.sign_obj.limit = limit;
+    this.sign_obj.iDisplayLength = limit;
+    this.sign_obj.map = 'BAIDU';
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
+};
+
+WiStormAPI.prototype._lookupUrl = function (table, lookup, query_json, fields, sorts, page, page_no, limit, access_token, is_dev_key) {
+    this.init();
+    this.sign_obj.method = 'wicare.' + table + '.lookup';
+    if (is_dev_key) {
+        this.sign_obj.dev_key = this.dev_key;
+    }
+    this.sign_obj.access_token = access_token;
+    for (var key in query_json) {
+        this.sign_obj[key] = query_json[key];
+    }
+    this.sign_obj.lookup = lookup;
+    this.sign_obj.fields = fields;
+    this.sign_obj.sorts = sorts;
+    this.sign_obj.page = page;
+    this.sign_obj.page_no = page_no;
+    this.sign_obj.iDisplayStart = page_no;
+    this.sign_obj.limit = limit;
+    this.sign_obj.iDisplayLength = limit;
+    this.sign_obj.map = 'BAIDU';
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    return path;
 };
 
 // 获取对象列表
@@ -730,7 +917,7 @@ WiStormAPI.prototype._count = function (table, query_json, access_token, is_dev_
 WiStormAPI.prototype._list = function (table, query_json, fields, sorts, page, min_id, max_id, page_no, limit, access_token, is_dev_key, callback) {
     this.init();
     this.sign_obj.method = 'wicare.' + table + '.list';
-    if(is_dev_key){
+    if (is_dev_key) {
         this.sign_obj.dev_key = this.dev_key;
     }
     this.sign_obj.access_token = access_token;
@@ -745,8 +932,192 @@ WiStormAPI.prototype._list = function (table, query_json, fields, sorts, page, m
     this.sign_obj.limit = limit;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
+        callback(obj);
+    });
+};
+
+WiStormAPI.prototype._listPost = function (table, query_json, fields, sorts, page, min_id, max_id, page_no, limit, access_token, is_dev_key, callback) {
+    this.init();
+    this.sign_obj.method = 'wicare.' + table + '.list';
+    if (is_dev_key) {
+        this.sign_obj.dev_key = this.dev_key;
+    }
+    this.sign_obj.access_token = access_token;
+    var data = {};
+    for (var key in query_json) {
+        data[key] = query_json[key];
+    }
+    this.sign_obj.fields = fields;
+    this.sign_obj.sorts = sorts;
+    this.sign_obj.page = page;
+    this.sign_obj.max_id = max_id;
+    this.sign_obj.min_id = min_id;
+    this.sign_obj.limit = limit;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    _post(path, data, function (obj) {
+        callback(obj);
+    });
+};
+
+WiStormAPI.prototype._exportUrl = function (table, query_json, fields, titles, displays, sorts, page, map, access_token) {
+    this.sign_obj.format = 'xls';
+    this.sign_obj.method = 'wicare.' + table + '.export';
+    this.sign_obj.access_token = access_token;
+    for (var key in query_json) {
+        this.sign_obj[key] = query_json[key];
+    }
+    this.sign_obj.fields = fields;
+    this.sign_obj.titles = titles;
+    this.sign_obj.displays = displays;
+    this.sign_obj.sorts = sorts;
+    this.sign_obj.page = page;
+    this.sign_obj.map = map;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    return path;
+};
+
+WiStormAPI.prototype._exportPost = function (table, query_json, fields, titles, displays, sorts, page, map, access_token, callback) {
+    // this.init();
+    // this.sign_obj.limit = -1;
+    // this.sign_obj.max_id = 0;
+    // this.sign_obj.min_id = 0;
+    // this.sign_obj.dev_key = this.dev_key;
+    this.sign_obj.format = 'xls';
+    this.sign_obj.method = 'wicare.' + table + '.export';
+    this.sign_obj.access_token = access_token;
+    // for (var key in query_json) {
+    //     this.sign_obj[key] = query_json[key];
+    // }
+    var data = {};
+    for (var key in query_json) {
+        // data[key] = query_json[key];
+        data[key] = encodeURIComponent(query_json[key]);
+    }
+    data.titles = encodeURIComponent(titles);
+    data.displays = encodeURIComponent(displays);
+    data.map = map
+
+    this.sign_obj.fields = fields;
+    // this.sign_obj.titles = titles;
+    // this.sign_obj.displays = displays;
+    this.sign_obj.sorts = sorts;
+    this.sign_obj.page = page;
+    // this.sign_obj.map = map;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+
+    // exportajax(path, { type: 'POST', data: data, dataType: 'blob', success: callback })
+    // _post1(path, data, function (obj) {
+    //     callback(obj);
+    // });
+    // debugger;
+    download(path, data, callback)
+    // return path;
+};
+
+// 获取统计信息
+// 参数:
+//
+// 返回:
+//    status_code: 状态码
+// WiStormAPI.prototype._aggr = function (table, query_json, group_json, sorts, access_token, callback) {
+//     this.init();
+//     this.sign_obj.method = 'wicare.' + table + '.aggr';
+//     this.sign_obj.dev_key = this.dev_key;
+//     this.sign_obj.access_token = access_token;
+//     for (var key in query_json) {
+//         this.sign_obj[key] = query_json[key];
+//     }
+//     this.sign_obj.group = JSON.stringify(group_json);
+//     this.sign_obj.sorts = sorts;
+//     this.sign_obj.sign = this.sign();
+//     var params = raw2(this.sign_obj);
+//     var path = API_URL + "/router/rest?" + params;
+//     _get(path, function (obj) {
+//         callback(obj);
+//     });
+// };
+WiStormAPI.prototype._aggr = function (table, query_json, group_json, sorts, page_no, limit, access_token, callback) {
+    this.init();
+    this.sign_obj.method = 'wicare.' + table + '.aggr';
+    this.sign_obj.dev_key = dev_key;
+    this.sign_obj.access_token = access_token;
+    for (var key in query_json) {
+        this.sign_obj[key] = query_json[key];
+    }
+    this.sign_obj.group = JSON.stringify(group_json);
+    this.sign_obj.sorts = sorts;
+    this.sign_obj.page_no = page_no;
+    this.sign_obj.limit = limit;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
+        callback(obj);
+    });
+};
+
+
+// 获取对象列表链接
+// 参数:
+//    query_json: 查询json;
+//    fields: 返回字段
+//    sorts: 排序字段,如果倒序,在字段前面加-
+//    page: 分页字段
+//    min_id: 分页字段的本页最小值
+//    max_id: 分页字段的本页最小值
+//    limit: 返回条数;
+// 返回：
+//    按fields返回数据列表
+WiStormAPI.prototype._listUrl = function (table, query_json, fields, sorts, page, min_id, max_id, page_no, limit, access_token, is_dev_key) {
+    this.init();
+    this.sign_obj.method = 'wicare.' + table + '.list';
+    if (is_dev_key) {
+        this.sign_obj.dev_key = this.dev_key;
+    }
+    this.sign_obj.access_token = access_token;
+    for (var key in query_json) {
+        this.sign_obj[key] = query_json[key];
+    }
+    this.sign_obj.fields = fields;
+    this.sign_obj.sorts = sorts;
+    this.sign_obj.page = page;
+    this.sign_obj.max_id = max_id;
+    this.sign_obj.min_id = min_id;
+    this.sign_obj.page_no = page_no;
+    this.sign_obj.limit = limit;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    return path;
+};
+
+// 统计计数
+// 参数:
+//
+// 返回:
+//    status_code: 状态码
+WiStormAPI.prototype._count = function (table, query_json, access_token, is_dev_key, callback) {
+    this.init();
+    this.sign_obj.method = 'wicare.' + table + '.count';
+    if (is_dev_key) {
+        this.sign_obj.dev_key = this.dev_key;
+    }
+    this.sign_obj.access_token = access_token;
+    for (var key in query_json) {
+        this.sign_obj[key] = query_json[key];
+    }
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -778,8 +1149,8 @@ WiStormAPI.prototype._list2 = function (table, query_json, fields, sorts, page, 
     this.sign_obj.limit = limit;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -797,8 +1168,8 @@ WiStormAPI.prototype.setCache = function (key, value, callback) {
     this.sign_obj.value = value;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
@@ -806,14 +1177,117 @@ WiStormAPI.prototype.setCache = function (key, value, callback) {
 WiStormAPI.prototype.getCache = function (key, callback) {
     this.init();
     this.sign_obj.method = 'wicare.cache.getObj';
-    // this.sign_obj.dev_key = this.dev_key;
     this.sign_obj.key = key;
     this.sign_obj.sign = this.sign();
     var params = raw2(this.sign_obj);
-    var path = define.API_URL + "/router/rest?" + params;
-    util._get(path, function (obj) {
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
         callback(obj);
     });
 };
 
-module.exports = WiStormAPI;
+// 验证校验码
+// 参数:
+//    valid_type: 1: 通过手机号  2:通过邮箱
+//    valid_code: 收到的验证码
+//    mobile: 手机
+//    email: 邮箱
+// 返回:
+//    valid: true 有效 false 无效
+WiStormAPI.prototype.updateTree = function (uid, treePath, access_token, callback) {
+    this.init();
+    this.sign_obj.method = 'wicare.tree.update';
+    this.sign_obj.uid = uid;
+    this.sign_obj.treePath = treePath;
+    this.sign_obj.dev_key = this.dev_key;
+    this.sign_obj.access_token = access_token;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
+        callback(obj);
+    });
+};
+
+// 获取账单列表
+// 参数:
+// uid: 用户ID
+// start_time: 开始时间
+// end_time: 结束时间
+WiStormAPI.prototype.getBillList = function (uid, start_time, end_time, page_no, limit, access_token, callback) {
+    this.init();
+    this.sign_obj.method = 'wicare.bill.list';
+    this.sign_obj.access_token = access_token;
+    this.sign_obj.uid = uid;
+    this.sign_obj.start_time = start_time;
+    this.sign_obj.end_time = end_time;
+    this.sign_obj.page_no = page_no;
+    this.sign_obj.limit = limit;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
+        callback(obj);
+    });
+};
+
+
+// 获取账单统计
+// 参数:
+// uid: 用户ID
+// start_time: 开始时间
+// end_time: 结束时间
+WiStormAPI.prototype.getBillTotal = function (uid, start_time, end_time, page_no, limit, access_token, callback) {
+    this.init();
+    this.sign_obj.method = 'wicare.bill.total';
+    this.sign_obj.access_token = access_token;
+    this.sign_obj.uid = uid;
+    this.sign_obj.start_time = start_time;
+    this.sign_obj.end_time = end_time;
+    this.sign_obj.page_no = page_no;
+    this.sign_obj.limit = limit;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
+        callback(obj);
+    });
+};
+/**
+ * 纠偏函数
+ * type === 4, 百度坐标转GPS坐标
+ */
+WiStormAPI.prototype.revise = function (lon, lat, type, callback) {
+    this.init();
+    this.sign_obj.method = 'wicare.loc.revise';
+    this.sign_obj.lon = lon;
+    this.sign_obj.lat = lat;
+    this.sign_obj.type = type;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    console.log(path);
+    _get(path, function (obj) {
+        callback(obj);
+    });
+};
+
+WiStormAPI.prototype.validDevice = function (did, access_token, callback) {
+    this.init();
+    this.sign_obj.method = 'wicare.device.valid';
+    this.sign_obj.dev_key = dev_key;
+    this.sign_obj.access_token = access_token;
+    this.sign_obj.did = did;
+    this.sign_obj.sign = this.sign();
+    var params = raw2(this.sign_obj);
+    var path = API_URL + "/router/rest?" + params;
+    _get(path, function (obj) {
+        callback(obj);
+    });
+};
+
+var dev_key = $.cookie('dev_key');
+var app_key = $.cookie('app_key');
+var app_secret = $.cookie('app_secret');
+
+var wistorm_api = new WiStormAPI(app_key, app_secret, 'json', '2.0', 'md5', dev_key);

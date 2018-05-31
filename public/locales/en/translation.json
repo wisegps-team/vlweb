@@ -70,6 +70,12 @@
     "fee_month": "Month Fee",
     "fee_year": "Year Fee"
   },
+  "member": {
+    "name": "MemberName",
+    "cust_type": "MemberType",
+    "edit_member": "EditMember",
+    "member": "Member"
+  },
   "depart": {
     "search": "Search department",
     "click_tree": "Click + To Expand",
@@ -164,7 +170,15 @@
     "password2_equalTo": "Password confirm is wrong",
     "my_account": "My Account",
     "base_info": "Account Info",
-    "password_info": "Modify Password"
+    "password_info": "Modify Password",
+    "benchmarkMonthFee": "Benchmark Month Fee",
+    "benchmarkYearFee": "Benchmark Year Fee",
+    "balanceMessage": "Balance Message",
+    "balance": "Balance",
+    "frozenBalance": "FrozenBalance",
+    "amount": "Amount",
+    "recharge": "Recharge",
+    "withdraw": "Withdraw"
   },
   "device": {
     "search": "Search Device",
@@ -215,10 +229,10 @@
     "contact": "Contact",
     "tel": "Tel",
     "remark": "Remark",
-    "maintainMileage": "MaintainMileage",
-    "maintainExpireIn": "MaintainExpireIn",
-    "insuranceExpireIn": "InsuranceExpireIn",
-    "inspectExpireIn": "InspectExpireIn",
+    "maintainMileage": "Maintain Mileage",
+    "maintainExpireIn": "Maintain ExpireIn",
+    "insuranceExpireIn": "Insurance ExpireIn",
+    "inspectExpireIn": "Inspect ExpireIn",
     "objectType": "objectType",
     "objectTypeList": {
       "default": "default",
@@ -232,7 +246,7 @@
       "tractor": "tractor",
       "police_box": "police box"
     },
-    "maintenance": "maintenance",
+    "maintenance": "Maintain",
     "new": "Add",
     "create_date": "Created",
     "end_date": "Due",
@@ -241,6 +255,7 @@
     "edit_vehicle": "Edit Vehicle",
     "base_info": "Info",
     "bind_device": "Device",
+    "device_info": "Device Info",
     "err_change_parent": "Change vehicle's customer fail, please try again",
     "msg_confirm_delete": "Confirm to delete vehicle {{name}}?",
     "msg_add_fail": "Add vehicle fail, please try again",
@@ -264,7 +279,8 @@
     "sim_remote": "Sim is used already",
     "change_parent": "Change Parent",
     "select_vehicle": "Select Vehicle",
-    "selected_vehicle": "{{count}} selected vehicle"
+    "selected_vehicle": "{{count}} selected vehicle",
+    "fuel_tank":"Fuel Tank(L)"
   },
   "monitor": {
     "all_status": "All ",
@@ -324,7 +340,8 @@
     "startlocation": "Start Location",
     "endlon": "End Lon",
     "endlat": "End Lat",
-    "endlocation": "End Location"
+    "endlocation": "End Location",
+    "info": "Info"
   },
   "playback": {
     "start_time": "Start Time",
@@ -404,7 +421,10 @@
     "2week": "2 weeks",
     "1month": "1 month",
     "send_day_interval": "Day Interval(d):",
-    "send_time_point": "Time Point"
+    "send_time_point": "Time Point",
+    "sendTextMessage": "Send TextMessage",
+    "textMessage": "TextMessage",
+    "input_message": "Input Message"
   },
   "picture": {
     "picture_manage": "Image Manage",
@@ -560,12 +580,16 @@
     "lowpower": "Low Power",
     "gpscut": "GPS Cut",
     "overdrive": "Overdrive",
+    "enterroute": "Enter Route",
+    "exitroute": "Exit Route",
+    "alert": "Alert",
     "search": "Search Alert",
     "clear_alert_fail": "Clear alert failed, please try again",
     "alert_type": "Alert Type",
     "alert_time": "Alert Time",
     "confirm_deal": "Confirm to deal select alert?",
-    "deal": "Deal Alert"
+    "deal": "Deal Alert",
+    "deal_all_alert":"Deal All Alert"
   },
   "report": {
     "stat_report": "Stat Report",
@@ -649,5 +673,31 @@
     "err_getvehicles": "Get vehicles failed, try again later",
     "err_execption": "Unknow expection, pls relogin and try",
     "warn_password": "Password length is 6 at least"
+  },
+  "map": {
+    "google_map": "Google Maps",
+    "baidu_map": "Baidu Map",
+    "gaode_map": "Amap",
+    "ranging": "Ranging",
+    "node_search":"Node Search",
+    "filter_point":"Filter Stop Point"
+  },
+  "summary": {
+    "summary":"Summary",
+    "device": "Device",
+    "vehicle": "Vehicle",
+    "customer": "Customer",
+    "department": "Department",
+    "employee": "Employee",
+    "vehicle_mileageOrfuel":"Vehicle Mileage and Fuel",
+    "vehicle_onlineStatis":"Vehicle Online Statistics",
+    "vehicle_statusStatis":"Vehicle Status Statistics",
+    "mileage":"Mileage",
+    "fuel":"Fuel",
+    "daily_mileage":"Daily Mileage",
+    "daily_fuel":"Daily Fuel",
+    "leisure":"Leisure",
+    "using":"Using",
+    "maintenance":"Maintenance"
   }
 }

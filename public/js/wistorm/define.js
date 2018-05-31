@@ -43,8 +43,8 @@ IOT_CMD.QUESTION = 0x8302;        //提问下发
 IOT_CMD.QUESTION_RESP = 0x0302;   //提问应答
 IOT_CMD.PHONE_CALLBACK = 0x8400;   //电话回拨
 IOT_CMD.SET_PHONE_BOOK = 0x8401;   //设置电话本
-IOT_CMD.VEHICLE_CONTORL = 0x8500; //车辆控制
-IOT_CMD.VEHICLE_CONTORL_RESP = 0x0500; //车辆控制应答
+IOT_CMD.VEHICLE_CONTORL = 0x8500; //目标控制
+IOT_CMD.VEHICLE_CONTORL_RESP = 0x0500; //目标控制应答
 IOT_CMD.SET_GEOFENCE_CIRCLE = 0x8600; //设置圆形区域
 IOT_CMD.DEL_GEOFENCE_CIRCLE = 0x8601; //删除圆形区域
 IOT_CMD.SET_GEOFENCE_RECT = 0x8602; //设置矩形区域
@@ -112,7 +112,8 @@ IOT_ALERT.ALERT_NOTIFY = 0x3015;  //通知公告提醒
 
 var IOT_ALERT_DESC = {};
 var IOT_ALERT_STATUS_DESC = {};
-var defineId = setInterval(function() {
+var alertType = {};
+var defineId = setInterval(function () {
     if ("undefined" === typeof i18nextLoaded || !i18nextLoaded) {
         return;
     }
@@ -137,26 +138,44 @@ var defineId = setInterval(function() {
     // IOT_ALERT_DESC[IOT_ALERT.ALERT_OFFLINE.toString()] = '离线报警';
     IOT_ALERT_STATUS_DESC["0"] = i18next.t("table.unprocessed");
     IOT_ALERT_STATUS_DESC["1"] = i18next.t("table.processed");
+
+
+
+
+
+    alertType[i18next.t("alert.sos") + i18next.t("alert.alert")] = 0x3001;  //紧急报警：
+    alertType[i18next.t("alert.overspeed") + i18next.t("alert.alert")] = 0x3002;//超速报警：
+    alertType[i18next.t("alert.virbrate") + i18next.t("alert.alert")] = 0x3003;//震动报警：
+    alertType[i18next.t("alert.move") + i18next.t("alert.alert")] = 0x3004;//位移报警：
+    alertType[i18next.t("alert.alarm") + i18next.t("alert.alert")] = 0x3005;//防盗器报警：
+    alertType[i18next.t("alert.entergeo") + i18next.t("alert.alert")] = 0x3007;//进围栏报警：
+    alertType[i18next.t("alert.exitgeo") + i18next.t("alert.alert")] = 0x3008;//出围栏报警：
+    alertType[i18next.t("alert.cutpower") + i18next.t("alert.alert")] = 0x3009;//断电报警：
+    alertType[i18next.t("alert.lowpower") + i18next.t("alert.alert")] = 0x300A;//低电压报警：
+    alertType[i18next.t("alert.gpscut") + i18next.t("alert.alert")] = 0x300B;//GPS断路报警：
+    alertType[i18next.t("alert.overdrive") + i18next.t("alert.alert")] = 0x300C;//疲劳驾驶报警：
+    alertType[i18next.t("alert.enterroute") + i18next.t("alert.alert")] = 0x3010; //进线路报警
+    alertType[i18next.t("alert.exitroute") + i18next.t("alert.alert")] = 0x3011; //出线路报警
     clearInterval(defineId);
 }, 100);
 
-Date.prototype.beautify = function(){
-    var d_minutes,d_hours,d_days;
-    var timeNow = parseInt(new Date().getTime()/1000);
+Date.prototype.beautify = function () {
+    var d_minutes, d_hours, d_days;
+    var timeNow = parseInt(new Date().getTime() / 1000);
     var d;
-    d = timeNow - parseInt(this.getTime()/1000);
-    d_days = parseInt(d/86400);
-    d_hours = parseInt(d/3600);
-    d_minutes = parseInt(d/60);
-    if(d_days>0 && d_days<4){
-        return '>' + d_days+"d";
-    }else if(d_days<=0 && d_hours>0){
-        return '>' + d_hours+"h";
-    }else if(d_hours<=0 && d_minutes>0){
-        return '>' + d_minutes+"m";
-    }else if(d_minutes<=0 && d>=0){
+    d = timeNow - parseInt(this.getTime() / 1000);
+    d_days = parseInt(d / 86400);
+    d_hours = parseInt(d / 3600);
+    d_minutes = parseInt(d / 60);
+    if (d_days > 0 && d_days < 4) {
+        return '>' + d_days + "d";
+    } else if (d_days <= 0 && d_hours > 0) {
+        return '>' + d_hours + "h";
+    } else if (d_hours <= 0 && d_minutes > 0) {
+        return '>' + d_minutes + "m";
+    } else if (d_minutes <= 0 && d >= 0) {
         return "Now";
-    }else{
+    } else {
         return this.format("MM-dd hh:mm");
     }
 };
@@ -216,32 +235,32 @@ Date.prototype.beautify = function(){
  .format({hello: "你好", world: "世界"})
  console.log(say)
  ------------------------------ */
-String.prototype.format = function(arg) {
+String.prototype.format = function (arg) {
     // 安全检查(长度不能小于 {{.}}，为后面下标引用做准备)
     var len = this.length;
     if (len < 5) { return this }
 
     var start = 0, result = "", argi = 0;
 
-    for (var i=0; i<=len; i++) {
+    for (var i = 0; i <= len; i++) {
         // 处理 {{ }} 之外的内容
-        if (this[i] === "{" && this[i-1] === "{") {
-            result += this.slice(start, i-1);
-            start = i-1;
-        } else if (this[i] === "}" && this[i-1] === "}") {
+        if (this[i] === "{" && this[i - 1] === "{") {
+            result += this.slice(start, i - 1);
+            start = i - 1;
+        } else if (this[i] === "}" && this[i - 1] === "}") {
             // 获取 {{ }} 中的索引
-            var index = this.slice(start+2, i-1);
+            var index = this.slice(start + 2, i - 1);
             if (index === ".") {          // 字符串
                 result += arguments[argi];
                 // 最后一个字符串会重复使用
                 if (argi < (arguments.length - 1)) {
                     argi++;
                 }
-                start = i+1;
+                start = i + 1;
             } else {                      // 对象或数组
                 if (arg[index] != null) {
                     result += arg[index];
-                    start = i+1;
+                    start = i + 1;
                 }
             }
         }
@@ -250,3 +269,5 @@ String.prototype.format = function(arg) {
     result += this.slice(start);
     return result;
 };
+
+
