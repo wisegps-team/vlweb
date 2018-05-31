@@ -18,6 +18,11 @@ var names = [];
 var vehicles = [];
 var map_type = MAP_TYPE_BAIDU;
 var map_engine = 'BAIDU';
+var mapType = $.cookie('map_type')
+var typeaheadNameOption = {}; //存储搜索的目标点
+// if(!fuelTankCapacityObj){
+var fuelTankCapacityObj = JSON.parse(sessionStorage.getItem('fuelTank'))
+// }
 
 // 设备查询
 function deviceQuery(dids, callback) {
@@ -28,8 +33,8 @@ function deviceQuery(dids, callback) {
         map: map_engine,
         'activeGpsData.rcvTime': startTime + '@' + endTime
     };
-    wistorm_api._get('_iotDevice', query_json, 'did,vehicleName,activeGpsData,params', auth_code, true, function(json){
-        if(json.status_code && json.data){
+    wistorm_api._get('_iotDevice', query_json, 'did,vehicleName,activeGpsData,params', auth_code, true, function (json) {
+        if (json.status_code && json.data) {
             updateTime = new Date(json.data.activeGpsData.rcvTime);
             updateTime.setSeconds(updateTime.getSeconds() + 1);
         }
@@ -37,28 +42,28 @@ function deviceQuery(dids, callback) {
     });
 }
 
-var getAcc = function(device){
-    var acc = device.activeGpsData.status.join(",").indexOf('8196') > -1 ? i18next.t("monitor.acc_on"): i18next.t("monitor.acc_off");
+var getAcc = function (device) {
+    var acc = device.activeGpsData.status.join(",").indexOf('8196') > -1 ? i18next.t("monitor.acc_on") : i18next.t("monitor.acc_off");
     return acc;
 };
 
-var getSpeed = function(device){
+var getSpeed = function (device) {
     var speed = (device.activeGpsData.speed || 0).toFixed(1) + 'km/h';
     return speed;
 };
 
-var getMileage = function(device){
+var getMileage = function (device) {
     var mileage = (device.activeGpsData.mileage || 0).toFixed(1) + 'km/h';
     return mileage;
 };
 
-var getFlag = function(device){
+var getFlag = function (device) {
     var flag = '';
-    if(!device.activeGpsData || !getOnLine(device)){
+    if (!device.activeGpsData || !getOnLine(device)) {
         flag = '2';
-    }else if(device.activeGpsData && device.activeGpsData.alerts.length > 0){
+    } else if (device.activeGpsData && device.activeGpsData.alerts.length > 0) {
         flag = '3';
-    }else{
+    } else {
         flag = '1';
     }
     return flag;
@@ -78,7 +83,7 @@ var getColorFlag = function (device) {
     return flag;
 };
 
-var setColor = function(vehicle){
+var setColor = function (vehicle) {
     var obj = $('#' + vehicle.did);
     var flag = getColorFlag(vehicle);
     obj.parent().parent().removeClass('_run');
@@ -87,7 +92,7 @@ var setColor = function(vehicle){
     obj.parent().parent().addClass(flag);
 };
 
-var setInfo = function(vehicle){
+var setInfo = function (vehicle) {
     var obj = $('#' + vehicle.did);
     // obj.parent().parent().find('td')[2].innerHTML = vehicle.acc;
     // obj.parent().parent().find('td')[3].innerHTML = vehicle.speed;
@@ -106,17 +111,18 @@ var setInfo = function(vehicle){
 function windowResize() {
     //高度变化改变(要重新计算_browserheight)
     var windowHeight = $(window).height() - 200;
-    $('#map_canvas').css({"height": windowHeight + "px"});
-    // 修改车辆列表高度
+    $('#map_canvas').css({ "height": windowHeight + "px" });
+    $('#panorama').css({ "height": windowHeight + "px" })
+    // 修改目标列表高度
     var height = $(window).height();
-    $('.dataTables_scrollBody').css({"height": height + "px"});
+    $('.dataTables_scrollBody').css({ "height": height + "px" });
 }
 
 var oldGpsTime = 0;
 
 var gpsFlagDesc = ['', '参考', 'GPS', '基站', '北斗'];
 
-var refreshVehicles = function(){
+var refreshVehicles = function () {
     var gpsFlagDesc =
         ['',
             i18next.t("locate.bad"),
@@ -124,8 +130,8 @@ var refreshVehicles = function(){
             i18next.t("locate.lbs"),
             i18next.t("locate.bd")
         ];
-    deviceQuery(did, function(device) {
-        console.log("更新车辆数据。");
+    deviceQuery(did, function (device) {
+        console.log("更新目标数据。");
         var vehicles = [];
         var vehicle = {
             did: device.did,
@@ -140,7 +146,7 @@ var refreshVehicles = function(){
         };
         vehicles.push(vehicle);
         var lastGpsTime = new Date(device.activeGpsData.gpsTime);
-        if(lastGpsTime > oldGpsTime){
+        if (lastGpsTime > oldGpsTime) {
             var gpsTime = new Date(device.activeGpsData.gpsTime).format('MM-dd hh:mm:ss');
             addRow(gpsTime, vehicle.acc, gpsFlagDesc[device.activeGpsData.gpsFlag], vehicle.speed, vehicle.mileage, vehicle.direct, vehicle.status, '', vehicle.activeGpsData.lon, vehicle.activeGpsData.lat);
             wimap.addVehicles(vehicles, true, false, true);
@@ -151,12 +157,12 @@ var refreshVehicles = function(){
 
 var interval = 10;
 var intervalId;
-var refreshLocation = function(){
-    $('#refreshText').html(i18next.t("monitor.refresh_after", {interval: interval}));
-    if(interval == 0){
+var refreshLocation = function () {
+    $('#refreshText').html(i18next.t("monitor.refresh_after", { interval: interval }));
+    if (interval == 0) {
         refreshVehicles();
         interval = 10;
-    }else{
+    } else {
         interval--;
     }
     intervalId = setTimeout('refreshLocation()', 1000);
@@ -167,7 +173,7 @@ var showLocation = function showLocation(thisID, address) {
 };
 
 var addRow = function (gps_time, acc, gpsFlag, speed, mileage, direct, status, location, lon, lat) {
-    if(t){
+    if (t) {
         var lonlat = "<a class='lonUpdate' href='#'>" + lon.toFixed(6) + "," + lat.toFixed(6) + "</a>";
         t.row.add([
             gps_time,
@@ -197,15 +203,97 @@ var t = null;
 $(document).ready(function () {
     windowResize();
 
-    map_type = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? MAP_TYPE_BAIDU : MAP_TYPE_GOOGLE;
-    map_engine = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? 'BAIDU' : 'GOOGLE';
+    // map_type = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? MAP_TYPE_BAIDU : MAP_TYPE_GOOGLE;
+    // map_engine = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? 'BAIDU' : 'GOOGLE';
 
-    var tId = setInterval(function(){
-        if(!i18nextLoaded){
+
+    var tId = setInterval(function () {
+        if (!i18nextLoaded) {
             return;
         }
-        var center_point = { lon:lon, lat:lat };
+
+        if (mapType) {
+            map_type = mapType == 1 ? MAP_TYPE_BAIDU : mapType == 3 ? MAP_TYPE_GAODE : MAP_TYPE_GOOGLE;
+            map_engine = mapType == 1 ? 'BAIDU' : 'GOOGLE';
+        } else {
+            map_type = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? MAP_TYPE_BAIDU : MAP_TYPE_GOOGLE;
+            mapType = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? 1 : 2;
+            map_engine = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? 'BAIDU' : 'GOOGLE';
+        }
+
+        $('#map_type').val(mapType)
+        $('#map_type').change(function () {
+            $.cookie('map_type', this.value);
+            history.go(0);
+            // console.log(this.value)
+        })
+        var center_point = { lon: lon, lat: lat };
         wimap = new wiseMap(map_type, document.getElementById('map_canvas'), center_point, 14);
+
+        if (map_type === MAP_TYPE_BAIDU) {
+            var local = new BMap.LocalSearch(wimap.map, {
+                renderOptions: {},
+            });
+            var addrSearch = function (id) {
+                var searchMarker;
+                $(id).typeahead({
+                    source: function (query, process) {
+                        $(id).val() == query && query ? local.search(query) : process([]);
+                        var func = function (res) {
+                            console.log(res.zr)
+                            var names = [];
+                            res.zr.forEach((ele, i) => {
+                                typeaheadNameOption[ele.title] = {}
+                                typeaheadNameOption[ele.title]["point"] = ele.point;
+                                typeaheadNameOption[ele.title]["address"] = ele.address;
+                                names.push(ele.title);
+                            });
+                            process(names)
+                        }
+                        local.setSearchCompleteCallback(func)
+                    }
+                });
+
+                $(id).on('input', function (e) {
+                    if (e.target.value == '') {
+                        wimap.map.removeOverlay(searchMarker);
+                    }
+                });
+
+                $(id).change(function (e) {
+                    if (typeaheadNameOption[e.target.value]) {
+                        wimap.map.removeOverlay(searchMarker);
+                        var l_point = typeaheadNameOption[e.target.value].point;
+                        var point = new BMap.Point(l_point.lng, l_point.lat)
+                        wimap.map.centerAndZoom(point, 15);
+                        searchMarker = new BMap.Marker(point); // 创建点
+                        wimap.map.addOverlay(searchMarker);    //增加点
+                    }
+                    typeaheadNameOption = {}
+                })
+            }
+            addrSearch('#lose_addr');
+            wimap.cityList(10, 170);
+            wimap.distanceTool();
+        } else if (map_type === MAP_TYPE_GAODE) {
+            var distanceTool = wimap.distanceTool();
+            $('#distanceTool').on('click', function () {
+                // distanceTool.off();
+                distanceTool.turnOn();
+            })
+        }
+        var otherControl = setTimeout(() => {
+            $('#cur_city_name').parent().addClass('br6');
+            $('.otherControl').show();
+            if (map_type === MAP_TYPE_BAIDU) {
+                $('#lose_addr').show();
+                $('#distanceTool').show();
+            } else if (map_type === MAP_TYPE_GAODE) {
+                $('#distanceTool').show();
+            }
+            clearTimeout(otherControl);
+        }, 1000)
+
 
         //高度变化改变(要重新计算_browserheight)
         $(window).resize(function () {
@@ -214,20 +302,20 @@ $(document).ready(function () {
 
         var lang = i18next.language || 'en';
         var objTable = {
-            "bInfo":true,
-            "bLengthChange":false,
-            "bProcessing":false,
-            "bServerSide":false,
-            "bFilter":false,
+            "bInfo": true,
+            "bLengthChange": false,
+            "bProcessing": false,
+            "bServerSide": false,
+            "bFilter": false,
             "searching": false,//本地搜索
             // "data":json.data,
             "paging": false,
             "scrollY": "180px",
-            "order": [[ 0, 'desc' ]],
+            "order": [[0, 'desc']],
             // "scrollCollapse": true,
-            "sDom":"<'row'r>t<'row'<'pull-right'p>>",
+            "sDom": "<'row'r>t<'row'<'pull-right'p>>",
             // "sPaginationType":"bootstrap",
-            "oLanguage":{"sUrl":'css/' + lang +'.txt'}
+            "oLanguage": { "sUrl": 'css/' + lang + '.txt' }
         };
 
         t = $("#vehicle_list").DataTable(objTable);
@@ -240,7 +328,7 @@ $(document).ready(function () {
                 $(this).addClass('selected');
                 var lon = parseFloat($(this).children(0)[8].innerText);
                 var lat = parseFloat($(this).children(0)[9].innerText);
-//            alert(lon + "," + lat);
+                //            alert(lon + "," + lat);
                 wimap.addStartMarker(lon, lat, $(this).children(0)[0].innerText);
                 wimap.setCenter(lon, lat);
             }

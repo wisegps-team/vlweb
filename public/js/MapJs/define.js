@@ -61,6 +61,7 @@ var ALERT_SOS = 0x3001,
 //地图类型定义
 var MAP_TYPE_GOOGLE = 0x9001,
     MAP_TYPE_BAIDU = 0x9002;
+    MAP_TYPE_GAODE = 0x9003;
 
 //地图工具类型定义
 var TOOL_TYPE_DEFAULT = 0x8000,

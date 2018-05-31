@@ -173,9 +173,9 @@ function getIconName(vehicle) {
     // if (vehicle.obj_type == 0) {
     //     icon_name = "normal";
     // }
-    if(!vehicle.objectType){
+    if (!vehicle.objectType) {
         icon_name = "normal"
-    }else {
+    } else {
         icon_name = vehicle.objectType
     }
     return icon_name;
@@ -193,7 +193,8 @@ function getIcon(vehicle, map_type, if_playback) {
             icon.labelOrigin = new google.maps.Point(60, 10);
             //icon.url = "../../Content/MapImages/" + icon_name + "_" + icon_status + "_" + icon_direct + ".png";
             // icon.url = "./objects/" + icon_name + "_" + icon_status + "_" + icon_direct + ".gif";
-            icon.url = "./objects/" + icon_name + "_" + icon_status + "_1.svg";
+            // icon.url = "./objects/" + icon_name + "_" + icon_status + "_1.svg";
+            icon.url = "./objects/" + icon_name + "_" + icon_status + "_" + 0 + ".gif";
             icon.rotation = vehicle.activeGpsData.direct;
             return icon;
             break;
@@ -204,6 +205,15 @@ function getIcon(vehicle, map_type, if_playback) {
             var icon = new BMap.Icon("./objects/" + icon_name + "_" + icon_status + "_" + 0 + ".gif", new BMap.Size(28, 28));
             return icon;
             break;
+        case MAP_TYPE_GAODE:
+            var icon_name = getIconName(vehicle);
+            var icon_status = getIconStatus(vehicle, _if_playback);
+            var icon_direct = getDirect(vehicle.activeGpsData.direct);
+            var icon = new AMap.Icon({
+                image: "./objects/" + icon_name + "_" + icon_status + "_" + 0 + ".gif",
+                imageOffset: new AMap.Pixel(0, 0)
+            });
+            return icon;
     }
 }
 
@@ -225,15 +235,15 @@ function getPoiIcon(poi, map_type) {
 
 Date.prototype.format = function (format) {
     var o =
-    {
-        "M+": this.getMonth() + 1, //month
-        "d+": this.getDate(),    //day
-        "h+": this.getHours(),   //hour
-        "m+": this.getMinutes(), //minute
-        "s+": this.getSeconds(), //second
-        "q+": Math.floor((this.getMonth() + 3) / 3),  //quarter
-        "S": this.getMilliseconds() //millisecond
-    }
+        {
+            "M+": this.getMonth() + 1, //month
+            "d+": this.getDate(),    //day
+            "h+": this.getHours(),   //hour
+            "m+": this.getMinutes(), //minute
+            "s+": this.getSeconds(), //second
+            "q+": Math.floor((this.getMonth() + 3) / 3),  //quarter
+            "S": this.getMilliseconds() //millisecond
+        }
     if (/(y+)/.test(format))
         format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
     for (var k in o)
@@ -255,15 +265,15 @@ function dateDiff(sDate1, sDate2, mode) {     //sDate1和sDate2是2004-10-18格�
 // var gpsFlagDesc = ['', '参考', 'GPS', '基站', '北斗'];
 // var workTypeDesc = ['（有线）', '（无线）'];
 
-var formatLongTime = function(longTime){
+var formatLongTime = function (longTime) {
     var s = '';
     var old_t = '';
-    for(var i = 0; i < longTime.length / 2; i++){
-        var t = longTime.substr(i*2, 2);
-        if(old_t != t){
+    for (var i = 0; i < longTime.length / 2; i++) {
+        var t = longTime.substr(i * 2, 2);
+        if (old_t != t) {
             old_t = t;
             t = parseInt('0x' + t);
-            if(t < 24){
+            if (t < 24) {
                 s += ' ' + t + ':00';
             }
         }
@@ -283,13 +293,19 @@ function getMapContent(vehicle, if_playback) {
     var show_mode = 2;
     var rcv_time = NewDate(vehicle.activeGpsData.rcvTime);
     var gps_time = NewDate(vehicle.activeGpsData.gpsTime);
+    var temp = vehicle.activeGpsData.temp ? vehicle.activeGpsData.temp : [];
+    var soc = vehicle.activeGpsData.soc;
+    var model = vehicle.model || '';
+    // fuelTankCapacityObj = fuelTankCapacityObj ? fuelTankCapacityObj : {};
+    var fuelTankCapacity = fuelTankCapacityObj ? fuelTankCapacityObj[vehicle.did] || 0 : 0;
+    var oilMass = fuelTankCapacity * vehicle.activeGpsData.fuel;
     rcv_time = rcv_time.format("MM-dd hh:mm:ss");
     gps_time = gps_time.format("MM-dd hh:mm:ss");
     var _vehiclesim = vehicle.sim;
     if (_vehiclesim === undefined) {
         _vehiclesim = "";
     }
-    var workType = (vehicle.workType||0).toString();
+    var workType = (vehicle.workType || 0).toString();
     var content = "<div class='zhishichuang'><div class='wind'>";
     content += "<p><span><font style='font-size: 15px;'>" + vehicle.name + workTypeDesc[workType] + "</font></span>" + "                     ";
     if (if_playback) {
@@ -300,7 +316,7 @@ function getMapContent(vehicle, if_playback) {
     var wifis = vehicle.activeGpsData.signal;
     var isonline = getOnLine(vehicle);
     var acc = i18next.t("monitor.acc_off");
-    if(inArray(vehicle.activeGpsData.status, 8196)){
+    if (inArray(vehicle.activeGpsData.status, 8196)) {
         acc = i18next.t("monitor.acc_on");
     }
     if (wifis <= 10) {
@@ -348,37 +364,40 @@ function getMapContent(vehicle, if_playback) {
     /*
      无线设备相关数据
      */
-    if(workType === '1'){
+    if (workType === '1') {
         var mode = '';
-        if(vehicle.activeGpsData && vehicle.activeGpsData.longWorkMode){
-            if(vehicle.activeGpsData.longWorkMode === 1){
-                if(vehicle.activeGpsData.longInterval === 1440){
-                    mode = i18next.t("monitor.mode_long", {longTime: formatLongTime(vehicle.activeGpsData.longTime)});
-                }else{
-                    mode = i18next.t("monitor.mode_time", {longInterval: parseInt(vehicle.activeGpsData.longInterval)});
+        if (vehicle.activeGpsData && vehicle.activeGpsData.longWorkMode) {
+            if (vehicle.activeGpsData.longWorkMode === 1) {
+                if (vehicle.activeGpsData.longInterval === 1440) {
+                    mode = i18next.t("monitor.mode_long", { longTime: formatLongTime(vehicle.activeGpsData.longTime) });
+                } else {
+                    mode = i18next.t("monitor.mode_time", { longInterval: parseInt(vehicle.activeGpsData.longInterval) });
                 }
-            }else{
-                mode = i18next.t("monitor.mode_trace", {longInterval: parseInt(vehicle.activeGpsData.longInterval)}); //'跟踪（上传间隔: ' + parseInt(vehicle.activeGpsData.longInterval) + '秒）';
+            } else {
+                mode = i18next.t("monitor.mode_trace", { longInterval: parseInt(vehicle.activeGpsData.longInterval) }); //'跟踪（上传间隔: ' + parseInt(vehicle.activeGpsData.longInterval) + '秒）';
             }
-            vehicle.activeGpsData.longPercent +=  vehicle.activeGpsData.longPercent * 1.2;
-            if(vehicle.activeGpsData.longPercent > 0.99){
+            vehicle.activeGpsData.longPercent += vehicle.activeGpsData.longPercent * 1.2;
+            if (vehicle.activeGpsData.longPercent > 0.99) {
                 vehicle.activeGpsData.longPercent = 0.99;
             }
-            mode += ', ' + i18next.t("monitor.open_count", {longCount: parseInt(vehicle.activeGpsData.longCount)});  //开机次数：' + vehicle.activeGpsData.longCount + '次';
+            mode += ', ' + i18next.t("monitor.open_count", { longCount: parseInt(vehicle.activeGpsData.longCount) });  //开机次数：' + vehicle.activeGpsData.longCount + '次';
             content += "<tr><td><span style='color: #244FAF'>" + i18next.t("monitor.mode") + ": </span></td><td colspan='3'>" + mode + "</td></tr>";
         }
-    }else {
+    } else {
         if (show_mode == 3 || getOnLine(vehicle)) {
-            content += "<tr><td><span style='color: #244FAF'>" + i18next.t("monitor.status") + ": </span></td><td>" + getStatusDesc(vehicle, show_mode) + "</td><td><span style='color: #244FAF'>ACC: </span></td><td>" + acc + "</td></tr>";
+            content += "<tr><td><span style='color: #244FAF'>" + i18next.t("monitor.status") + ": </span></td><td>" + vehicle.status + "</td><td><span style='color: #244FAF'>ACC: </span></td><td>" + acc + "</td></tr>";
         } else {
-            content += "<tr><td><font color='#244FAF'>" + i18next.t("monitor.status") + ": </font></span></td><td colspan='3'>" + getStatusDesc(vehicle, 1) + "</td></tr>";
+            content += "<tr><td><font color='#244FAF'>" + i18next.t("monitor.status") + ": </font></span></td><td colspan='3'>" + vehicle.status + "</td></tr>";
         }
+        // debugger
+        // content += "<tr><td><font color='#244FAF'>" + i18next.t("monitor.status") + ": </font></span></td><td colspan='3'>" + vehicle.status + "</td></tr>";
+
     }
     content += "<tr><td class='info_label'><font color='#244FAF'>" + i18next.t("monitor.locate") + ": </font></td><td class='content'>" + gpsFlagDesc[vehicle.activeGpsData.gpsFlag] + "</td><td class='info_label'><font color='#244FAF'>" + i18next.t("monitor.direct") + ": </font></td><td class='content'>" + getDirectDesc(vehicle.activeGpsData.direct) + "</td></tr>";
 
-    if(workType === '1'){
-        content += "<tr><td><font color='#244FAF'>" + i18next.t("monitor.battery") + ": </font></td><td>" + (vehicle.activeGpsData.longBattery||0).toFixed(1) + "V</td><td><font color='#244FAF'>" + i18next.t("monitor.speed") + ": </font></td><td>" + vehicle.activeGpsData.speed.toFixed(1) + "km/h</td></tr>";
-    }else{
+    if (workType === '1') {
+        content += "<tr><td><font color='#244FAF'>" + i18next.t("monitor.battery") + ": </font></td><td>" + (vehicle.activeGpsData.longBattery || 0).toFixed(1) + "V</td><td><font color='#244FAF'>" + i18next.t("monitor.speed") + ": </font></td><td>" + vehicle.activeGpsData.speed.toFixed(1) + "km/h</td></tr>";
+    } else {
         content += "<tr><td><font color='#244FAF'>" + i18next.t("monitor.mileage") + ": </font></td><td>" + vehicle.activeGpsData.mileage.toFixed(1) + "km</td><td><font color='#244FAF'>" + i18next.t("monitor.speed") + ": </font></td><td>" + vehicle.activeGpsData.speed.toFixed(1) + "km/h</td></tr>";
     }
     // 加入油耗
@@ -395,11 +414,55 @@ function getMapContent(vehicle, if_playback) {
     // if (dateDiff(rcv_time, now, "dd") < 30) {
     //     content += "<tr><td colspan='2'><font color='#CD0200'>服务到期：</font></span>" + vehicle.serviceExpireIn + "</td></tr>";
     // }
+    var tempGet = function (temp) {
+        if (temp != null && temp > -99) {
+            return parseFloat(temp).toFixed(1);
+        } else {
+            return ''
+        }
+    }
+
+    if (temp.length) {
+        content += "<tr><td><font color='#244FAF'>温度: </font></td><td colspan='3'>"
+        temp.forEach((ele, i) => {
+            switch (i) {
+                case 0: content += tempGet(ele) ? '<span style="position:relative;top:-1px">①</span>' + tempGet(ele) + '°C&nbsp;&nbsp;' : tempGet(ele)
+                    break;
+                case 1: content += tempGet(ele) ? '<span style="position:relative;top:-1px">②</span>' + tempGet(ele) + '°C&nbsp;&nbsp;' : tempGet(ele)
+                    break;
+                case 2: content += tempGet(ele) ? '<span style="position:relative;top:-1px">③</span>' + tempGet(ele) + '°C&nbsp;&nbsp;' : tempGet(ele)
+                    break;
+                case 3: content += tempGet(ele) ? '<span style="position:relative;top:-1px">④</span>' + tempGet(ele) + '°C' : tempGet(ele)
+                    break;
+                default:
+                    break;
+            }
+        })
+        content += "</td></tr>"
+    }
+    // if(soc)
+    if (oilMass || (soc != undefined && soc != null && soc != -1 && model.indexOf("D6") > -1)) {
+        content += "<tr>"
+        if (oilMass) {
+            content += "<td><font color='#244FAF'>油量: </font></td>" + `<td>${oilMass.toFixed(2)}L</td>`
+        }
+        if (soc != undefined && soc != null && soc != -1 && model.indexOf("D6") > -1) {
+            content += "<td><font color='#244FAF'>电量: </font></td>" + `<td ${soc < 20 ? 'style="color:red"' : ''}>${soc.toFixed(1)}%</td>`
+        }
+        content += "</tr>"
+    }
+
     var caption = vehicle.if_track ? i18next.t("monitor.untrace") : i18next.t("monitor.trace");
     content += "<tr><td><font color='#244FAF'>" + i18next.t("monitor.location") + ": </font></td><td colspan='3'><span id='location" + vehicle.did + "'><img style='width:16px;height:16px' src='./img/loading.gif'/></span></td></tr>";
 
-    if(!if_playback){
-        content += '<tr class="button"><td colspan="4"><div class="infowin-button"><button class="btn trace" type="button" id="trace" did="' + vehicle.did + '" onclick="trace(this, \'' + vehicle.did + '\');">' + caption + '</button><button class="btn playback" type="button" id="playback" did="' + vehicle.did + '" onclick="playback(\'' + vehicle.did + '\');">' + i18next.t("monitor.playback") + '</button><button class="btn playback" type="button" id="playback" did="' + vehicle.did + '" onclick="deviceSet(\'' + vehicle.did + '\');">' + i18next.t("monitor.setting") + '</button><button class="btn geofence" type="button" id="geofence" did="' + vehicle.did + '" onclick="geofenceSet(\'' + vehicle.did + '\',' + vehicle.activeGpsData.lon + ',' + vehicle.activeGpsData.lat + ');">' + i18next.t("monitor.geofence") + '</button><button class="btn idle" type="button" id="idle" did="' + vehicle.did + '" onclick="idle(\'' + vehicle.did + '\');">' + i18next.t("monitor.idle") + '</button><button class="btn picture" type="button" id="picture" did="' + vehicle.did + '" onclick="picture(\'' + vehicle.did + '\');">' + i18next.t("monitor.picture") + '</button></div></td></tr>';
+
+    // if(temp != -99){
+    //     content+="<td><font color='#244FAF'>温度: </font></td>"
+    // }
+    console.log(temp, fuelTankCapacity)
+    // debugger;
+    if (!if_playback) {
+        content += '<tr class="button"><td colspan="4"><div class="infowin-button"><button class="btn trace" type="button" id="trace" did="' + vehicle.did + '" onclick="trace(this, \'' + vehicle.did + '\');">' + caption + '</button><button class="btn playback" type="button" id="playback" did="' + vehicle.did + '" onclick="playback(\'' + vehicle.did + '\');">' + i18next.t("monitor.playback") + '</button><button class="btn playback" type="button" id="playback" did="' + vehicle.did + '" onclick="deviceSet(\'' + vehicle.did + '\');">' + i18next.t("monitor.setting") + '</button><button class="btn geofence" type="button" id="geofence" did="' + vehicle.did + '" onclick="geofenceSet(\'' + vehicle.did + '\',' + vehicle.activeGpsData.lon + ',' + vehicle.activeGpsData.lat + ');">' + i18next.t("monitor.geofence") + '</button><button class="btn playback" type="button" id="playback" did="' + vehicle.did + '" onclick="vehicleEditOpen(\'' + vehicle.did + '\');">' + i18next.t("monitor.info") + '</button><button class="btn idle" type="button" id="idle" did="' + vehicle.did + '" onclick="idle(\'' + vehicle.did + '\');">' + i18next.t("monitor.idle") + '</button><button class="btn picture" type="button" id="picture" did="' + vehicle.did + '" onclick="picture(\'' + vehicle.did + '\');">' + i18next.t("monitor.picture") + '</button></div></td></tr>';
     }
     content += "</table>";
     content += "</div></div>";
@@ -437,7 +500,7 @@ m)	非法启动：ALERT_INVALIDACC = 0x300D
 n)	非法开车门：ALERT_INVALIDDOOR = 0x300E
 */
 // show_mode 
-// 1: 车辆列表中
+// 1: 目标列表中
 // 2: 实时监控中
 // 3: 轨迹回放中
 function getStatusDesc(vehicle, show_mode) {
@@ -474,7 +537,7 @@ function getStatusDesc(vehicle, show_mode) {
                 alert_desc = getUniAlertsDesc(vehicle.activeGpsData.alerts);
             }
         }
-        desc = alert_desc == ''? desc: alert_desc;
+        desc = alert_desc == '' ? desc : alert_desc;
     } else {
         if (show_mode == 1) {
             desc = i18next.t("monitor.offline");
@@ -535,7 +598,7 @@ function getUniAlertsDesc(uni_alerts) {
             case ALERT_OVERDRIVE: desc += i18next.t("alert.overdrive") + "|"; break;
         }
     }
-    if(desc != ''){
+    if (desc != '') {
         desc = desc.substr(0, desc.length - 1);
     }
     return desc;
@@ -543,7 +606,7 @@ function getUniAlertsDesc(uni_alerts) {
 
 
 // getOnLine 
-// 1: 车辆列表中
+// 1: 目标列表中
 // 2: 地图中
 function getOnLine(vehicle) {
     var desc = "";
@@ -595,49 +658,53 @@ function getOnline(vehicle) {
     return desc;
 }
 
-var getStatus = function(vehicle){
+var getStatus = function (vehicle) {
     var result = i18next.t("monitor.no_data");
     var status = 'offline';
-    if(vehicle.activeGpsData){
+    if (vehicle.activeGpsData) {
         if (!getOnline(vehicle)) {
             var now = new Date();
             var rcvTime = new Date(vehicle.activeGpsData.rcvTime);
             var m = dateDiff(now, rcvTime, "mm");
-            if(m < 60){
+            if (m < 60) {
                 result = i18next.t("monitor.offline") + '<1h';
-            }else if(m >= 60 && m < 240){
+            } else if (m >= 60 && m < 240) {
                 result = i18next.t("monitor.offline") + '<4h';
-            }else if(m >= 60 && m < 240){
+            } else if (m >= 60 && m < 240) {
                 result = i18next.t("monitor.offline") + '<4h';
-            }else if(m >= 240 && m < 480){
+            } else if (m >= 240 && m < 480) {
                 result = i18next.t("monitor.offline") + '<8h';
-            }else if(m >= 480 && m < 720){
+            } else if (m >= 480 && m < 720) {
                 result = i18next.t("monitor.offline") + '<12h';
-            }else if(m >= 720 && m < 960){
+            } else if (m >= 720 && m < 960) {
                 result = i18next.t("monitor.offline") + '<16h';
-            }else if(m >= 960 && m < 1200){
+            } else if (m >= 960 && m < 1200) {
                 result = i18next.t("monitor.offline") + '<20h';
-            }else if(m >= 1200 && m < 1440){
+            } else if (m >= 1200 && m < 1440) {
                 result = i18next.t("monitor.offline") + '<1d';
-            }else if(m >= 1440 && m < 129600){
-                result = i18next.t("monitor.offline")  + parseInt(m/60/24) + 'd';
-            }else if(m >= 129600){
+            } else if (m >= 1440 && m < 129600) {
+                result = i18next.t("monitor.offline") + parseInt(m / 60 / 24) + 'd';
+            } else if (m >= 129600) {
                 result = i18next.t("monitor.offline") + '>90d';
             }
             status = 'offline';
         } else {
+            var alertResult = '';
             if (vehicle.activeGpsData.alerts.length > 0) {
-                result = getUniAlertsDesc(vehicle.activeGpsData.alerts);
-                status = 'alert';
-            } else {
-                if (vehicle.activeGpsData.status.indexOf(8196) > -1 && vehicle.activeGpsData.speed > 5) {
-                    result = vehicle.activeGpsData.speed.toFixed(0) + 'km';
-                    status = 'run';
-                } else {
-                    result = i18next.t("monitor.stop");
-                    status = 'stop';
-                }
+                alertResult = getUniAlertsDesc(vehicle.activeGpsData.alerts);
+                console.log(alertResult)
+                // status = 'alert';
             }
+            // else {
+            if (vehicle.activeGpsData.status.indexOf(8196) > -1 && vehicle.activeGpsData.speed > 5) {
+                result = vehicle.activeGpsData.speed.toFixed(0) + 'km';
+                status = 'run';
+            } else {
+                result = i18next.t("monitor.stop");
+                status = 'stop';
+            }
+            result = alertResult ? alertResult + ',' + result : result;
+            // }
         }
     }
     return {
@@ -664,7 +731,7 @@ function _getStatusDesc(vehicle) {
         desc += getUniStatusDesc(vehicle.status);
         alert_desc = getUniAlertsDesc(vehicle.alerts);
     }
-    desc = alert_desc === ''? desc: alert_desc;
+    desc = alert_desc === '' ? desc : alert_desc;
     return desc;
 }
 

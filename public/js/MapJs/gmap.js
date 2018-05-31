@@ -114,7 +114,7 @@ gmap.prototype.addVehicles = function (vehicles, is_track, is_playback, if_open_
         if (vehicles[0] != null) {
             if(vehicles[i].activeGpsData === undefined)continue;
             var v = this.vehicles[vehicles[i].did];
-            // 判断车辆是否存在，存在则更新数据，不存在则添加
+            // 判断目标是否存在，存在则更新数据，不存在则添加
             if (v != null) {
                 this.updateVehicle(vehicles[i], is_track, is_track, _is_open_win, '#FF0000', 3, is_playback);
             } else {
@@ -146,7 +146,7 @@ gmap.prototype.addVehicles = function (vehicles, is_track, is_playback, if_open_
                 });
                 if(!_is_playback){
                     content = getMapContent(vehicles[i]);
-                    //打开该车辆的信息窗体
+                    //打开该目标的信息窗体
                     var infowin = new google.maps.InfoWindow({
                         content: content,
                         disableAutoPan: true
@@ -265,7 +265,7 @@ var markerClickFunction = function (v) {
         var latLng = new google.maps.LatLng(v.lat, v.lon);
         var geoFn = geoFunction(v.did);
         geocoder.geocode({'latLng': latLng}, geoFn);
-        // 设置该车辆为选中车辆
+        // 设置该目标为选中目标
         select_vehicle = v;
     };
 };
@@ -287,7 +287,7 @@ gmap.prototype.setZoom = function (level) {
     this.map.setZoom(level);
 };
 
-// 更新车辆显示
+// 更新目标显示
 gmap.prototype.updateVehicle = function (vehicle, if_track, if_show_line, if_open_win, color, width, if_playback) {
     var v = this.vehicles[vehicle.did];
     var content = "";
