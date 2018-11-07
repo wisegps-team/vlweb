@@ -80,7 +80,7 @@ function dateDiff(sDate1, sDate2, mode) {     //sDate1和sDate2是2004-10-18格�
     return iDays;
 }
 
-// 车辆查询
+// 目标查询
 function getMessageQuery() {
     var auth_code = $.cookie('auth_code');
     var searchUrl = $.cookie('Host') + "customer/" + cust_id + "/get_chats?auth_code=" + auth_code + "&friend_id=" + parent_cust_id;

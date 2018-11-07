@@ -18,7 +18,7 @@
       filter: Dropshadow(offx=1,offy=0,color=#ffffff) Dropshadow(offx=0,offy=1,color=#ffffff) Dropshadow(offx=-1,offy=0,color=#ffffff) Dropshadow(offx=0,offy=-1,color=#ffffff);
       }
 	  
-.zhishichuang{ width:350px !important; border:none !important; position:static !important; left:auto !important; top:auto !important;overflow-x:hidden;overflow-y:hidden; font-size: 12px!important;}
+.zhishichuang{ width:385px !important; border:none !important; position:static !important; left:auto !important; top:auto !important;overflow-x:hidden;overflow-y:hidden; font-size: 12px!important;}
 .zhishichuang .wind{background:#fff; min-height:240px; height: auto; float:left; width:350px; padding:0; overflow:hidden}
 .zhishichuang .wind2{background:#fff; height:80px; float:left; width:340px; padding:5px 0 0; overflow:hidden}
 .zhishichuang .wind .vehicle{width:100%; line-height: 22px; padding: 5px; height: 220px;}
@@ -32,8 +32,8 @@
 .zhishichuang .wind p span{ width:60px; text-align:right}
 
 @media screen and (max-width: 1366px) {
-    .zhishichuang{ width:350px !important; border:none !important; position:static !important; left:auto !important; top:auto !important;overflow-x:hidden;overflow-y:hidden; font-size: 12px!important;}
-    .zhishichuang .wind{background:#fff; min-height:240px; height: auto; float:left; width:350px; padding:0; overflow:hidden}
+    .zhishichuang{ width:385px !important; border:none !important; position:static !important; left:auto !important; top:auto !important;overflow-x:hidden;overflow-y:hidden; font-size: 12px!important;}
+    .zhishichuang .wind{background:#fff; min-height:240px; height: auto; float:left; width:385px; padding:0; overflow:hidden}
     .zhishichuang .wind .vehicle{width:100%; line-height: 21px; padding: 5px}
 }
 

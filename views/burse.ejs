@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,viewport-fit=cover">
+    <title>钱包</title>
+    <!-- <link rel="stylesheet" href="./css/weui.css" />
+    <link rel="stylesheet" href="./css/example.css" /> -->
+    <!-- <link href="css/style.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="./css/weui.min.css" />
+    <style>
+        body {
+            font-family: Roboto-Regular, Roboto, Helvetica Neue, Helvetica, Tahoma, Arial, "Noto Sans", 'Microsoft Yahei', SimSun, sans-serif !important;
+            font-size: 12px;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0
+        }
+
+        .weui-btn_primary {
+            background-color: #1AAD19;
+        }
+
+        .weui-msg__title {
+            font-weight: 500;
+            font-size: 18px;
+        }
+
+        .weui-msg__desc {
+            font-weight: 600;
+            font-size: 36px;
+            color: #000;
+            text-align: center;
+        }
+
+        .burseIcon {
+            display: inline-block;
+            width: 102px;
+            height: 102px;
+            border-radius: 51px;
+            /* background: url('./img/burse.svg') no-repeat; */
+            background-size: 102px;
+            background-repeat: no-repeat;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        .container, .page {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+        .page.js_show {
+            opacity: 1;
+        }
+        .page {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            opacity: 0;
+            z-index: 1;
+        }
+        @-webkit-keyframes a {
+            0% {
+                -webkit-transform: translate3d(100%,0,0);
+                transform: translate3d(100%,0,0);
+                opacity: 0
+            }
+
+            to {
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+                opacity: 1
+            }
+        }
+
+        @keyframes a {
+            0% {
+                -webkit-transform: translate3d(100%,0,0);
+                transform: translate3d(100%,0,0);
+                opacity: 0
+            }
+
+            to {
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+                opacity: 1
+            }
+        }
+
+        @-webkit-keyframes b {
+            0% {
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+                opacity: 1
+            }
+
+            to {
+                -webkit-transform: translate3d(100%,0,0);
+                transform: translate3d(100%,0,0);
+                opacity: 0
+            }
+        }
+
+        @keyframes b {
+            0% {
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+                opacity: 1
+            }
+
+            to {
+                -webkit-transform: translate3d(100%,0,0);
+                transform: translate3d(100%,0,0);
+                opacity: 0
+            }
+        }
+        .page.slideIn {
+            -webkit-animation: a .2s forwards;
+            animation: a .2s forwards
+        }
+
+        .page.slideOut {
+            -webkit-animation: b .2s forwards;
+            animation: b .2s forwards
+        }
+        .weui-cells {
+            margin-top: 1em;
+        }
+        .weui-cells:before {
+            border-top: 0px
+        }
+        .weui-cells:after {
+            border-bottom: 0px
+        }
+        .detail {
+            background-color: #f8f8f8;
+        }
+        .detail .page__title {
+            text-align: center;
+            font-size: 19px;
+            padding: 5px;
+            font-weight: 500;
+            background: #fff;
+            border-bottom: 1px solid #e4e4e4;
+       }
+       .detail .weui-cells{
+           margin-top: 0px
+       }
+       .detail_back {
+           position: absolute;
+           top: 9px;
+           left: 6px;
+           display: inline-block;
+           width: 20px;
+           height: 20px;
+           background: url('./img/back.svg') no-repeat;
+           cursor: pointer;
+       }
+       .detail_back a {
+           display: inline-block;
+           width: 20px;
+           height: 20px;
+       }
+       .weui-cell:before {
+           left: 0px;
+       }
+       .loadMore{
+            text-align: center;
+            height: 50px;
+            line-height: 50px;
+            border-top: 1px solid #e5e5e5;
+       }
+    </style>
+</head>
+
+<body ontouchstart>
+
+    <div class="container" id="container"></div>
+    <script type="text/html" id="tpl_home">
+        <div class="page home js_show">
+            <div class="weui-msg">
+                <div class="weui-msg__icon-area">
+                    <span class="burseIcon"></span>
+                </div>
+                <div class="weui-msg__text-area">
+                    <h2 class="weui-msg__title">余额</h2>
+                    <p class="weui-msg__desc" id="balance">￥0.00</p>
+                </div>
+                <div class="weui-msg__text-area">
+                    <h2 class="weui-msg__title">冻结资金</h2>
+                    <p class="weui-msg__desc" id="frozenBalance" style="color:red">￥0.00</p>
+                </div>
+                <div class="weui-msg__opr-area">
+                    <p class="weui-btn-area">
+                        <a href="javascript:void(0)" class="weui-btn  weui-btn_primary" id="withdrawDialog">提现</a>
+                        <a href="#detail" class="weui-btn weui-btn_default" id="detail">明细</a>
+                        <a href="javascript:void(0)" class="weui-btn weui-btn_default" id="bindWxBtn">绑定微信</a>
+                        <a href="javascript:void(0)" class="weui-btn weui-btn_default" id="unbindWxBtn">解绑微信</a>
+                    </p>
+                </div>
+         
+            </div>
+            <div id="dialogs">
+                <div class="js_dialog" id="iosDialog1" style="display: none;">
+                    <div class="weui-mask"></div>
+                    <div class="weui-dialog">
+                        <div class="weui-dialog__hd"><strong class="weui-dialog__title">提现</strong></div>
+                        <div class="weui-dialog__bd">
+                            <div class="weui-cells">
+                                <div class="weui-cell">
+                                    <div class="weui-cell__bd">
+                                        <input class="weui-input" type="text" placeholder="请输入提现金额" id="rechargeAmount">
+                                    </div>
+                                </div>
+                            </div>  
+                        </div>
+                        <div class="weui-dialog__ft">
+                            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default" id="drawCancel">取消</a>
+                            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" id="drawSubmit">确定</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="tpl_detail">
+        <div class="page">
+            <div class="page__hd">
+                <h1 class="page__title">
+                    <span class="detail_back"><a href="javascript:history.back();"></a></span>
+                    账户明细
+                </h1>
+                <!-- <p class="page__desc">列表</p> -->
+            </div>
+            <div class="page__bd">
+                <div class="weui-cells" id="detail_cell">
+                
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <script src='js/jquery.cookie.js'></script>
+    <script src="js/json.js"></script>
+    <script src="js/locales.js"></script>
+    <script src='js/md5.js'></script>
+    <script src="js/system.js"></script>
+    <script src="js/wistorm/md5.js"></script>
+    <script src="js/wistorm/define.js"></script>
+    <script src="js/wistorm/wistorm.js"></script>
+    <!-- <script src="js/wistorm/wistorm_2.js"></script> -->
+    <script src="js/burse.js"></script>
+    <script>
+        var REMOTE_DATA = "<%= user %>";
+        var user = JSON.parse(decodeURIComponent(REMOTE_DATA));
+        console.log(user)
+        $.cookie('adminUser', user.adminUser)
+        // $.cookie('username', $("#username").val());
+        $.cookie('auth_code', user.access_token);
+        $.cookie('dealer_id', user.uid);
+        $.cookie('parent_id', user.pid || '');
+        $.cookie('dealer_type', user.user_type);
+        // console.log()
+    </script>
+</body>
+
+</html>

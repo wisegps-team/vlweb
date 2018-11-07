@@ -1,6 +1,7 @@
 .customerSelector {
-    overflow-x: hidden;
-    overflow-y: auto;
+    /* overflow-x: hidden;
+    overflow-y: auto; */
+    overflow: auto;
     width: 200px;
     height: 200px;
     border: solid 1px #ccc;
