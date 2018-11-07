@@ -52,7 +52,7 @@ function windowResize() {
     // map_canvasHeight = windowobj.height() - 80;
     // browsCss(_panorama, map_canvasHeight);
     // debugger;
-    play_info.css({"height":canvasHeight - 356 + 'px'})
+    play_info.css({ "height": canvasHeight - 356 + 'px' })
     _panorama.css({ "height": canvasHeight + "px" });
     $('.dataTables_scrollBody').css({ "height": ($(window).height() - 138 - $('.accordion-group').height()) + "px" });
 
@@ -110,7 +110,7 @@ var playback = function () {
     __interval = _interval;
     timerPlayback = setTimeout(function () {
 
-        
+
 
         if (!_play || p == gpsDatas.length) {
             stop(false);
@@ -307,6 +307,7 @@ var loadGpsData = function (did, name, startTime, endTime, objectType) {
     // 删除之前的轨迹
     wimap.removeTrackLine(vehicle);
     wimap.removeTrackPoint(vehicle);
+    !map_engine ? changeTypeAndEngine() : null;
     var query = {
         did: did,
         gpsTime: startTime + '@' + endTime,
@@ -324,12 +325,12 @@ var loadGpsData = function (did, name, startTime, endTime, objectType) {
         }
         if (obj.status_code == 0 && obj.total > 0) {
             // gpsDatas = obj.data;
-            if($('#isFiltering').is(':checked')){
+            if ($('#isFiltering').is(':checked')) {
                 gpsDatas = screenGpsData(obj.data)
-            }else {
+            } else {
                 gpsDatas = obj.data;
             }
-           
+
             // 添加目标
             var vehicles = [{
                 did: did,
@@ -346,6 +347,12 @@ var loadGpsData = function (did, name, startTime, endTime, objectType) {
             if ($('#chkPoint').is(':checked')) {
                 wimap.addTrackPoint(vehicle, gpsDatas, '#0000FF', 4, true);
             }
+            
+            var _zoom = wimap.map.getZoom()
+            if(_zoom > 14){
+                wimap.map.setZoom(_zoom-2)
+            }
+            
             // 显示第一个定位
             vehicle = {
                 obj_id: did,
@@ -353,7 +360,7 @@ var loadGpsData = function (did, name, startTime, endTime, objectType) {
                 activeGpsData: gpsDatas[0]
             };
             setGpsInfo(0, vehicle);
-            setGpsDataList({data:gpsDatas});
+            setGpsDataList({ data: gpsDatas });
             $('.empty').hide();
             $('.data').show();
             $('#startPlay').show();
@@ -377,6 +384,17 @@ var loadGpsData = function (did, name, startTime, endTime, objectType) {
         $('.waiting').hide();
     });
 };
+
+var changeTypeAndEngine = function () {
+    if (mapType) {
+        map_type = mapType == 1 ? MAP_TYPE_BAIDU : mapType == 3 ? MAP_TYPE_GAODE : MAP_TYPE_GOOGLE;
+        map_engine = mapType == 1 ? 'BAIDU' : 'GOOGLE';
+    } else {
+        map_type = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? MAP_TYPE_BAIDU : MAP_TYPE_GOOGLE;
+        mapType = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? 1 : 2;
+        map_engine = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? 'BAIDU' : 'GOOGLE';
+    }
+}
 
 $(document).ready(function () {
     sliderSpeed = new Slider('#playbackSpeed', {
@@ -504,6 +522,17 @@ $(document).ready(function () {
             name = $('#name').val();
             var startTime = $('#startTime').val();
             var endTime = $('#endTime').val();
+            var yesterday = new Date(endTime);
+            yesterday = new Date(Date.parse(yesterday) - 48 * 3600 * 1000).format('yyyy-MM-dd hh:mm:ss');
+            if(startTime>endTime){
+                _alert(i18next.t("开始时间不能大于结束时间"));
+                return
+            }
+            if(startTime<yesterday){
+                _alert(i18next.t("查询时间间隔不能超过48小时"));
+                return
+            }
+
             objectType = $('#objectType').val();
             loadGpsData(did, name, startTime, endTime, objectType);
         });
@@ -528,14 +557,7 @@ $(document).ready(function () {
             clearTimeout(timerPlayback);
         });
 
-        if (mapType) {
-            map_type = mapType == 1 ? MAP_TYPE_BAIDU : mapType == 3 ? MAP_TYPE_GAODE : MAP_TYPE_GOOGLE;
-            map_engine = mapType == 1 ? 'BAIDU' : 'GOOGLE';
-        } else {
-            map_type = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? MAP_TYPE_BAIDU : MAP_TYPE_GOOGLE;
-            mapType = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? 1 : 2;
-            map_engine = $.cookie('lang') === 'zh' || $.cookie('lang') === 'zh-CN' ? 'BAIDU' : 'GOOGLE';
-        }
+        changeTypeAndEngine();
         $('#map_type').val(mapType)
         $('#map_type').change(function () {
             $.cookie('map_type', this.value);
@@ -553,15 +575,28 @@ $(document).ready(function () {
                 $(id).typeahead({
                     source: function (query, process) {
                         $(id).val() == query && query ? local.search(query) : process([]);
-                        var func = function (res) {
-                            console.log(res.zr)
+                        var func = function (results) {
+                            // console.log(res.zr)
+                            // var names = [];
+                            // res.zr.forEach((ele, i) => {
+                            //     typeaheadNameOption[ele.title] = {}
+                            //     typeaheadNameOption[ele.title]["point"] = ele.point;
+                            //     typeaheadNameOption[ele.title]["address"] = ele.address;
+                            //     names.push(ele.title);
+                            // });
+                            // process(names)
                             var names = [];
-                            res.zr.forEach((ele, i) => {
-                                typeaheadNameOption[ele.title] = {}
-                                typeaheadNameOption[ele.title]["point"] = ele.point;
-                                typeaheadNameOption[ele.title]["address"] = ele.address;
-                                names.push(ele.title);
-                            });
+                            var poiNum = results.getNumPois();
+                            for (var i = 0; i < 50; i++) {
+                                var _currPoi = results.getPoi(i);
+                                console.log(_currPoi)
+                                if (_currPoi) {
+                                    typeaheadNameOption[_currPoi.title] = {}
+                                    typeaheadNameOption[_currPoi.title]["point"] = _currPoi.point;
+                                    typeaheadNameOption[_currPoi.title]["address"] = _currPoi.address;
+                                    names.push(_currPoi.title);
+                                }
+                            }
                             process(names)
                         }
                         local.setSearchCompleteCallback(func)

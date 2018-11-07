@@ -41,6 +41,8 @@ var edit_sim = '';
 var obj_id = '';
 var fuelTankCapacityObj;
 var cust_typeObj = {};
+var vehicleServiceObj = {};
+// var wistorm_api = 
 
 function customerQuery() {
     var dealer_type = $.cookie('dealer_type');
@@ -269,6 +271,26 @@ function getAllDepart() {
     });
 }
 
+function vehicleService(query_json, callback) {
+    vehicleServiceObj = { isbegin: false }
+
+    wistorm_api._listPost('vehicle', query_json, '', 'createdAt', 'createdAt', 0, 0, 1, -1, $.cookie('auth_code'), true, function (obj) {
+        console.log(obj, 'post vehicle')
+        vehicleServiceObj['isbegin'] = true;
+        if (obj.status_code == 0 && obj.data.length) {
+            obj.data.forEach(ele => {
+                if (ele.did) {
+                    vehicleServiceObj[ele.did] = ele
+                }
+            });
+            callback(vehicleServiceObj)
+        }
+    })
+
+
+
+}
+
 
 function customerInfo(objectId, callback) {
     var query_json = {
@@ -351,6 +373,7 @@ function vehicleQuery(cust_id, depart) {
     // wistorm_api._list('vehicle', query_json, 'objectId,name,model,did,sim,serviceRegDate,serviceExpireIn', 'name', 'name', 0, 0, 1, -1, auth_code, true, vehicleQuerySuccess)
     uid = cust_id;
     is_depart = depart;
+    // if(uid)
     querySuccess();
 }
 
@@ -552,6 +575,7 @@ var querySuccess = function () {
     });
 
     vehicle_table = $("#vehicle_list").dataTable(objTable);
+
     $('#vehicle_list tbody').on('click', 'tr', function () {
         if ($(this).hasClass('selected')) {
             // $(this).removeClass('selected');
@@ -561,6 +585,11 @@ var querySuccess = function () {
             $(this).addClass('selected');
         }
         var did = $(this).find(".did [type='checkbox']").val();
+
+        if (isExpiredFun(did)) {
+            return false
+        }
+
         if (did) {
             addVehicle(did);
             wimap.findVehicle(did, true, true);
@@ -593,8 +622,12 @@ var setVehicleList = function () {
     $('#vehicle_list :checkbox:not(#checkAll)').change(function () {
         // alert($(this).prop("checked"));
         // alert($(this).val());
+
         var checked = $(this).prop("checked");
         var did = $(this).val();
+        if (isExpiredFun(did)) {
+            return false
+        }
         if (checked) {
             checkDids.push(did);
             addVehicle(did);
@@ -833,7 +866,12 @@ function retrieveData(sSource, aoData, fnCallback) {
         if (key && key != "") {
             query_json = {
                 uid: uid,
-                $where: 'function(){return this.did.indexOf("' + key + '") > -1 || (this.vehicleName && (this.vehicleName.indexOf("' + key + '") > -1));}'
+                '$or': {
+                    'did':  '^' + key,
+                    'vehicleName': '^' + key
+                }
+
+                // $where: 'function(){return this.did.indexOf("' + key + '") > -1 || (this.vehicleName && (this.vehicleName.indexOf("' + key + '") > -1));}'
             };
         } else {
             query_json = {
@@ -903,50 +941,70 @@ function retrieveData(sSource, aoData, fnCallback) {
             json.iTotalRecords = json.total;
             json.iTotalDisplayRecords = json.total;
             vehicles = json.data;
-            for (var i = 0; i < json.data.length; i++) {
-                var vehicle = json.data[i];
-                var device = json.data[i].device ? json.data[i].device[0] : json.data[i];
-                if (device) {
-                    if (device.activeGpsData && device.activeGpsData.gpsTime) {
-                        vehicle.name = device.vehicleName || device.did;
-                        vehicle.flag = getFlag(device);
-                        vehicle.acc = getAcc(device);
-                        vehicle.speed = getSpeed(device);
-                        vehicle.status = getStatus(device).desc;
-                        vehicle.activeGpsData = device.activeGpsData;
+            var serviceDids = [];
+            json.data.forEach(ele => {
+                ele.did ? serviceDids.push(ele.did) : null;
+            });
+
+            var prePlay = function () {
+                for (var i = 0; i < json.data.length; i++) {
+                    if (json.data[i].did) {
+                        serviceDids.push(json.data[i].did)
+                    }
+                    var vehicle = json.data[i];
+                    var device = json.data[i].device ? json.data[i].device[0] : json.data[i];
+                    if (device) {
+                        if (device.activeGpsData && device.activeGpsData.gpsTime) {
+                            vehicle.name = device.vehicleName || device.did;
+                            vehicle.flag = getFlag(device);
+                            vehicle.acc = getAcc(device);
+                            vehicle.speed = getSpeed(device);
+                            vehicle.status = getStatus(device).desc;
+                            vehicle.activeGpsData = device.activeGpsData;
+                        } else {
+                            vehicle.name = vehicle.did;
+                            vehicle.status = vehicle.did === '' ? i18next.t("monitor.no_device") : i18next.t("monitor.no_data");
+                            vehicle.flag = '';
+                        }
+                        vehicle.workType = device.workType || 0;
+                        vehicle.params = device.params || {};
                     } else {
-                        vehicle.name = vehicle.did;
                         vehicle.status = vehicle.did === '' ? i18next.t("monitor.no_device") : i18next.t("monitor.no_data");
                         vehicle.flag = '';
                     }
-                    vehicle.workType = device.workType || 0;
-                    vehicle.params = device.params || {};
-                } else {
-                    vehicle.status = vehicle.did === '' ? i18next.t("monitor.no_device") : i18next.t("monitor.no_data");
-                    vehicle.flag = '';
+                    _vehicles[vehicle.did] = vehicle;
                 }
-                _vehicles[vehicle.did] = vehicle;
+
+                json.aaData = json.data;
+                if (status_flag === '') {
+                    $('#allStatus').find('a')[0].innerHTML = _counts[''] + '(' + json.total + ')';
+                    // $("#vehicle_list").html('');
+                    fnCallback(json); //服务器端返回的对象的returnObject部分是要求的格式
+                    updateVehicleCount(function () { });
+                } else {
+                    // $("#vehicle_list").html('');
+                    fnCallback(json);
+                }
+                if (vehicles.length > 0) {
+                    refreshLocation();
+                }
+                //定时更新数据
+                $('#refreshText').css('display', vehicles.length > 0 ? 'block' : 'none');
+                _runing = false;
+                _drawing = false;
+                checkAllDid();
+                setVehicleList();
+                windowResize();
             }
-            json.aaData = json.data;
-            if (status_flag === '') {
-                $('#allStatus').find('a')[0].innerHTML = _counts[''] + '(' + json.total + ')';
-                // $("#vehicle_list").html('');
-                fnCallback(json); //服务器端返回的对象的returnObject部分是要求的格式
-                updateVehicleCount(function () { });
+
+            if (serviceDids.length) {
+                var serviceQuery = { did: serviceDids.join('|') };
+                vehicleService(serviceQuery, function () {
+                    prePlay()
+                })
             } else {
-                // $("#vehicle_list").html('');
-                fnCallback(json);
+                prePlay()
             }
-            if (vehicles.length > 0) {
-                refreshLocation();
-            }
-            //定时更新数据
-            $('#refreshText').css('display', vehicles.length > 0 ? 'block' : 'none');
-            _runing = false;
-            _drawing = false;
-            checkAllDid();
-            setVehicleList();
-            windowResize();
         }
     });
     _runing = true;
@@ -1001,6 +1059,9 @@ var addVehicles = function () {
     var dids = $("[type='checkbox']:checked:not(#checkAll)");
     checkDids = [];
     for (var i = 0; i < dids.length; i++) {
+        if (isExpiredFun($(dids[i]).val())) {
+            continue;
+        }
         var vehicle = _vehicles[$(dids[i]).val()];
         if (vehicle) {
             vehicles.push(vehicle);
@@ -1088,7 +1149,7 @@ var deviceInfo = function (did) {
 
         }
         // $('#_selectAll').empty();
-        liText = `<li style="width:100%"><input type="checkbox" ${isAllSelect ? 'checked' : ''} id="isAllSelect" value='2'><label for="isAllSelect">${'全选/不选'}</label> </li>`;
+        liText = `<li style="width:100%"><input type="checkbox" ${isAllSelect ? 'checked' : ''} id="isAllSelect" value='2'><label for="isAllSelect">${i18next.t('vehicle.all_not')}</label> </li>`;
         $('.ulClass').prepend(liText)
 
         $('#isAllSelect').on('click', function () {
@@ -1103,7 +1164,7 @@ var deviceInfo = function (did) {
         did: did
     }
     wistorm_api._get('_iotDevice', query_json, 'params,objectId,did', auth_code, true, function (json) {
-        var alertOptions = json.data.params.alertOptions;
+        var alertOptions = json.data.params ? json.data.params.alertOptions : null;
         if (!alertOptions) {
             ulInner(alertType);
         } else {
@@ -1511,7 +1572,7 @@ var getVehicleMessage = function (obj) {
 
 }
 
-
+//节点查询
 var searchVehicle = function () {
     console.log(markePois)
     var startTime = $('#divStartTime').val();
@@ -1543,7 +1604,7 @@ var searchVehicle = function () {
         var _thisPoi = ele.split(',');
         wistorm_api.revise(_thisPoi[0], _thisPoi[1], 4, function (res) {
             query.loc = '!' + res.x.toFixed(6) + '@' + res.y.toFixed(6) + '@' + parseInt(100);
-            wistorm_api._list('_iotGpsData', query, 'did,rcvTime,createdAt', 'createdAt', 'createdAt', 0, 0, 0, -1, $.cookie('auth_code'), true, function (obj) {
+            otherWistorm_api._list('_iotGpsData', query, 'did,rcvTime,createdAt', 'createdAt', 'createdAt', 0, 0, 0, -1, $.cookie('auth_code'), true, function (obj) {
                 _thisI++;
                 if (obj) {
                     obj.data.forEach(ele => {
@@ -1757,18 +1818,25 @@ $(document).ready(function () {
                 $(id).typeahead({
                     source: function (query, process) {
                         $(id).val() == query && query ? local.search(query) : process([]);
-                        var func = function (res) {
-                            console.log(res.zr)
+                        var func = function (results) {
+                            console.log(results)
+                            console.log(results.getNumPois())
                             var names = [];
-                            res.zr.forEach((ele, i) => {
-                                typeaheadNameOption[ele.title] = {}
-                                typeaheadNameOption[ele.title]["point"] = ele.point;
-                                typeaheadNameOption[ele.title]["address"] = ele.address;
-                                names.push(ele.title);
-                            });
+                            var poiNum = results.getNumPois();
+                            for (var i = 0; i < 50; i++) {
+                                var _currPoi = results.getPoi(i);
+                                console.log(_currPoi)
+                                if (_currPoi) {
+                                    typeaheadNameOption[_currPoi.title] = {}
+                                    typeaheadNameOption[_currPoi.title]["point"] = _currPoi.point;
+                                    typeaheadNameOption[_currPoi.title]["address"] = _currPoi.address;
+                                    names.push(_currPoi.title);
+                                }
+                            }
                             process(names)
                         }
                         local.setSearchCompleteCallback(func)
+                        // local.setInfoHtmlSetCallback(func)
                     }
                 });
 

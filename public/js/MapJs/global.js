@@ -235,15 +235,15 @@ function getPoiIcon(poi, map_type) {
 
 Date.prototype.format = function (format) {
     var o =
-        {
-            "M+": this.getMonth() + 1, //month
-            "d+": this.getDate(),    //day
-            "h+": this.getHours(),   //hour
-            "m+": this.getMinutes(), //minute
-            "s+": this.getSeconds(), //second
-            "q+": Math.floor((this.getMonth() + 3) / 3),  //quarter
-            "S": this.getMilliseconds() //millisecond
-        }
+    {
+        "M+": this.getMonth() + 1, //month
+        "d+": this.getDate(),    //day
+        "h+": this.getHours(),   //hour
+        "m+": this.getMinutes(), //minute
+        "s+": this.getSeconds(), //second
+        "q+": Math.floor((this.getMonth() + 3) / 3),  //quarter
+        "S": this.getMilliseconds() //millisecond
+    }
     if (/(y+)/.test(format))
         format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
     for (var k in o)
@@ -550,6 +550,10 @@ function getStatusDesc(vehicle, show_mode) {
 
 //处理js时间转化的方法
 function NewDate(str) {
+    if (!str) {
+        // debugger;
+        return new Date().format("yyyy-MM-dd hh:mm:ss");
+    }
     var date = new Date();
     var str_before = str.split('T')[0]; //获取年月日
     var str_after = str.split('T')[1]; //获取时分秒
@@ -658,9 +662,34 @@ function getOnline(vehicle) {
     return desc;
 }
 
+//目标是否过期
+var isExpiredFun = function (did) {
+    // console.log(vehicleServiceObj[did])
+    // if (vehicleServiceObj[did]) {
+    //     var _serviceExpireIn;
+    //     _serviceExpireIn = vehicleServiceObj[did].serviceExpireIn ? NewDate(vehicleServiceObj[did].serviceExpireIn) : '';
+    //     if (_serviceExpireIn) {
+    //         // console.log(_serviceExpireIn)
+    //         if (_serviceExpireIn.format('yyyy-MM-dd hh:mm:ss') < new Date().format('yyyy-MM-dd hh:mm:ss')) {
+    //             return true
+    //         }
+    //         // return false
+    //     }
+    //     // return false
+    // }
+    return false
+}
+
 var getStatus = function (vehicle) {
+    if (isExpiredFun(vehicle.did)) {
+        return {
+            status: 'Expired',
+            desc: 'Expired'
+        }
+    }
     var result = i18next.t("monitor.no_data");
     var status = 'offline';
+    console.log(vehicle)
     if (vehicle.activeGpsData) {
         if (!getOnline(vehicle)) {
             var now = new Date();

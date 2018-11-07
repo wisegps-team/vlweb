@@ -25,7 +25,7 @@
     <link href="js/jqTree/jqtree.css" rel="stylesheet">
     <link href="js/zTree/css/metroStyle/metroStyle.css" rel="stylesheet" type="text/css"/>
     <link rel="stylesheet" href="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.css" />
-
+    <link href="css/amapCircle.css" rel="stylesheet">
     <!--[if IE 7]>
     <link href="css/font-awesome-ie7.min.css" rel="stylesheet">
     <![endif]-->
@@ -37,7 +37,7 @@
     <link href="css/Icon/iconfont.css" rel="stylesheet">
     <link href="css/branch.css" rel="stylesheet">
     <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
-
+    
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
     <script src="js/html5shiv.js"></script>
@@ -259,6 +259,25 @@
             color: white;
             display: none;
         }
+        #panorama {
+            float: left;
+            width: 35%;
+            position: relative;
+            z-index: 0;
+            height: 210px;
+            display: none;
+        }
+        .otherControl {
+            position: absolute;
+            top: 50px;
+            right: 164px;
+            /* display: none; */
+        }
+        #map_type {
+            margin: 0;
+            padding: 0;
+            width: 102px;
+        }
     </style>
 </head>
 
@@ -404,11 +423,29 @@
             </div>
         </div>
         <!--/span-->
+        <div id="panorama" class="panorama"></div>
         <div id="map_canvas">
         </div>
         <div id="city_list">
         </div>
-
+        <!-- <div class="AMapLib_Drawing_panel" style="display: block;">
+            <a class="AMapLib_box AMapLib_hander" drawingtype="hander" href="javascript:void(0)" title="拖动地图" onfocus="this.blur()"></a>
+            <a class="AMapLib_box AMapLib_circle" drawingtype="circle" href="javascript:void(0)" title="画圆" onfocus="this.blur()"></a>
+            <a class="AMapLib_box AMapLib_polygon AMapLib_last" drawingtype="polygon" href="javascript:void(0)" title="画多边形" onfocus="this.blur()"></a>
+        </div> -->
+        <div class="otherControl">
+            <!-- <input id="lose_addr" class="input-medium" type="text" style="margin-bottom:0px;font-size:12px" data-provide="typeahead" data-items="5" autocomplete="off" data-source=""
+                placeholder="搜地点" data-i18n="[placeholder]customer.search">
+            
+            
+            <button class="btn" type="button" id="nodeSearch" >节点查询</button>
+            <button class="btn" type="button" id="distanceTool" >测距</button> -->
+            <select id="map_type">
+                <option value="1"><%= t('map.baidu_map')%></option>
+                <option value="2"><%= t('map.google_map')%></option>
+                <option value="3"><%= t('map.gaode_map')%></option>
+            </select>
+        </div>
         <!--/span-->
     </div>
     <!--/row-->

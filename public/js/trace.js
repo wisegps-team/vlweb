@@ -53,7 +53,7 @@ var getSpeed = function (device) {
 };
 
 var getMileage = function (device) {
-    var mileage = (device.activeGpsData.mileage || 0).toFixed(1) + 'km/h';
+    var mileage = (device.activeGpsData.mileage || 0).toFixed(1) + 'km';
     return mileage;
 };
 
@@ -239,15 +239,28 @@ $(document).ready(function () {
                 $(id).typeahead({
                     source: function (query, process) {
                         $(id).val() == query && query ? local.search(query) : process([]);
-                        var func = function (res) {
-                            console.log(res.zr)
+                        var func = function (results) {
+                            // console.log(res.zr)
+                            // var names = [];
+                            // res.zr.forEach((ele, i) => {
+                            //     typeaheadNameOption[ele.title] = {}
+                            //     typeaheadNameOption[ele.title]["point"] = ele.point;
+                            //     typeaheadNameOption[ele.title]["address"] = ele.address;
+                            //     names.push(ele.title);
+                            // });
+                            // process(names)
                             var names = [];
-                            res.zr.forEach((ele, i) => {
-                                typeaheadNameOption[ele.title] = {}
-                                typeaheadNameOption[ele.title]["point"] = ele.point;
-                                typeaheadNameOption[ele.title]["address"] = ele.address;
-                                names.push(ele.title);
-                            });
+                            var poiNum = results.getNumPois();
+                            for (var i = 0; i < 50; i++) {
+                                var _currPoi = results.getPoi(i);
+                                console.log(_currPoi)
+                                if (_currPoi) {
+                                    typeaheadNameOption[_currPoi.title] = {}
+                                    typeaheadNameOption[_currPoi.title]["point"] = _currPoi.point;
+                                    typeaheadNameOption[_currPoi.title]["address"] = _currPoi.address;
+                                    names.push(_currPoi.title);
+                                }
+                            }
                             process(names)
                         }
                         local.setSearchCompleteCallback(func)

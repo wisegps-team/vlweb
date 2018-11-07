@@ -37,7 +37,9 @@ var refreshLabel = function (map, vehicles) {
 function bmap(div_map, center_point, zoom) {
     this.map = new BMap.Map(div_map);
     baidumap = this.map;
-    this.map.centerAndZoom(center_point, zoom);
+    var _this = this
+    setTimeout(function(){_this.map.centerAndZoom(center_point, zoom);},100)
+    
     // this.map.setCenter(point);
     // this.map.setZoom(zoom);
     this.map.enableScrollWheelZoom();
@@ -542,11 +544,14 @@ bmap.prototype.addTrackLine = function (vehicle, gps_datas, color, width, center
             if (isfrist) { //第一次
                 latLng = oldlatLng ? oldlatLng : lineObj[i][j].latLng;
                 var _j;
+
                 if (lineIndex == 0) {
                     _j = j;
                 } else {
                     _j = j - 1;
+                    _j = _j == -1 ? 0 : _j
                 }
+                console.log(j, i, _j, 'jj')
                 if (lineObj[i][_j].alert.length) {
                     isgreen = false;
                     changeColor = 'red' + lineIndex
@@ -571,14 +576,15 @@ bmap.prototype.addTrackLine = function (vehicle, gps_datas, color, width, center
                     allObjPoints[i][changeColor].push(latLng)
                 }
             } else { //报警
-                if (!lineObj[i][j].alert.length) {
-                    isfrist = true;
-                    lineIndex++;
-                    oldlatLng = lineObj[i][j].latLng;
-                    ooldlatLng = lineObj[i][j - 1] ? lineObj[i][j - 1].latLng : '';
-                } else {
-                    // allObjPoints[changeColor].push(latLng)
-                    allObjPoints[i][changeColor].push(latLng)
+                if (lineObj[i][j - 1]) {
+                    if (!lineObj[i][j - 1].alert.length) {
+                        isfrist = true;
+                        lineIndex++;
+                        oldlatLng = lineObj[i][j - 1].latLng;
+                        ooldlatLng = lineObj[i][j - 2] ? lineObj[i][j - 2].latLng : '';
+                    } else {
+                        allObjPoints[i][changeColor].push(latLng)
+                    }
                 }
             }
         }

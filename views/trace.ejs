@@ -158,14 +158,39 @@
             height: 180px!important;
         }
 
+        .otherControl {
+                position: absolute;
+                top: 10px;
+                right: 164px;
+                display: none;
+            }
+        .br6 {
+            border-radius: 6px;
+        }
+        #map_type {
+            margin: 0;
+            padding: 0;
+            width: 102px;
+        }
     </style>
 </head>
 
 <body>
 
 <div class="row-fluid">
+    <div id="panorama" class="panorama" style="float:left;display:none;width:35%"></div>
     <!--/span-->
     <div id="map_canvas">
+    </div>
+    <div class="otherControl">
+        <input id="lose_addr" class="input-medium" type="text" style="margin-bottom:0px;font-size:12px;display: none" data-provide="typeahead" data-items="5" autocomplete="off" data-source=""
+            placeholder="搜地点" data-i18n="[placeholder]customer.search">
+        <button class="btn hide" type="button" id="distanceTool" ><%= t('map.ranging')%></button>
+        <select id="map_type">
+            <option value="1"><%= t('map.baidu_map')%></option>
+            <option value="2"><%= t('map.google_map')%></option>
+            <option value="3"><%= t('map.gaode_map')%></option>
+        </select>
     </div>
     <div id="refreshText"></div>
     <input type="hidden" id="did" value="<%= vehicle.did %>">
@@ -227,6 +252,6 @@
 <script src='js/MapJs/bmap.js'></script>
 <script src="js/MapJs/wisemap.js"></script>
 <script src="js/trace.js"></script>
-
+<!-- <script src="js/panoramaCtrl.js"></script> -->
 </body>
 </html>

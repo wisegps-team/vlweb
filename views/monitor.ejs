@@ -39,6 +39,8 @@
     <link href="css/viewer.min.css" rel="stylesheet">
     <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
     <link href="css/customerSelector.css" rel="stylesheet">
+    <link href="http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="http://api.map.baidu.com/library/SearchInfoWindow/1.5/src/SearchInfoWindow_min.css" />
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -272,6 +274,52 @@
         .ui-widget-content {
             background: #ffffff repeat-x;
         }
+        /* #address {
+            position: fixed;
+            left: 585px;
+            top: 49px;
+            border-radius: 3px;
+            color: white;
+            display: block;
+        } */
+        /* #nodeSearch {
+            position: absolute;
+            top: 49px;
+            right: 178px;
+        }
+        #distanceTool {
+            position: absolute;
+            top: 49px;
+            right: 124px;
+        } */
+        .otherControl {
+            position: absolute;
+            top: 50px;
+            right: 164px;
+            display: none;
+        }
+        .br6 {
+            border-radius: 6px;
+        }
+        #map_type {
+            margin: 0;
+            padding: 0;
+            width: 102px;
+        }
+        .ulClass li {
+            list-style: none;
+            float: left;
+            margin-right: 20px;
+            margin-top: 10px;
+            width: 110px;
+        }
+        .ulClass label {
+            display: inline;
+            padding-left: 2px;
+        }
+        .ulClass input {
+            margin-top: 0px;
+        }
     </style>
 </head>
 
@@ -373,10 +421,29 @@
             </div>
             <!--/.well -->
         </div>
+        <div id="panorama" class="panorama" style="float:left;display:none;width:35%"></div>
         <!--/span-->
         <div id="map_canvas">
         </div>
         <div id="refreshText"></div>
+        <div class="otherControl">
+            <!-- <div id="address"> -->
+            
+            <input id="lose_addr" class="input-medium" type="text" style="margin-bottom:0px;font-size:12px;display: none" data-provide="typeahead" data-items="5" autocomplete="off" data-source=""
+                placeholder="搜地点" data-i18n="[placeholder]customer.search">
+            <!-- </div> -->
+            
+            <button class="btn hide" type="button" id="nodeSearch" > <%= t('map.node_search')%></button>
+            <button class="btn hide" type="button" id="distanceTool" ><%= t('map.ranging')%></button>
+            <select id="map_type">
+                <option value="1"><%= t('map.baidu_map')%></option>
+                <option value="2"><%= t('map.google_map')%></option>
+                <option value="3"><%= t('map.gaode_map')%></option>
+            </select>
+        </div>
+        
+        <!-- <input id="distanceTool" type='button' class='btn' value='测距'/> -->
+        
         <!--/span-->
     </div>
     <!--/row-->
@@ -392,6 +459,10 @@
 
     <!-- 图像管理 -->
     <% include dialog/frmPicture.html %>
+
+    <% include dialog/frmMonitorLose.html %>
+    <% include dialog/frmMonitorLoseList.html %>
+    <% include dialog/frmVehicle.html %>
 
 </div>
 <!--/.fluid-container-->
@@ -436,6 +507,7 @@
 <script src="js/deviceSet.js"></script>
 <script src="js/idle.js"></script>
 <script src="js/picture.js"></script>
+
 
 </body>
 </html>

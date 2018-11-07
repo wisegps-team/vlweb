@@ -85,7 +85,7 @@
 
         .accordion-body {
             background-color: #fff;
-            max-height:276px;
+            max-height:290px;
             overflow-x: hidden;
             overflow-y: auto;
         }
@@ -182,22 +182,35 @@
              box-shadow: inset 0 0px 0px rgba(0, 0, 0, 0.1);
         }
 
-        .form-horizontal {
+        .tab-content .form-horizontal,
+        #collapseOne .form-horizontal {
             padding: 10px 0px;
             font-size: 12px;
         }
 
-        .form-horizontal .control-group {
+        .tab-content .form-horizontal .control-group,
+        #collapseOne .form-horizontal .control-group {
              margin-bottom: 5px;
         }
+        /* .form-horizontal .control-group {
+             margin-bottom: 5px;
+        } */
 
-        .form-horizontal .control-label {
+        .tab-content .form-horizontal .control-label,
+        #collapseOne .form-horizontal .control-label {
             width: auto;
             padding-left: 10px;
             padding-right: 20px;
             font-size: inherit;
             min-width: 55px;
         }
+        /* .form-horizontal .control-label {
+            width: auto;
+            padding-left: 10px;
+            padding-right: 20px;
+            font-size: inherit;
+            min-width: 55px;
+        } */
 
         #info .form-horizontal .stat .control-label {
             width: 50px;
@@ -222,7 +235,8 @@
             margin-bottom: 5px;
         }
 
-        .form-horizontal .control-value {
+         .tab-content .form-horizontal .control-value,
+         #collapseOne .form-horizontal .control-value{
             width: auto;
             padding-top: 5px;
             padding-left: 10px;
@@ -230,13 +244,15 @@
             font-size: inherit;
         }
 
-        .form-horizontal .controls {
+        .tab-content .form-horizontal .controls,
+        #collapseOne .form-horizontal .controls {
             margin-left: 0px;
             font-size: inherit;
             line-height: 30px;
         }
-
-        .form-horizontal .controls .checkbox{
+        
+        .tab-content .form-horizontal .controls .checkbox,
+        #collapseOne .form-horizontal .controls .checkbox{
             font-size: inherit;
             vertical-align: middle;
             width: auto;
@@ -244,23 +260,26 @@
             margin-bottom: 3px;
         }
 
-        .form-horizontal .controls span{
+        .tab-content .form-horizontal .controls span,
+        #collapseOne .form-horizontal .controls span{
             font-size: inherit;
             vertical-align: middle;
             width: auto;
             padding: 2px;
         }
 
-        .form-horizontal .controls input {
+        .tab-content .form-horizontal .controls input,
+        #collapseOne .form-horizontal .controls input {
             font-size: inherit;
             width: calc(100% - 110px);
         }
 
-        .form-horizontal .controls .date {
+        .tab-content .form-horizontal .controls .date,
+        #collapseOne .form-horizontal .controls .date {
             width: calc(100% - 100px);
         }
-
-        .form-horizontal .controls .date input {
+        .tab-content .form-horizontal .controls .date input,
+        #collapseOne .form-horizontal .controls .date input {
             font-size: inherit;
             width: calc(100% - 40px);
         }
@@ -343,6 +362,35 @@
         .btn {
             margin-left: 5px;
         }
+        .br6 {
+            border-radius: 6px;
+        }
+        .otherControl {
+            position: absolute;
+            top: 50px;
+            right: 164px;
+            display: none;
+        }
+        #map_type {
+            margin: 0;
+            padding: 0;
+            width: 102px;
+        }
+        #play_info {
+            overflow: auto;
+        }
+        .controls .checkbox {
+            min-height: auto;
+        }
+        .isFiltering {
+            position: absolute;
+            left: 83px;
+            top: 18px;
+        }
+        #collapseOne .form-horizontal .mb14{
+            margin-bottom: 20px;
+            position: relative;
+        }
     </style>
 </head>
 
@@ -377,6 +425,7 @@
                                             <input id="name" name="name" type="text" placeholder="<%= t('vehicle.select_vehicle') %>" class="input" value="<%= vehicle.name || '' %>"  data-i18n="[placeholder]vehicle.select_vehicle">
                                             <input id="did" name="did" type="hidden" value="<%= vehicle.did || '' %>">
                                             <input id="workType" name="workType" type="hidden" value="<%= vehicle.workType || 0 %>">
+                                            <input id="objectType" name="objectType" type="hidden" value="<%= vehicle.objectType || 0 %>">
                                         </div>
                                     </div>
                                     <div class="control-group">
@@ -419,7 +468,7 @@
                                             <input id="playbackProgress" data-slider-id='playbackProgress' type="text" data-slider-min="1" data-slider-max="100" data-slider-handle="round" data-slider-tooltip="hide" data-slider-step="1" data-slider-value="0"/>
                                         </div>
                                     </div>
-                                    <div class="control-group">
+                                    <div class="control-group mb14" >
                                         <!-- Text input-->
                                         <label class="control-label" for="speed" data-i18n="playback.display_setting"><%= t('playback.display_setting') %></label>
 
@@ -427,8 +476,16 @@
                                             <input class="checkbox" type="checkbox" id="chkLine"><span data-i18n="playback.track_line"><%= t('playback.track_line') %></span>
                                             <input class="checkbox" type="checkbox" id="chkPoint"><span data-i18n="playback.track_point"><%= t('playback.track_point') %></span>
                                             <input class="checkbox" type="checkbox" id="chkIdle"><span data-i18n="playback.idle"><%= t('playback.idle') %></span>
+                                            <span class="isFiltering"><input class="checkbox" type="checkbox" id="isFiltering"><span data-i18n="playback.idle"><%= t('map.filter_point') %></span></span>
                                         </div>
                                     </div>
+                                    <!-- <div class="control-group">
+                                        <label class="control-label" for="speed" data-i18n="playback.display_setting"></label>
+
+                                        <div class="controls">
+                                             <input class="checkbox" type="checkbox" id="isFiltering"><span data-i18n="playback.idle">过滤静止点</span>
+                                        </div>
+                                    </div> -->
                                     <div class="control-group button-bar">
                                         <!-- Text input-->
                                         <div class="pull-left waiting">
@@ -460,7 +517,7 @@
                 <div class="tab-content">
                     <div class="tab-pane" id="info">
                         <div class="empty" data-i18n="playback.no_data"><%= t('playback.no_data') %></div>
-                        <div class="form-horizontal data">
+                        <div class="form-horizontal data" id="play_info">
                             <!--<div class="control-group stat">-->
                                 <!--&lt;!&ndash; Text input&ndash;&gt;-->
                                 <!--<label class="control-label">行驶里程: </label>-->
@@ -567,8 +624,19 @@
             </div>
             <!--/.well -->
         </div>
+        <div id="panorama" class="panorama" style="float:left;display:none;width:35%"></div>
         <!--/span-->
         <div id="map_canvas">
+        </div>
+        <div class="otherControl">
+            <input id="lose_addr" class="input-medium" type="text" style="margin-bottom:0px;font-size:12px;display: none" data-provide="typeahead" data-items="5" autocomplete="off" data-source=""
+                placeholder="搜地点" data-i18n="[placeholder]customer.search">
+            <button class="btn hide" type="button" id="distanceTool" ><%= t('map.ranging')%></button>
+            <select id="map_type">
+                <option value="1"><%= t('map.baidu_map')%></option>
+                <option value="2"><%= t('map.google_map')%></option>
+                <option value="3"><%= t('map.gaode_map')%></option>
+            </select>
         </div>
         <!--/span-->
     </div>
@@ -625,6 +693,7 @@
 <script src="js/playback.js"></script>
 <script src="js/idle.js"></script>
 <script src="js/datepicker-zh-CN.js"></script>
+<!-- <script src="js/panoramaCtrl.js"></script> -->
 
 </body>
 </html>

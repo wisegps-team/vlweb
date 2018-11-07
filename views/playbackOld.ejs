@@ -50,7 +50,7 @@
         var tbHtml = '<table width="100%" cellpadding="0" cellspacing="0" border="0" id="DataTable" class="hover stripe display">\
                     <thead>\
                       <tr class="tops">\
-			           <th width="10%">定位时间</th><th width="10%">接收时间</th><th width="6%">速度</th><th width="6%">方向</th><th width="6%">里程</th><th width="10%">车辆状态</th><th width="5%">启动</th><th width="6%">经度</th><th width="6%">纬度</th><th class="lonUpdate">位置</th>\
+			           <th width="10%">定位时间</th><th width="10%">接收时间</th><th width="6%">速度</th><th width="6%">方向</th><th width="6%">里程</th><th width="10%">目标状态</th><th width="5%">启动</th><th width="6%">经度</th><th width="6%">纬度</th><th class="lonUpdate">位置</th>\
                      </tr>\
                    </thead><tbody></tbody></table>';
         var t = null;
@@ -149,7 +149,7 @@
             var OverspeedSetID = $("#txtSpeed"), slider_sp = $("#slider-Speed");
             Slider_Extend(slider_sp, OverspeedSetID, obj, "slider_sp", "paly");
 
-            // 获取车辆历史数据，用于车辆回放
+            // 获取目标历史数据，用于目标回放
             $("#start_PlayBack").on('click', function () {
                 if (ajax_request == false) {
                     if (isHold) {
@@ -186,7 +186,7 @@
             });
 
         });
-        // 获取车辆历史数据，用于车辆回放
+        // 获取目标历史数据，用于目标回放
 
         var LastTime, HistoryJson, txtSpeed = $("#txtSpeed");
         var p = 0, j = 1;
@@ -278,10 +278,10 @@
             ajax_function(playBackObj);
         }
 
-        //根据id找到车辆信息后开始填充数据
+        //根据id找到目标信息后开始填充数据
         var getMyCar_success = function playBack_success(json) {
             addmyCar = json;
-            //新增批量车辆
+            //新增批量目标
             var vehicles = [];
             if (addmyCar != null) {
                 if (addmyCar.active_gps_data.gps_flag % 2 == 1) {
@@ -294,7 +294,7 @@
         }
 
         var getMyCar_error = function getMyCar_error(json) {
-            alert("加载车辆数据失败");
+            alert("加载目标数据失败");
         }
 
         var addRow = function (gps_time, rcv_time, speed, direct, mileage, status, acc, lon, lat) {
@@ -322,7 +322,7 @@
         }
 
 
-        // 获取车辆历史数据，用于车辆回放
+        // 获取目标历史数据，用于目标回放
         var playBack_success = function playBack_success(json) {
             ajax_request = false;
             _VerifMsg.hide();
@@ -385,7 +385,7 @@
                     playinfo(hc);
                 } else {
                     endplay();
-                    $("#_VerifMsg").text("该车辆没有可供回放的数据!");
+                    $("#_VerifMsg").text("该目标没有可供回放的数据!");
                     $("#_VerifMsg").show();
                 }
             }
@@ -694,7 +694,7 @@
                                                 <table cellpadding="0" cellspacing="0" border="0">
                                                     <tr>
                                                         <td width="72" align="right" style="color: Blue">
-                                                            车辆状态:
+                                                            目标状态:
                                                         </td>
                                                         <td align="left">
                                                             <span id="carStatus"/>
