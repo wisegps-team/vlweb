@@ -85,7 +85,7 @@ var getRole = function(uid, callback){
     })
 };
 
-// 车辆更换所属用户
+// 目标更换所属用户
 var customerChangeParent = function(obj_id, change_cust_id){
     var query_json = {
         objectId: obj_id

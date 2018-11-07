@@ -113,7 +113,7 @@ var infoSuccess = function (json) {
     });
 };
 
-// 初始化车辆信息窗体
+// 初始化目标信息窗体
 var initFrm = function (title, flag, name, remark, createdAt) {
     var pageTree = $.fn.zTree.getZTreeObj("pageTree");
     pageTree.checkAllNodes(false);
@@ -269,7 +269,7 @@ var addSuccess = function (json) {
     }
 };
 
-// 修改车辆
+// 修改目标
 var _edit = function () {
     var name = $("#name").val();
     var remark = $("#remark").val();
@@ -355,7 +355,7 @@ var editSuccess = function (json) {
     }
 };
 
-// 新增车辆
+// 新增目标
 var _delete = function (id) {
     var query_json = {
         objectId: id

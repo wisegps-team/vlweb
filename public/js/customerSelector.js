@@ -146,7 +146,7 @@ customerSelector.prototype.getData = function(){
         //     open: true,
         //     id: $.cookie('dealer_id'),
         //     pId: 0,
-        //     name: '我的车辆',
+        //     name: '我的目标',
         //     icon: '/img/customer.png'
         // });
         // if($.cookie('dealer_type') == 1 || $.cookie('dealer_type') == 11){

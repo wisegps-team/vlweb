@@ -63,6 +63,9 @@ function windowResize() {
 var _report;
 
 var makeReport = function (type, uid, vid) {
+    // $('#toolbar .row-fluid:first').show();
+    $('#customer_name')
+    $('#export').hide()
     switch (type) {
         case 1: //日统计表
             // 创建日统计表表格
@@ -176,7 +179,8 @@ var makeReport = function (type, uid, vid) {
                             json.data[j].alert4 = s.alertTotal ? s.alertTotal[IOT_ALERT.ALERT_LOWPOWER.toString()] || 0 : 0;
                             json.data[j].alert5 = s.alertTotal ? s.alertTotal[IOT_ALERT.ALERT_CUTPOWER.toString()] || 0 : 0;
                         } else {
-                            json.data[j].day = yesterday.format('yyyy-MM-dd');
+                            // json.data[j].day = yesterday.format('yyyy-MM-dd');
+                            json.data[j].day = new Date(startTime).format('yyyy-MM-dd')
                             json.data[j].vehicleName = json.data[j].vehicleName || json.data[j].did;
                             json.data[j].distance = 0;
                             json.data[j].alert1 = 0;
@@ -434,7 +438,6 @@ var makeReport = function (type, uid, vid) {
                 gpsTime: startTime + '@' + endTime,
                 map: 'BAIDU'
             };
-
             _report = new _dataTable(div, '_iotGpsData', fields, query, 'gpsTime', $('#vehicleKey'), 'gpsTime', buttons, uButtons);
             _report.createHeader();
             var speedFunction = function () {
@@ -446,10 +449,14 @@ var makeReport = function (type, uid, vid) {
             _report.sFields = 'gpsTime,rcvTime,lon,lat,location,mileage,speed,direct,status,alerts'; //重新设置初始查询返回字段
             _report.setExportFields('gpsTime,rcvTime,lon,lat,location,mileage,speed,direct,status,alerts');
             _report.setExportDisplays('d#d#f6#f6#s#' + mileageFunction.toString() + '#' + speedFunction.toString() + '#s#s');
+
+            // console.log(exportObj)
             if (_did === '') return;
+
             _report.query(query, function (json) {
                 // 对数据进行后置处理
                 updateLoc();
+
             });
             break;
         case 3: //打卡详情
@@ -525,7 +532,7 @@ var makeReport = function (type, uid, vid) {
                 updateLoc();
             });
             break;
-            case 5:
+        case 5: //启动报表
             var fields = [
                 {
                     title: i18next.t('monitor.run_time'),
@@ -666,7 +673,7 @@ var makeReport = function (type, uid, vid) {
                 updateLoc();
             });
             break;
-        case 6:
+        case 6: //停留报表
             var fields = [
                 {
                     title: i18next.t('monitor.acc_off_time'),
@@ -786,10 +793,510 @@ var makeReport = function (type, uid, vid) {
                 updateLoc();
             });
             break;
+        case 7: //收入统计
+            // $('#toolbar .row-fluid:first').hide();
+            var fields = [
+                {
+                    title: i18next.t("monitor.date"),
+                    width: '100px',
+                    name: 'date',
+                    className: 'center',
+                    display: 'TextBox'
+                },
+                {
+                    title: i18next.t("report.income"),
+                    width: '100px',
+                    name: 'total',
+                    className: 'center',
+                    display: 'UserDefined',
+                    render: function (obj) {
+                        var data = obj.aData ? obj.aData : obj;
+                        return data.total.toFixed(2);
+                    }
+                }
+            ];
+            var buttons = {
+                show: false //是否显示列表按钮
+            };
+            var uButtons = [];
+            var div = $('#list');
+            var query = {
+                uid: uid,
+            };
+
+            _report = new _dataTable(div, '', fields, query, 'vehicleName', $('#vehicleKey'), 'vehicleName', buttons, uButtons);
+            _report.createHeader();
+            _report.sFields = 'date,total'; //重新设置初始查询返回字段
+            _report.query(query, function (json) {
+                // 对数据进行后置处理
+            }, function (json, callback) {
+
+                var startTime = $('#startTime').val();
+                var endTime = $('#endTime').val();
+
+                var auth_code = $.cookie('auth_code');
+                var dealer_id = $.cookie('dealer_id')
+
+                wistorm_api.getBillTotal(dealer_id, startTime, endTime, json.page_no, json.page_count, auth_code, function (stat) {
+                    json.total = stat.total
+                    json.iTotalRecords = stat.total;
+                    json.iTotalDisplayRecords = stat.total;
+                    json.aaData = stat.data;
+                    json.data = stat.data;
+                    json.status_code = stat.status_code;
+                    callback(json);
+                });
+            });
+            break;
+        case 8: //会员使用统计
+            var fields = [
+                {
+                    title: i18next.t('member.name'),
+                    width: '100px',
+                    name: 'name',
+                    className: 'center',
+                    display: 'TextBox'
+                },
+                {
+                    title:  i18next.t('report.total_amount'),
+                    width: '100px',
+                    name: 'amount',
+                    className: 'center',
+                    display: 'UserDefined',
+                    render: function (obj) {
+                        var data = obj.aData ? obj.aData : obj;
+                        return data.amount.toFixed(2);
+                    }
+                },
+                {
+                    title: i18next.t('report.total_usage'),
+                    width: '80px',
+                    name: 'count',
+                    className: 'center',
+                    display: 'TextBox'
+                }
+            ];
+
+            var buttons = {
+                show: false //是否显示列表按钮
+            };
+            var uButtons = [];
+            var div = $('#list');
+            var query = {
+                parentId: uid,
+                custType: 14
+            };
+
+            _report = new _dataTable(div, 'customer', fields, query, 'vehicleName', $('#vehicleKey'), 'vehicleName', buttons, uButtons);
+            _report.createHeader();
+            _report.sFields = ''; //重新设置初始查询返回字段
+            _report.query(query, function (json) {
+                // 对数据进行后置处理
+            }, function (json, callback) {
+                var _creator = [];
+                json.data.forEach(ele => _creator.push(ele.uid))
+                var startTime = $('#startTime').val();
+                var endTime = $('#endTime').val();
+                var query_json = {
+                    createdAt: startTime + "@" + endTime,
+                    creator: _creator.join('|')
+                };
+
+                var group = {
+                    _id: { creator: "$creator" },
+                    amount: { $sum: "$amount" },
+                    count: { $sum: 1 }
+                };
+                var sorts = '_id.creator';
+                var auth_code = $.cookie('auth_code');
+                wistorm_api._aggr("_iotTrip", query_json, group, sorts, 1, -1, auth_code, function (obj) {
+                    console.log(JSON.stringify(obj));
+                    json.data.forEach(e => {
+                        e.amount = 0;
+                        e.count = 0
+                        if (obj.data.length) {
+                            obj.data.forEach(ele => {
+                                if (e.uid == ele._id.creator) {
+                                    e.amount = ele.amount;
+                                    e.count = ele.count
+                                }
+                            })
+                        }
+                    })
+                    callback(json);
+                });
+            });
+            break;
+        case 9: //会员收支明细
+
+            var _billType = { 1: "交易", 2: "充值", 3: "扣费", 4: "体现", 5: "退款", 6: "手续费", 7: "充押金", 8: "退押金", 9: "购买游戏币", 10: "商户分佣", 11: "服务费分成" };
+            var memberUid = memberOption[$('#member').val()] || '';
+            var fields = [
+                {
+                    title: i18next.t('report.trading_hours'),
+                    width: '160px',
+                    name: 'createdAt',
+                    className: 'center',
+                    display: 'UserDefined',
+                    render: function (obj) {
+                        var data = obj.aData ? obj.aData : obj;
+                        return new Date(data.createdAt).format('yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+                {
+                    title: i18next.t('report.orderId'),
+                    width: '100px',
+                    name: 'oid',
+                    className: 'center',
+                    display: 'TextBox'
+                },
+                {
+                    title: i18next.t('report.available_amount'),
+                    width: '100px',
+                    name: 'balance',
+                    className: 'center',
+                    display: 'UserDefined',
+                    render: function (obj) {
+                        var data = obj.aData ? obj.aData : obj;
+                        return data.balance.toFixed(2);
+                    }
+                },
+                {
+                    title: i18next.t('report.trading_amount'),
+                    width: '100px',
+                    name: 'amount',
+                    className: 'center',
+                    display: 'UserDefined',
+                    render: function (obj) {
+                        var data = obj.aData ? obj.aData : obj;
+                        debugger;
+                        return data.amount.toFixed(2);
+                    }
+                },
+                {
+                    title: i18next.t('report.trading_remark'),
+                    width: '100px',
+                    name: 'remark',
+                    className: 'center',
+                    display: 'TextBox'
+                },
+                {
+                    title: i18next.t('report.trading_type'),
+                    width: '100px',
+                    name: 'billType',
+                    className: 'center',
+                    display: 'UserDefined',
+                    render: function (obj) {
+                        var data = obj.aData ? obj.aData : obj;
+                        return _billType[data.billType]
+                    }
+                },
+            ];
+            var buttons = {
+                show: false //是否显示列表按钮
+            };
+            var uButtons = [];
+            var div = $('#list');
+            var query = {
+                uid: uid,
+            };
+
+            _report = new _dataTable(div, '', fields, query, 'vehicleName', $('#vehicleKey'), 'vehicleName', buttons, uButtons);
+            _report.createHeader();
+            _report.sFields = 'date,total'; //重新设置初始查询返回字段
+            _report.query(query, function (json) {
+                // 对数据进行后置处理
+            }, function (json, callback) {
+
+                var startTime = $('#startTime').val();
+                var endTime = $('#endTime').val();
+
+                var auth_code = $.cookie('auth_code');
+                var dealer_id = $.cookie('dealer_id')
+                // debugger;
+                // console.log(uid)
+                if (memberUid) {
+                    wistorm_api.getBillList(memberUid, startTime, endTime, json.page_no, json.page_count, auth_code, function (stat) {
+                        json.total = stat.total
+                        json.iTotalRecords = stat.total;
+                        json.iTotalDisplayRecords = stat.total;
+                        json.aaData = stat.data;
+                        json.data = stat.data;
+                        json.status_code = stat.status_code;
+                        callback(json);
+                    });
+                } else {
+                    callback(json);
+                }
+
+            });
+            break;
+        case 10: //里程报表
+            var fields = [
+                {
+                    title: i18next.t("vehicle.name"),
+                    width: '100px',
+                    name: 'vehicleName',
+                    className: 'center',
+                    display: 'TextBox'
+                },
+                {
+                    title: "里程(km)",
+                    width: '100px',
+                    name: 'distance',
+                    className: 'center',
+                    display: 'TextBox'
+                },
+                // {
+                //     title: i18next.t("report.day_duration"),
+                //     width: '100px',
+                //     name: 'distance',
+                //     className: 'center',
+                //     display: 'TextBox'
+                // },
+            ];
+            var buttons = {
+                show: false //是否显示列表按钮
+            };
+            var uButtons = [];
+            var div = $('#list');
+            var query = {
+                uid: uid,
+                vehicleName: '<>null'
+            };
+
+            if (vid && vid > 0) {
+                query = {
+                    vehicleId: vid
+                }
+            }
+
+            _report = new _dataTable(div, '_iotDevice', fields, query, 'vehicleName', $('#vehicleKey'), 'vehicleName', buttons, uButtons);
+            _report.createHeader();
+            _report.sFields = 'did,vehicleName'; //重新设置初始查询返回字段
+            _report.query(query, function (json) {
+                // 对数据进行后置处理
+            }, function (json, callback) {
+                var dids = [];
+                for (var i = 0; i < json.data.length; i++) {
+                    if (json.data[i].did) {
+                        dids.push(json.data[i].did)
+                    }
+                    // dids += json.data[i].did + '|';
+                }
+                var startTime = $('#startTime').val();
+                var endTime = $('#endTime').val();
+                // var query = {
+                //     uid: uid,
+                //     did: dids,
+                //     endTime: startTime.format("yyyy-MM-dd") + "@" + endTime.format("yyyy-MM-dd"),
+                // };
+
+                var query = {
+                    did: dids.join('|'),
+                    gpsTime: startTime.format("yyyy-MM-dd") + "@" + endTime.format("yyyy-MM-dd"),
+                    mileage: '>0'
+                };
+                var group = {
+                    _id: { did: "$did" },
+                    max: { $max: "$mileage" },
+                    min: { $min: "$mileage" }
+                };
+
+                // var group = {
+                //     _id: { did: '$did' },
+                //     distance: { $sum: "$distance" },
+                // };
+                var sorts = '_id.did';
+                var auth_code = $.cookie('auth_code');
+                wistorm_api._aggr("_iotGpsData", query, group, sorts, 1, -1, auth_code, function (trip) {
+                    console.log(trip)
+                    var _trip = {};
+                    if (trip && trip.data.length > 0) {
+                        for (var i = 0; i < trip.data.length; i++) {
+                            _trip[trip.data[i]._id.did] = trip.data[i];
+                        }
+                    }
+
+                    for (var j = 0; j < json.data.length; j++) {
+                        var s = _trip[json.data[j].did];
+                        if (s) {
+                            json.data[j].vehicleName = json.data[j].vehicleName || json.data[j].did;
+                            json.data[j].distance = (s.max - s.min).toFixed(2);
+                        } else {
+                            json.data[j].vehicleName = json.data[j].vehicleName || json.data[j].did;
+                            json.data[j].distance = 0;
+                        }
+                    }
+                    callback(json);
+                });
+            });
+            break;
+        case 11: //收支明细
+
+            var _billType = { 1: "交易", 2: "充值", 3: "扣费", 4: "体现", 5: "退款", 6: "手续费", 7: "充押金", 8: "退押金", 9: "购买游戏币", 10: "商户分佣", 11: "服务费分成" };
+            var memberUid = memberOption[$('#member').val()] || '';
+            var fields = [
+                {
+                    title: i18next.t('report.trading_hours'),
+                    width: '160px',
+                    name: 'createdAt',
+                    className: 'center',
+                    display: 'UserDefined',
+                    render: function (obj) {
+                        var data = obj.aData ? obj.aData : obj;
+                        return new Date(data.createdAt).format('yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+                {
+                    title: i18next.t('report.orderId'),
+                    width: '100px',
+                    name: 'oid',
+                    className: 'center',
+                    display: 'TextBox'
+                },
+                {
+                    title: i18next.t('report.available_amount'),
+                    width: '100px',
+                    name: 'balance',
+                    className: 'center',
+                    display: 'UserDefined',
+                    render: function (obj) {
+                        var data = obj.aData ? obj.aData : obj;
+                        return data.balance.toFixed(2);
+                    }
+                },
+                {
+                    title: i18next.t('report.trading_amount'),
+                    width: '100px',
+                    name: 'amount',
+                    className: 'center',
+                    display: 'UserDefined',
+                    render: function (obj) {
+                        var data = obj.aData ? obj.aData : obj;
+                        debugger;
+                        return data.amount.toFixed(2);
+                    }
+                },
+                {
+                    title: i18next.t('report.trading_remark'),
+                    width: '100px',
+                    name: 'remark',
+                    className: 'center',
+                    display: 'TextBox'
+                },
+                {
+                    title: i18next.t('report.trading_type'),
+                    width: '100px',
+                    name: 'billType',
+                    className: 'center',
+                    display: 'UserDefined',
+                    render: function (obj) {
+                        var data = obj.aData ? obj.aData : obj;
+                        return _billType[data.billType]
+                    }
+                },
+            ];
+            var buttons = {
+                show: false //是否显示列表按钮
+            };
+            var uButtons = [];
+            var div = $('#list');
+            var query = {
+                uid: uid,
+            };
+
+            _report = new _dataTable(div, '', fields, query, 'vehicleName', $('#vehicleKey'), 'vehicleName', buttons, uButtons);
+            _report.createHeader();
+            _report.sFields = 'date,total'; //重新设置初始查询返回字段
+            _report.query(query, function (json) {
+                // 对数据进行后置处理
+            }, function (json, callback) {
+
+                var startTime = $('#startTime').val();
+                var endTime = $('#endTime').val();
+
+                var auth_code = $.cookie('auth_code');
+                var dealer_id = $.cookie('dealer_id')
+                // debugger;
+                // console.log(uid)
+                if (dealer_id) {
+                    wistorm_api.getBillList(dealer_id, startTime, endTime, json.page_no, json.page_count, auth_code, function (stat) {
+                        json.total = stat.total
+                        json.iTotalRecords = stat.total;
+                        json.iTotalDisplayRecords = stat.total;
+                        json.aaData = stat.data;
+                        json.data = stat.data;
+                        json.status_code = stat.status_code;
+                        callback(json);
+                    });
+                } else {
+                    callback(json);
+                }
+
+            });
+            break;
+        case 12:
+            // alert(12)
+            var startTime = $('#startTime').val();
+            var endTime = $('#endTime').val();
+            if (!_did || _did == '') return
+            console.log(_did);
+
+            var query = {
+                did: _did
+            }
+            wistorm_api._get('vehicle', query, 'did,fuelTankCapacity,name', auth_code, true, function (veh) {
+                console.log(veh);
+                var fuelTankCapacity = veh.data ? veh.data.fuelTankCapacity || 1 : 1;
+                var query_json = {
+                    did: _did,
+                    gpsTime: startTime.format("yyyy-MM-dd") + "@" + endTime.format("yyyy-MM-dd"),
+                    fuel: '>0'
+                }
+                wistorm_api._list('_iotGpsData', query_json, 'fuel,mileage', 'createdAt', 'createdAt', 0, 0, 1, -1, $.cookie('auth_code'), true, function (obj) {
+                    console.log(obj)
+                    if (obj.status_code === 0) {
+                        var dateArray = [];
+                        var mileArray = [];
+                        var fuelArray = [];
+                        for (var i = 0; i < obj.data.length; i++) {
+                            dateArray.push(new Date(obj.data[i].rcvTime).format('yyyy-MM-dd hh:mm:ss'));
+                            mileArray.push(obj.data[i].mileage.toFixed(2));
+                            fuelArray.push((obj.data[i].fuel * fuelTankCapacity).toFixed(2));
+                        }
+                        drawOilChart(dateArray, mileArray, fuelArray);
+                    }
+                })
+            })
+            // wistorm_api._get('vehicle',{d})
+            // wistorm_api._list('_iotGpsData', {did:'63074726924',gpsTime: startTime.format("yyyy-MM-dd") + "@" + endTime.format("yyyy-MM-dd")}, 'fuel,mileage', 'createdAt', 'createdAt', 0, 0, 1, -1, $.cookie('auth_code'), true, function (obj) {
+            //     console.log(obj)
+            // })
+            break;
         default:
             break;
     }
 };
+
+var memberOption = {};
+var getMember = function (uid) {
+    var query = {
+        parentId: _uid,
+        custType: 14
+    }
+    wistorm_api._list('customer', query, 'objectId,name,treePath,parentId,uid,custType', 'custType,name', '-createdAt', 0, 0, 1, -1, auth_code, true, function (json) {
+        var names = [];
+        if (json.total) {
+            $('#member').val(json.data[0].name)
+            json.data.forEach(ele => {
+                memberOption[ele.name] = ele.uid;
+                names.push(ele.name)
+            })
+            $('#member').typeahead({ source: names });
+        }
+    })
+}
 
 var reportType = 1;
 var activeReportType = null;
@@ -813,7 +1320,14 @@ $(document).ready(function () {
             $(this)[0].classList.add("active");
             activeReportType = $(this)[0];
             reportType = parseInt($(this).attr("id"));
+            // debugger;
             $('#alertPanel').css('display', reportType == 2 ? 'block' : 'none');
+            $('#customer_name').css('display', reportType == 7 || reportType == 8 || reportType == 9 || reportType == 11 ? 'none' : 'block');
+            $('#vehicle_name').css('display', reportType == 7 || reportType == 8 || reportType == 9 || reportType == 11 ? 'none' : 'block');
+            $('#member_name').css('display', reportType == 9 ? 'block' : 'none');
+            // $('#member_name').css('display', reportType == 9 ? 'block' : 'none');
+            reportType == 12 ? $('#oilCurve').show() : $('#oilCurve').hide();
+            reportType == 12 ? $('#list').hide() : $('#list').show();
             makeReport(reportType, _uid, _vid);
         });
 
@@ -824,6 +1338,10 @@ $(document).ready(function () {
         $('#query').click(function (e) {
             makeReport(reportType, _uid, _vid);
         });
+
+        $('#member').change(function (e) {
+            makeReport(reportType, memberOption[e.target.value])
+        })
 
         $('#export').click(function (e) {
             showLoading(true, i18next.t("report.exporting"), ICON_LOADING);
@@ -855,7 +1373,7 @@ $(document).ready(function () {
         });
         $('#endTime').val(today.format('yyyy-MM-dd 23:59:59'));
 
-        // 初始化车辆选择框
+        // 初始化目标选择框
         var ts = new vehicleSelector($('#vehicle'), function (vid, did, name) {
             makeReport(reportType, 0, vid);
             _vid = vid;
@@ -869,19 +1387,176 @@ $(document).ready(function () {
             makeReport(reportType, uid);
             _uid = uid;
         });
+        getMember(_uid)
         cs.init();
 
-        // 初始加载本级用户所有车辆数据
+        // 初始加载本级用户所有目标数据
         makeReport(reportType, _uid);
-
+        _navResize()
         clearInterval(rpId);
+        $(window).resize(function () {
+            _navResize();
+        })
     }, 100);
 });
 
 function _tableResize() {
-    // 修改车辆列表高度
+    // 修改目标列表高度
     var height = $(window).height() - 200;
     $('.dataTables_wrapper').css({ "height": height + "px" });
 }
 
+function _navResize() {
+    var height = $(window).height() - 80;
+    $('#leftNav').css({ "height": height + "px", "overflow": 'auto' });
+}
 
+// 加载目标状态曲线
+/**
+ * @param {[*]} dateArray
+ */
+var drawOilChart = function (dateArray, mileArray, fuelArray) {
+    // 基于准备好的dom，初始化echarts实例
+    statChart = echarts.init(document.getElementById('oilCurve'));
+
+    // 指定图表的配置项和数据
+    var option = {
+        backgroundColor: '#fff',
+        color: ['#5793f3', '#d14a61'],
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                animation: false,
+                label: {
+                    backgroundColor: '#0D4286'
+                }
+            }
+        },
+        toolbox: {
+            show: true,
+            feature: {
+                dataView: { show: true, readOnly: false },
+                magicType: { show: true, type: ['line', 'bar'] },
+                restore: { show: true },
+                saveAsImage: { show: true }
+            }
+        },
+        legend: {
+            left: 'center',
+            data: [i18next.t('summary.mileage'), i18next.t('report.oil')],
+            textStyle: {
+                color: "#000",
+                fontsize: 5
+            }
+        },
+        // dataZoom: [{
+        //     show: false,
+        //     realtime: true,
+        //     start: 0,
+        //     end: 5,
+        //     // backgroundColor:'#d'
+        //     textStyle: {
+        //         color: "#000"
+        //     }
+        // }, {
+        //     type: 'inside',
+        //     realtime: true,
+        //     start: 5,
+        //     end: 85
+        // }],
+        grid: {
+            show: true,
+            top: '24%',
+            left: '2%',
+            right: '1%',
+            bottom: '14%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            axisLine: {
+                lineStyle: {
+                    color: '#000'
+                }
+            },
+            axisLabel: { //调整x轴的lable
+                textStyle: {
+                    color: '#000'
+                }
+            },
+            splitLine: {
+                show: true
+            },
+            data: dateArray
+        },
+        yAxis: [{
+            boundaryGap: [0, '50%'],
+            axisLine: {
+                lineStyle: {
+                    color: '#000'
+                }
+            },
+            type: 'value',
+            name: i18next.t('summary.mileage') + '(km)',
+            position: 'left',
+            offset: 0,
+            splitNumber: 10,
+            axisLabel: {
+                formatter: '{value}',
+                textStyle: {
+                    color: '#000'
+                }
+            },
+            splitLine: {
+                show: false
+            },
+            min: function (value) {
+                return value.min - 10;
+            },
+            max: function (value) {
+                return value.max + 10;
+            }
+        }, {
+            boundaryGap: [0, '50%'],
+            axisLine: {
+                lineStyle: {
+                    color: '#000'
+                }
+            },
+            splitLine: {
+                show: false
+            },
+            type: 'value',
+            name: i18next.t('report.oil') + '(L)',
+            position: 'right',
+            axisLabel: {
+                formatter: '{value}'
+            },
+            min: function (value) {
+                return parseInt(value.min - 5);
+            },
+            max: function (value) {
+                return parseInt(value.max + 5);
+            }
+        }],
+        series: [{
+            name: i18next.t('summary.mileage'),
+            type: 'line',
+            // step: 'middle',
+            smooth: true,
+            data: mileArray,
+            yAxisIndex: 0
+        }, {
+            name: i18next.t('report.oil'),
+            type: 'line',
+            // step: 'start',
+            smooth: true,
+            data: fuelArray,
+            yAxisIndex: 1
+        }]
+    };
+
+    // 使用刚指定的配置项和数据显示图表。
+    statChart.setOption(option);
+};

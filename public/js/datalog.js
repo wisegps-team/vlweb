@@ -67,7 +67,7 @@ var exit_success = function exit_success(json) {
     location.href = "/";
 };
 
-// 车辆查询
+// 目标查询
 function getDataLogQuery() {
     var auth_code = $.cookie('auth_code');
     var page_no = 1;

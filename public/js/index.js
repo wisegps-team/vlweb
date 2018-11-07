@@ -73,7 +73,7 @@ $(document).ready(function () {
             customer_selected = $(this);
         }
 
-        //加载客户下的车辆
+        //加载客户下的目标
         cust_id = parseInt($(this).attr("cust_id"));
         parent_cust_id = parseInt($(this).attr("parent_cust_id"));
         tree_path = $(this).attr("tree_path");
@@ -105,7 +105,7 @@ $(document).ready(function () {
     $(document).on("click", "#vehicle_list .icon-remove", function () {
         obj_id = parseInt($(this).attr("obj_id"));
         obj_name = $(this).attr("obj_name");
-        if (CloseConfirm('你确认删除车辆[' + obj_name + ']吗？')) {
+        if (CloseConfirm('你确认删除目标[' + obj_name + ']吗？')) {
             vehicleDelete(obj_id);
         }
     });
@@ -197,7 +197,7 @@ $(document).ready(function () {
         var service_end_date = new Date();
         service_end_date = new Date(Date.parse(service_end_date) + (86400000 * 31));
         service_end_date = service_end_date.format("yyyy-MM-dd");
-        initFrmVehicle("新增车辆(所属用户: " + cust_name + ")", 1, "", "", "", "", service_end_date);
+        initFrmVehicle("新增目标(所属用户: " + cust_name + ")", 1, "", "", "", "", service_end_date);
         validator_vehicle.resetForm();
         $("#divVehicle").dialog("open");
     });
@@ -505,9 +505,9 @@ $(document).ready(function () {
                 }
             },
             messages:{
-                obj_name:{minlength:"车辆名称必须超过4位", required:"请输入车辆名称", remote:"车辆名称已存在"},
-                device_id:{minlength:"设备ID必须超过6位", required:"请输入设备ID", remote:"设备ID已被其他车辆绑定"},
-                sim:{rangelength:"SIM卡号必须为11到13位", required:"请输入SIM卡号", remote:"SIM卡号已被其他车辆使用"},
+                obj_name:{minlength:"目标名称必须超过4位", required:"请输入目标名称", remote:"目标名称已存在"},
+                device_id:{minlength:"设备ID必须超过6位", required:"请输入设备ID", remote:"设备ID已被其他目标绑定"},
+                sim:{rangelength:"SIM卡号必须为11到13位", required:"请输入SIM卡号", remote:"SIM卡号已被其他目标使用"},
                 serial:{remote:"终端条码已存在"}
             },
             highlight:function (element) {

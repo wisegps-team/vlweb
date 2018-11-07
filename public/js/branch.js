@@ -38,7 +38,7 @@ var branchInfoSuccess = function(json) {
     $("#divBranch").dialog("open");
 };
 
-// 初始化车辆信息窗体
+// 初始化目标信息窗体
 var initFrmBranch = function (title, flag, name, contact, tel, mobile, address, city, createdAt) {
     $("#divBranch").dialog("option", "title", title);
     branch_flag = flag;
@@ -170,7 +170,7 @@ var branchAddSuccess = function (json) {
     }
 };
 
-// 修改车辆
+// 修改目标
 var branchEdit = function () {
     var name = $("#name").val();
     var contact = $("#contact").val();

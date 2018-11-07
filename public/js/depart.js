@@ -506,7 +506,7 @@ var customerDelete = function(cust_id){
        if(obj.count > 0){
            _alert(i18next.t("depart.msg_have_depart"));
        }else{
-           //判断下属是否有车辆，如果有，不能删除用户
+           //判断下属是否有目标，如果有，不能删除用户
            var query_json = {
                objectId: cust_id
            };

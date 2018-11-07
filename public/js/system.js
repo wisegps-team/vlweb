@@ -16,17 +16,37 @@ function NewDate(str) {
     return date;
 }
 
+
+function preTime(s) {
+    var date = new Date();
+    var nowYear = date.getFullYear();
+    var nowMonth = date.getMonth();
+    var nowDate = date.getDate();
+
+    date.setMonth(nowMonth - s);
+    return date.format('yyyy-MM-dd')
+}
+
+function nextTime(s) {
+    var date = new Date();
+    var nowYear = date.getFullYear();
+    var nowMonth = date.getMonth();
+    var nowDate = date.getDate();
+    date.setMonth(nowMonth + s);
+    return date.format('yyyy-MM-dd')
+}
+
 Date.prototype.format = function (format) {
     var o =
-    {
-        "M+": this.getMonth() + 1, //month
-        "d+": this.getDate(),    //day
-        "h+": this.getHours(),   //hour
-        "m+": this.getMinutes(), //minute
-        "s+": this.getSeconds(), //second
-        "q+": Math.floor((this.getMonth() + 3) / 3),  //quarter
-        "S": this.getMilliseconds() //millisecond
-    }
+        {
+            "M+": this.getMonth() + 1, //month
+            "d+": this.getDate(),    //day
+            "h+": this.getHours(),   //hour
+            "m+": this.getMinutes(), //minute
+            "s+": this.getSeconds(), //second
+            "q+": Math.floor((this.getMonth() + 3) / 3),  //quarter
+            "S": this.getMilliseconds() //millisecond
+        }
     if (/(y+)/.test(format))
         format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
     for (var k in o)
@@ -36,9 +56,9 @@ Date.prototype.format = function (format) {
 };
 
 // 让表格记入加载状态
-var setLoading = function(name){
+var setLoading = function (name) {
     var col_span = $("#" + name + " thead tr th").length;
-    if(!$("#waiting").length > 0){
+    if (!$("#waiting").length > 0) {
         $("#" + name + " tbody").append('<tr><td colspan="' + col_span + '"><p style="text-align: center; padding-top: 5px"><img style="width:16px;height:16px" src="/img/waiting.gif" id="waiting"/> Loading...</p></td></tr>');
     }
 };
@@ -107,14 +127,14 @@ function CloseConfirm(Msg) {
 
 function msgShow(str, fade_out) {
     $("#err_msg").html(str);
-    if(fade_out){
+    if (fade_out) {
         $("#alert").show().fadeOut(fade_out);
-    }else{
+    } else {
         $("#alert").show();
     }
 }
 
-function loadStyles(url){
+function loadStyles(url) {
     var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.type = 'text/css';
@@ -122,7 +142,7 @@ function loadStyles(url){
     document.getElementsByTagName('head')[0].appendChild(link);
 }
 
-function loadScript(url){
+function loadScript(url) {
     var script = document.createElement('script');   // 创建script标签;
     script.type = 'text/javascript';          // 设置type属性;
     script.src = url;                 // 引入url;
@@ -152,7 +172,7 @@ function loadScript(url){
 //     }
 // }
 
-function clearLogin(){
+function clearLogin() {
     $.cookie('Login_auth_code', null);
     $.cookie('Login_tree_path', null);
     $.cookie('Login_cust_id', null);
@@ -268,7 +288,7 @@ function Slider_switch(Sliderfalg, txtID, txtValue, paly) {
 * createDOM
 */
 var diff = true;
-createDomObj = []; //上一次保存用户车辆数组
+createDomObj = []; //上一次保存用户目标数组
 function createDOM(obj, flag, ImgPath, mode) {
     var _createDomExtend = new createDomExtend();
     var flg, imgState, onLineSum = 0, offLineSum = 0;
@@ -344,7 +364,7 @@ function createDOM(obj, flag, ImgPath, mode) {
                     imgState = ImgPath.offLine
                 }
 
-                //创建用户车辆列表dom
+                //创建用户目标列表dom
                 var objnames = "";
                 if (obj[i]["obj_name"].length <= 9) {
                     objnames = obj[i]["obj_name"].trim();
@@ -612,7 +632,7 @@ function browsCss(ID, windowHeight) {
 function clearCookie() {
     var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
     if (keys) {
-        for (var i = keys.length; i--; )
+        for (var i = keys.length; i--;)
             document.cookie = keys[i] + '=0;expires=' + new Date(0).toUTCString()
     }
 }
@@ -837,116 +857,116 @@ _getDataTable.prototype = {
                         }
                     }
                 }
-    }
-    //样式操作
-    dataTableCss(page_no, pageNumberCount);
-},
-createPageNumber: function (pageNumberCount, page_no) {
-    var pageCount = "", pageJquery = "",
+        }
+        //样式操作
+        dataTableCss(page_no, pageNumberCount);
+    },
+    createPageNumber: function (pageNumberCount, page_no) {
+        var pageCount = "", pageJquery = "",
             upPage = "<input class='pageNumberInfo' type='button' id='upPage' value='上一页' title='上一页'/>",
             dowmPage = "<input class='pageNumberInfo' type='button' value='下一页' id='dowmPage'  title='下一页'/>";
-    omitPage = "<span id='omitPage' class='pageNumberInfo'>...</span>";
-    page.empty();
-    page.append(upPage);
-    if (pageNumberCount > 5) {
-        _sum = 5;
-        if (page_no < 5) {
-            for (var i = 1; i <= _sum; i++) {
-                pageCount += "<a class='pageNumberInfo' id='a_" + i + "' href=''>" + i + "</a>";
+        omitPage = "<span id='omitPage' class='pageNumberInfo'>...</span>";
+        page.empty();
+        page.append(upPage);
+        if (pageNumberCount > 5) {
+            _sum = 5;
+            if (page_no < 5) {
+                for (var i = 1; i <= _sum; i++) {
+                    pageCount += "<a class='pageNumberInfo' id='a_" + i + "' href=''>" + i + "</a>";
+                }
+            } else if (page_no + 5 > pageNumberCount) {
+                for (var i = pageNumberCount - 4; i <= pageNumberCount; i++) {
+                    pageCount += "<a class='pageNumberInfo' id='a_" + i + "' href=''>" + i + "</a>";
+                }
+            } else {
+                for (var i = page_no - 3; i <= page_no - 3 + 4; i++) {
+                    pageCount += "<a class='pageNumberInfo' id='a_" + i + "' href=''>" + i + "</a>";
+                }
             }
-        } else if (page_no + 5 > pageNumberCount) {
-            for (var i = pageNumberCount - 4; i <= pageNumberCount; i++) {
-                pageCount += "<a class='pageNumberInfo' id='a_" + i + "' href=''>" + i + "</a>";
-            }
-        } else {
-            for (var i = page_no - 3; i <= page_no - 3 + 4; i++) {
-                pageCount += "<a class='pageNumberInfo' id='a_" + i + "' href=''>" + i + "</a>";
-            }
+            page.append(pageCount);
+            page.append(omitPage);
         }
-        page.append(pageCount);
-        page.append(omitPage);
-    }
-    else {
-        for (var i = 1; i <= pageNumberCount; i++) {
-            pageCount += "<a class='pageNumberInfo' id='a_" + i + "' href=''>" + i + "</a>";
+        else {
+            for (var i = 1; i <= pageNumberCount; i++) {
+                pageCount += "<a class='pageNumberInfo' id='a_" + i + "' href=''>" + i + "</a>";
+            }
+            page.append(pageCount);
         }
-        page.append(pageCount);
-    }
-    pageJquery = "共  " + pageNumberCount + "  页到第 <input class='pageNumberInfo' placeholder='请输入' type='text' id='jumpto' name='jumpto' title='指定页码'/><input class='pageNumberInfo' type='button' value='确定' id='btnJquery' title='指定页码'/>";
-    page.append(pageJquery);
-    page.append(dowmPage);
-},
-btnCreatePageNumber: function (page_no) {
-    var i;
-    //获取最大值最小值 这里修改利用each获取 
-    var max = parseInt($("#page").children("a:last").text()), min = parseInt($("#page").children("a:first").text());
+        pageJquery = "共  " + pageNumberCount + "  页到第 <input class='pageNumberInfo' placeholder='请输入' type='text' id='jumpto' name='jumpto' title='指定页码'/><input class='pageNumberInfo' type='button' value='确定' id='btnJquery' title='指定页码'/>";
+        page.append(pageJquery);
+        page.append(dowmPage);
+    },
+    btnCreatePageNumber: function (page_no) {
+        var i;
+        //获取最大值最小值 这里修改利用each获取 
+        var max = parseInt($("#page").children("a:last").text()), min = parseInt($("#page").children("a:first").text());
 
-    var pageCount = "", pageJquery = "",
+        var pageCount = "", pageJquery = "",
             upPage = "<input class='pageNumberInfo' type='button' id='upPage' value='上一页' title='上一页'/>",
             dowmPage = "<input class='pageNumberInfo' type='button' value='下一页' id='dowmPage'  title='下一页'/>";
-    omitPage = "<span id='omitPage' class='pageNumberInfo'>...</span>";
-    if (page_no >= max) {
-        if (page_no == pageNumberCount) {
-            var statr = parseInt($("#page").children("a").length);
-            //点6情况
-            page.html("");
-            page.append(upPage);
-            for (var i = statr - 1; i >= 0; i--) {
-                pageCount += "<a class='pageNumberInfo' id='a_" + (page_no - i) + "' href=''>" + (page_no - i) + "</a>";
+        omitPage = "<span id='omitPage' class='pageNumberInfo'>...</span>";
+        if (page_no >= max) {
+            if (page_no == pageNumberCount) {
+                var statr = parseInt($("#page").children("a").length);
+                //点6情况
+                page.html("");
+                page.append(upPage);
+                for (var i = statr - 1; i >= 0; i--) {
+                    pageCount += "<a class='pageNumberInfo' id='a_" + (page_no - i) + "' href=''>" + (page_no - i) + "</a>";
+                }
+                page.append(pageCount);
+                page.append(omitPage);
+                pageJquery = "共  " + pageNumberCount + "  页到第 <input class='pageNumberInfo' placeholder='请输入' type='text' id='jumpto' name='jumpto' title='指定页码'/><input class='pageNumberInfo' type='button' value='确定' id='btnJquery' title='指定页码'/>";
+                page.append(pageJquery);
+                page.append(dowmPage);
+            } else {
+                page.html("");
+                page.append(upPage);
+                for (var i = 4; i >= 0; i--) {
+                    pageCount += "<a class='pageNumberInfo' id='a_" + (page_no - i + 1) + "' href=''>" + (page_no - i + 1) + "</a>";
+                }
+                page.append(pageCount);
+                page.append(omitPage);
+                pageJquery = "共  " + pageNumberCount + "  页到第 <input class='pageNumberInfo' placeholder='请输入' type='text' id='jumpto' name='jumpto' title='指定页码'/><input class='pageNumberInfo' type='button' value='确定' id='btnJquery' title='指定页码'/>";
+                page.append(pageJquery);
+                page.append(dowmPage);
             }
-            page.append(pageCount);
-            page.append(omitPage);
-            pageJquery = "共  " + pageNumberCount + "  页到第 <input class='pageNumberInfo' placeholder='请输入' type='text' id='jumpto' name='jumpto' title='指定页码'/><input class='pageNumberInfo' type='button' value='确定' id='btnJquery' title='指定页码'/>";
-            page.append(pageJquery);
-            page.append(dowmPage);
-        } else {
-            page.html("");
-            page.append(upPage);
-            for (var i = 4; i >= 0; i--) {
-                pageCount += "<a class='pageNumberInfo' id='a_" + (page_no - i + 1) + "' href=''>" + (page_no - i + 1) + "</a>";
-            }
-            page.append(pageCount);
-            page.append(omitPage);
-            pageJquery = "共  " + pageNumberCount + "  页到第 <input class='pageNumberInfo' placeholder='请输入' type='text' id='jumpto' name='jumpto' title='指定页码'/><input class='pageNumberInfo' type='button' value='确定' id='btnJquery' title='指定页码'/>";
-            page.append(pageJquery);
-            page.append(dowmPage);
-        }
 
-    } else if (page_no <= min) {
-        if (page_no == 1) {
-            page.html("");
-            page.append(upPage);
-            for (var i = 0; i <= 4; i++) {
-                pageCount += "<a class='pageNumberInfo' id='a_" + (parseInt(page_no) + i) + "' href=''>" + (parseInt(page_no) + i) + "</a>";
+        } else if (page_no <= min) {
+            if (page_no == 1) {
+                page.html("");
+                page.append(upPage);
+                for (var i = 0; i <= 4; i++) {
+                    pageCount += "<a class='pageNumberInfo' id='a_" + (parseInt(page_no) + i) + "' href=''>" + (parseInt(page_no) + i) + "</a>";
+                }
+                page.append(pageCount);
+                page.append(omitPage);
+                pageJquery = "共  " + pageNumberCount + "  页到第 <input class='pageNumberInfo' placeholder='请输入' type='text' id='jumpto' name='jumpto' title='指定页码'/><input class='pageNumberInfo' type='button' value='确定' id='btnJquery' title='指定页码'/>";
+                page.append(pageJquery);
+                page.append(dowmPage);
+            } else {
+                page.html("");
+                page.append(upPage);
+                for (var i = 0; i <= 4; i++) {
+                    pageCount += "<a class='pageNumberInfo' id='a_" + (page_no - 1 + i) + "' href=''>" + (page_no - 1 + i) + "</a>";
+                }
+                page.append(pageCount);
+                page.append(omitPage);
+                pageJquery = "共  " + pageNumberCount + "  页到第 <input class='pageNumberInfo' placeholder='请输入' type='text' id='jumpto' name='jumpto' title='指定页码'/><input class='pageNumberInfo' type='button' value='确定' id='btnJquery' title='指定页码'/>";
+                page.append(pageJquery);
+                page.append(dowmPage);
             }
-            page.append(pageCount);
-            page.append(omitPage);
-            pageJquery = "共  " + pageNumberCount + "  页到第 <input class='pageNumberInfo' placeholder='请输入' type='text' id='jumpto' name='jumpto' title='指定页码'/><input class='pageNumberInfo' type='button' value='确定' id='btnJquery' title='指定页码'/>";
-            page.append(pageJquery);
-            page.append(dowmPage);
-        } else {
-            page.html("");
-            page.append(upPage);
-            for (var i = 0; i <= 4; i++) {
-                pageCount += "<a class='pageNumberInfo' id='a_" + (page_no - 1 + i) + "' href=''>" + (page_no - 1 + i) + "</a>";
-            }
-            page.append(pageCount);
-            page.append(omitPage);
-            pageJquery = "共  " + pageNumberCount + "  页到第 <input class='pageNumberInfo' placeholder='请输入' type='text' id='jumpto' name='jumpto' title='指定页码'/><input class='pageNumberInfo' type='button' value='确定' id='btnJquery' title='指定页码'/>";
-            page.append(pageJquery);
-            page.append(dowmPage);
         }
+        //样式操作
+        dataTableCss(page_no, pageNumberCount);
+    },
+    createDateMenu: function (Menu) {
+        $(".tops").contextMenu({
+            menu: Menu
+        }, function (action, el, pos) {
+            //action 是点击对应菜单名称
+        });
     }
-    //样式操作
-    dataTableCss(page_no, pageNumberCount);
-},
-createDateMenu: function (Menu) {
-    $(".tops").contextMenu({
-        menu: Menu
-    }, function (action, el, pos) {
-        //action 是点击对应菜单名称
-    });
-}
 }
 
 /*
@@ -1046,96 +1066,96 @@ var OnError = function OnError(XMLHttpRequest, textStatus, errorThrown) {
 */
 function _gmap() {
     this.divContent = '<div  style="height:150px;overflow:hidden;"><div>' +
-                '<table cellpadding="0" cellspacing="0" border="0">' +
-                '<div>添加兴趣点</div>' +
-                '<tr>' +
-                '<td style="height:35px;" align="right">名称: </td>' +
-                '<td align="left"><input style="width:140px;" id="poi_name" type="text"><img src="../../images/red_star.gif" align="absmiddle" /></td>' +
-                '</tr>' +
-                '<tr>' +
-                '<td style="height:35px;" align="right">类别: </td>' +
-                '<td align="left"><select id ="poi_type" style="width:140px;"><option value="1">一般建筑</option><option value="2">金融机构</option><option value="3">休闲娱乐</option><option value="4">加油站</option><option value="5">医疗机构</option><option value="6">科研教育</option><option value="7">企事业单位</option><option value="8">收费站</option></select></td>' +
-                '</tr>' +
-                '<tr>' +
-                '<td style="height:35px;" align="right">备注: </td>' +
-                '<td align="left"><input style="width:140px;" id="remark" type="text"></td>' +
-                '</tr>' +
-                '</table>' +
-                '</div>' +
-                '<div style="text-align: center"><input id="add_hobbySave" type="image" src="../../images/btn_save.jpg" border="0" align="absmiddle" /> <input id="add_hobbyClose" type="image" src="../../images/btn_cancel.jpg" border="0" align="absmiddle" /></div>' +
-                '</div>' +
-                '</div></div>';
+        '<table cellpadding="0" cellspacing="0" border="0">' +
+        '<div>添加兴趣点</div>' +
+        '<tr>' +
+        '<td style="height:35px;" align="right">名称: </td>' +
+        '<td align="left"><input style="width:140px;" id="poi_name" type="text"><img src="../../images/red_star.gif" align="absmiddle" /></td>' +
+        '</tr>' +
+        '<tr>' +
+        '<td style="height:35px;" align="right">类别: </td>' +
+        '<td align="left"><select id ="poi_type" style="width:140px;"><option value="1">一般建筑</option><option value="2">金融机构</option><option value="3">休闲娱乐</option><option value="4">加油站</option><option value="5">医疗机构</option><option value="6">科研教育</option><option value="7">企事业单位</option><option value="8">收费站</option></select></td>' +
+        '</tr>' +
+        '<tr>' +
+        '<td style="height:35px;" align="right">备注: </td>' +
+        '<td align="left"><input style="width:140px;" id="remark" type="text"></td>' +
+        '</tr>' +
+        '</table>' +
+        '</div>' +
+        '<div style="text-align: center"><input id="add_hobbySave" type="image" src="../../images/btn_save.jpg" border="0" align="absmiddle" /> <input id="add_hobbyClose" type="image" src="../../images/btn_cancel.jpg" border="0" align="absmiddle" /></div>' +
+        '</div>' +
+        '</div></div>';
 }
 
 _gmap.prototype = {
     editContent: function (thisID) {
         var divContent = '<div style="height:150px;overflow:hidden;"><div>' +
-                '<table cellpadding="0" cellspacing="0" border="0">' +
-	            '<div>编辑兴趣点</div>' +
-                '<tr>' +
-		        '<td style="height:35px;" align="right">名称: </td>' +
-		        '<td align="left" style="width:140px"><input style="width:130px;" id="poi_name" type="text" value=' + thisID.poi_name + '><img src="../../Content/images/red_star.gif" align="absmiddle" /></td>' +
-		        '</tr>' +
-		        '<tr>' +
-		        '<td style="height:35px;" align="right">类别: </td>' +
-		        '<td align="left"><select id ="poi_type" style="width:130px;"><option value="1">一般建筑</option><option value="2">金融机构</option><option value="3">休闲娱乐</option><option value="4">加油站</option><option value="5">医疗机构</option><option value="6">科研教育</option><option value="7">企事业单位</option><option value="8">收费站</option></select></td>' +
-		        '</tr>' +
-	            '<tr>' +
-		        '<td  style="height:35px;" align="right">备注: </td>' +
-		        '<td align="left"><input style="width:130px;"  id="remark" value=' + thisID.remark + ' type="text"></td>' +
-		        '</tr>' +
-		        '</table>' +
-		        '</div>' +
-		        '<div style="text-align: center"><input id="edit_hobbySave" type="image" src="../../images/btn_save.jpg" border="0" align="absmiddle"/> <input id="edit_hobbyClose" type="image" src="../../images/btn_cancel.jpg" border="0" align="absmiddle" /></div>' +
-				'</div>' +
-			    '</div></div>';
+            '<table cellpadding="0" cellspacing="0" border="0">' +
+            '<div>编辑兴趣点</div>' +
+            '<tr>' +
+            '<td style="height:35px;" align="right">名称: </td>' +
+            '<td align="left" style="width:140px"><input style="width:130px;" id="poi_name" type="text" value=' + thisID.poi_name + '><img src="../../Content/images/red_star.gif" align="absmiddle" /></td>' +
+            '</tr>' +
+            '<tr>' +
+            '<td style="height:35px;" align="right">类别: </td>' +
+            '<td align="left"><select id ="poi_type" style="width:130px;"><option value="1">一般建筑</option><option value="2">金融机构</option><option value="3">休闲娱乐</option><option value="4">加油站</option><option value="5">医疗机构</option><option value="6">科研教育</option><option value="7">企事业单位</option><option value="8">收费站</option></select></td>' +
+            '</tr>' +
+            '<tr>' +
+            '<td  style="height:35px;" align="right">备注: </td>' +
+            '<td align="left"><input style="width:130px;"  id="remark" value=' + thisID.remark + ' type="text"></td>' +
+            '</tr>' +
+            '</table>' +
+            '</div>' +
+            '<div style="text-align: center"><input id="edit_hobbySave" type="image" src="../../images/btn_save.jpg" border="0" align="absmiddle"/> <input id="edit_hobbyClose" type="image" src="../../images/btn_cancel.jpg" border="0" align="absmiddle" /></div>' +
+            '</div>' +
+            '</div></div>';
 
         $("#poi_type option[value='" + thisID.poi_type + "']").attr("selected", "selected");
         return divContent;
 
     }, addFenceContent: function () {
         var divContent = '<div style="height:150px;overflow:hidden;"><div>' +
-                '<table cellpadding="0" cellspacing="0" border="0">' +
-            	'<div>添加围栏</div>' +
-                '<tr>' +
-            	'<td style="height:35px;" align="right">名称: </td>' +
-            	'<td align="left" style="width:140px;"><input style="width:130px" id="poi_name" type="text"><img src="../../images/red_star.gif" align="absmiddle" /></td>' +
-            	'</tr>' +
-            	'<tr>' +
-            	'<td style="height:35px;" align="right">范围(米): </td>' +
-            	'<td align="left"><input style="width:130px" id="width" type="text"><img src="../../images/red_star.gif" align="absmiddle" /></td>' +
-            	'</tr>' +
-            	'<tr>' +
-            	'<td style="height:35px;" align="right">备注: </td>' +
-            	'<td align="left"><input style="width:130px" id="remark" type="text"></td>' +
-            	'</tr>' +
-            	'</table>' +
-            	'</div>' +
-            	'<div style="text-align: center"><input id="add_fenceSave" type="image" src="../../images/btn_save.jpg" border="0" align="absmiddle"/> <input id="add_fenceColse" type="image" src="../../images/btn_cancel.jpg" border="0" align="absmiddle" /></div>' +
-            	'</div>' +
-            	'</div></div>';
+            '<table cellpadding="0" cellspacing="0" border="0">' +
+            '<div>添加围栏</div>' +
+            '<tr>' +
+            '<td style="height:35px;" align="right">名称: </td>' +
+            '<td align="left" style="width:140px;"><input style="width:130px" id="poi_name" type="text"><img src="../../images/red_star.gif" align="absmiddle" /></td>' +
+            '</tr>' +
+            '<tr>' +
+            '<td style="height:35px;" align="right">范围(米): </td>' +
+            '<td align="left"><input style="width:130px" id="width" type="text"><img src="../../images/red_star.gif" align="absmiddle" /></td>' +
+            '</tr>' +
+            '<tr>' +
+            '<td style="height:35px;" align="right">备注: </td>' +
+            '<td align="left"><input style="width:130px" id="remark" type="text"></td>' +
+            '</tr>' +
+            '</table>' +
+            '</div>' +
+            '<div style="text-align: center"><input id="add_fenceSave" type="image" src="../../images/btn_save.jpg" border="0" align="absmiddle"/> <input id="add_fenceColse" type="image" src="../../images/btn_cancel.jpg" border="0" align="absmiddle" /></div>' +
+            '</div>' +
+            '</div></div>';
         return divContent;
     }, editFenceContent: function (obj) {
         var divContent = '<div style="height:150px;overflow:hidden;"><div>' +
-                '<table cellpadding="0" cellspacing="0" border="0">' +
-            	'<div>添加围栏</div>' +
-                '<tr>' +
-            	'<td style="height:35px;" align="right">围栏名称: </td>' +
-            	'<td align="left" style="width:140px;"><input style="width:130px" id="poi_name" type="text" value=' + obj.poi_name + '><img src="../../images/red_star.gif" align="absmiddle" /></td>' +
-            	'</tr>' +
-            	'<tr>' +
-            	'<td style="height:35px;" align="right">范围(米): </td>' +
-            	'<td align="left"><input style="width:130px"  id="width" type="text" value=' + obj.width + '><img src="../../images/red_star.gif" align="absmiddle" /></td>' +
-            	'</tr>' +
-            	'<tr>' +
-            	'<td style="height:35px;" align="right">备注: </td>' +
-            	'<td align="left"><input style="width:130px"  id="remark" type="text"  value=' + obj.remark + ' ></td>' +
-            	'</tr>' +
-            	'</table>' +
-            	'</div>' +
-            	'<div style="text-align: center"><input id="edit_fenceSave" type="image" src="../../images/btn_save.jpg" border="0" align="absmiddle"/> <input id="edit_fenceColse" type="image" src="../../Content/images/btn_cancel.jpg" border="0" align="absmiddle" /></div>' +
-            	'</div>' +
-            	'</div></div>';
+            '<table cellpadding="0" cellspacing="0" border="0">' +
+            '<div>添加围栏</div>' +
+            '<tr>' +
+            '<td style="height:35px;" align="right">围栏名称: </td>' +
+            '<td align="left" style="width:140px;"><input style="width:130px" id="poi_name" type="text" value=' + obj.poi_name + '><img src="../../images/red_star.gif" align="absmiddle" /></td>' +
+            '</tr>' +
+            '<tr>' +
+            '<td style="height:35px;" align="right">范围(米): </td>' +
+            '<td align="left"><input style="width:130px"  id="width" type="text" value=' + obj.width + '><img src="../../images/red_star.gif" align="absmiddle" /></td>' +
+            '</tr>' +
+            '<tr>' +
+            '<td style="height:35px;" align="right">备注: </td>' +
+            '<td align="left"><input style="width:130px"  id="remark" type="text"  value=' + obj.remark + ' ></td>' +
+            '</tr>' +
+            '</table>' +
+            '</div>' +
+            '<div style="text-align: center"><input id="edit_fenceSave" type="image" src="../../images/btn_save.jpg" border="0" align="absmiddle"/> <input id="edit_fenceColse" type="image" src="../../Content/images/btn_cancel.jpg" border="0" align="absmiddle" /></div>' +
+            '</div>' +
+            '</div></div>';
         return divContent;
     }
 }
@@ -1168,9 +1188,9 @@ function tableJquery(obj) {
 
 function userNameJquery(obj) {
     obj.liHtml
-			 .hide()
-			 .filter(":contains('" + (obj.txt) + "')")
-			 .show();
+        .hide()
+        .filter(":contains('" + (obj.txt) + "')")
+        .show();
 }
 
 /*
@@ -1278,32 +1298,32 @@ var STATUS_FORTIFY = 0x2001,
  .format({hello: "你好", world: "世界"})
  console.log(say)
  ------------------------------ */
-String.prototype.format = function(arg) {
+String.prototype.format = function (arg) {
     // 安全检查(长度不能小于 {{.}}，为后面下标引用做准备)
     var len = this.length;
     if (len < 5) { return this }
 
     var start = 0, result = "", argi = 0;
 
-    for (var i=0; i<=len; i++) {
+    for (var i = 0; i <= len; i++) {
         // 处理 {{ }} 之外的内容
-        if (this[i] === "{" && this[i-1] === "{") {
-            result += this.slice(start, i-1);
-            start = i-1;
-        } else if (this[i] === "}" && this[i-1] === "}") {
+        if (this[i] === "{" && this[i - 1] === "{") {
+            result += this.slice(start, i - 1);
+            start = i - 1;
+        } else if (this[i] === "}" && this[i - 1] === "}") {
             // 获取 {{ }} 中的索引
-            var index = this.slice(start+2, i-1);
+            var index = this.slice(start + 2, i - 1);
             if (index === ".") {          // 字符串
                 result += arguments[argi];
                 // 最后一个字符串会重复使用
                 if (argi < (arguments.length - 1)) {
                     argi++;
                 }
-                start = i+1;
+                start = i + 1;
             } else {                      // 对象或数组
                 if (arg[index] != null) {
                     result += arg[index];
-                    start = i+1;
+                    start = i + 1;
                 }
             }
         }
@@ -1324,21 +1344,21 @@ var showLoading = function (show, info, type, delayClose) {
     var _processing = $('#_processing');
     var _processingText = $('#_processingText');
     var _processingIcon = $('#_processingIcon');
-    if(show){
+    if (show) {
         _processingIcon.attr('src', ICON_PATH[type]);
         _processingText.html(info);
-        _processing.css('visibility','visible');
-        if(delayClose){
-            setTimeout(function(){
-                _processing.css('visibility','hidden');
+        _processing.css('visibility', 'visible');
+        if (delayClose) {
+            setTimeout(function () {
+                _processing.css('visibility', 'hidden');
             }, delayClose * 1000)
         }
-    }else{
-        _processing.css('visibility','hidden');
+    } else {
+        _processing.css('visibility', 'hidden');
     }
 };
 
-var setLoading2 = function(ul){
+var setLoading2 = function (ul) {
     ul.html('<tr>' +
         '<td colspan="3">' +
         '<p style="text-align: center; padding-top: 5px; padding-bottom: 5px">' +
@@ -1348,11 +1368,11 @@ var setLoading2 = function(ul){
         '</tr>');
 };
 
-function _ok(str){
+function _ok(str) {
     showLoading(true, str, ICON_OK, 2);
 }
 
-function _fail(str){
+function _fail(str) {
     showLoading(true, str, ICON_FAIL, 2);
 }
 
@@ -1360,18 +1380,18 @@ function _alert(str, fade_out) {
     showLoading(true, str, ICON_INFO, 2);
 }
 
-var loadSubNode = function(treeObj, node){
+var loadSubNode = function (treeObj, node) {
     var uid = node.id;
-    if(parseInt(uid) > 100 && !node.children){
+    if (parseInt(uid) > 100 && !node.children) {
         var query_json = {
             parentId: uid
         };
-        wistorm_api._list('customer', query_json, 'objectId,name,treePath,parentId,uid,custType,other', '-custType,name', '-createdAt', 0, 0, 1, -1, auth_code, true, function(json){
+        wistorm_api._list('customer', query_json, 'objectId,name,treePath,parentId,uid,custType,other', '-custType,name', '-createdAt', 0, 0, 1, -1, auth_code, true, function (json) {
             var customerArray = [];
             for (var i = 0; i < json.data.length; i++) {
-                if(json.data[i]['uid'] !== uid){
-                    var childCount = json.data[i]['other'] ? (json.data[i]['other']['childCount'] || 0): 0;
-                    var vehicleCount = json.data[i]['other'] ? (json.data[i]['other']['vehicleCount'] || 0): 0;
+                if (json.data[i]['uid'] !== uid) {
+                    var childCount = json.data[i]['other'] ? (json.data[i]['other']['childCount'] || 0) : 0;
+                    var vehicleCount = json.data[i]['other'] ? (json.data[i]['other']['vehicleCount'] || 0) : 0;
                     customerArray.push({
                         open: false,
                         id: json.data[i]['uid'],
@@ -1384,24 +1404,24 @@ var loadSubNode = function(treeObj, node){
                     });
                 }
             }
-            if(customerArray.length > 0){
+            if (customerArray.length > 0) {
                 treeObj.addNodes(node, customerArray, false);
             }
         });
     }
 };
 
-var searchNode = function(treeObj, key){
-    if(key && key !== ''){
+var searchNode = function (treeObj, key) {
+    if (key && key !== '') {
         var query_json = {
             objectId: '>0'
         };
-        wistorm_api._list('customer', query_json, 'objectId,name,treePath,parentId,uid,custType,other', '-custType,name', '-createdAt', 0, 0, 1, -1, auth_code, true, function(json){
+        wistorm_api._list('customer', query_json, 'objectId,name,treePath,parentId,uid,custType,other', '-custType,name', '-createdAt', 0, 0, 1, -1, auth_code, true, function (json) {
             var customerArray = [];
             for (var i = 0; i < json.data.length; i++) {
-                if(json.data[i]['uid'] !== uid){
-                    var childCount = json.data[i]['other'] ? (json.data[i]['other']['childCount'] || 0): 0;
-                    var vehicleCount = json.data[i]['other'] ? (json.data[i]['other']['vehicleCount'] || 0): 0;
+                if (json.data[i]['uid'] !== uid) {
+                    var childCount = json.data[i]['other'] ? (json.data[i]['other']['childCount'] || 0) : 0;
+                    var vehicleCount = json.data[i]['other'] ? (json.data[i]['other']['vehicleCount'] || 0) : 0;
                     customerArray.push({
                         open: false,
                         id: json.data[i]['uid'],
@@ -1411,7 +1431,7 @@ var searchNode = function(treeObj, key){
                     });
                 }
             }
-            if(customerArray.length > 0){
+            if (customerArray.length > 0) {
                 treeObj.addNodes(node, customerArray, false);
             }
         });
@@ -1420,9 +1440,10 @@ var searchNode = function(treeObj, key){
 
 
 // 更新客户下级用户数
-var updateCustomerCount = function(uid, treePath){
+var updateCustomerCount = function (uid, treePath, callback) {
     var query_json = {
-        treePath: '^' + treePath
+        treePath: '^' + treePath,
+        custType: '<>14'
     };
     wistorm_api._count('customer', query_json, auth_code, true, function (json) {
         var count = json.status_code === 0 ? json.count || 1 : 1;
@@ -1436,15 +1457,18 @@ var updateCustomerCount = function(uid, treePath){
         wistorm_api._update('customer', query_json, update_json, auth_code, true, function (json) {
             if (json.status_code !== 0) {
                 console.log('update customer child count failed - ' + json);
-            }else{
+            } else {
 
+            }
+            if (callback) {
+                callback(json)
             }
         });
     });
 };
 
-// 更新用户车辆数
-var updateVehicleCount = function(uid){
+// 更新用户目标数
+var updateVehicleCount = function (uid) {
     var query_json = {
         uid: uid
     };
@@ -1467,7 +1491,7 @@ var updateVehicleCount = function(uid){
 
 // 设置上级用户信息
 var setParentInfo = function () {
-    if($.cookie('parent_name') && $.cookie('parent_name') !== ''){
+    if ($.cookie('parent_name') && $.cookie('parent_name') !== '') {
         $('#parentInfo').html('所属用户：' + $.cookie('parent_name') + '&nbsp;&nbsp;&nbsp;&nbsp;联系人：' + $.cookie('parent_contact') +
             '&nbsp;&nbsp;&nbsp;&nbsp;联系电话：' + $.cookie('parent_tel'));
     }
@@ -1490,21 +1514,21 @@ function formatTime(seconds) {
         newMin = min % 60;
     }
 
-    if (second < 10) { second = '0' + second;}
-    if (min < 10) { min = '0' + min;}
+    if (second < 10) { second = '0' + second; }
+    if (min < 10) { min = '0' + min; }
 
-    return time = hour? (hour + i18next.t("system.hour") + newMin + i18next.t("system.min") + second + i18next.t("system.sec")) : (min + i18next.t("system.min") + second + i18next.t("system.sec"));
+    return time = hour ? (hour + i18next.t("system.hour") + newMin + i18next.t("system.min") + second + i18next.t("system.sec")) : (min + i18next.t("system.min") + second + i18next.t("system.sec"));
 }
 
 function _tableResize() {
-    // 修改车辆列表高度
+    // 修改目标列表高度
     var height = $(window).height() - 150;
-    $('.dataTables_wrapper').css({"height": height + "px"});
+    $('.dataTables_wrapper').css({ "height": height + "px" });
 }
 
 $(document).ready(function () {
     //高度变化改变(要重新计算_browserheight)
-    setTimeout(function(){
+    setTimeout(function () {
         _tableResize();
     }, 1000);
     $(window).resize(function () {
@@ -1518,7 +1542,7 @@ if (!Array.prototype.unique) {
         for (var i = 0; i < this.length; i++) {
             item = this[i];
             type = Object.prototype.toString.call(item);
-            if ( !hash[item + type] ) {
+            if (!hash[item + type]) {
                 hash[item + type] = true;
                 result.push(item);
             }

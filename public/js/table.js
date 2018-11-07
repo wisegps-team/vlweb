@@ -45,7 +45,7 @@ userDefineButtons:
 ]
  */
 
-var _dataTable = function(div, tableName, fields, condition, sort, searchElem, searchField, listButtons, userDefineButtons, lookup){
+var _dataTable = function (div, tableName, fields, condition, sort, searchElem, searchField, listButtons, userDefineButtons, lookup) {
     this.div = div;
     this._table = null;
     this.tableElem = null;
@@ -68,23 +68,23 @@ var _dataTable = function(div, tableName, fields, condition, sort, searchElem, s
     this.userDefineButtons = userDefineButtons;
 };
 
-_dataTable.prototype.setExportFields = function(fields){
+_dataTable.prototype.setExportFields = function (fields) {
     this.exportObj.fields = fields;
 };
 
-_dataTable.prototype.setExportTitles = function(titles){
+_dataTable.prototype.setExportTitles = function (titles) {
     this.exportObj.titles = titles;
 };
 
-_dataTable.prototype.setExportDisplays = function(displays){
+_dataTable.prototype.setExportDisplays = function (displays) {
     this.exportObj.displays = displays;
 };
 
-_dataTable.prototype.setExportMap = function(map){
+_dataTable.prototype.setExportMap = function (map) {
     this.exportObj.map = map;
 };
 
-_dataTable.prototype.createHeader = function(){
+_dataTable.prototype.createHeader = function () {
     this.clear();
     var table = document.createElement('table');
     table.id = this.tableName + '_list';
@@ -93,28 +93,28 @@ _dataTable.prototype.createHeader = function(){
     // 创建表头
     var thead = document.createElement('thead');
     var tr = document.createElement('tr');
-    for(var i = 0; i < this.fields.length; i++){
+    for (var i = 0; i < this.fields.length; i++) {
         var th = document.createElement('th');
         th.style.width = this.fields[i].width;
-        if(this.fields[i].display === 'CheckBox'){
+        if (this.fields[i].display === 'CheckBox') {
             th.innerHTML = '<input id="checkAll" type="checkbox">';
-        }else if(this.fields[i].display !== 'None'){
+        } else if (this.fields[i].display !== 'None') {
             th.innerHTML = this.fields[i].title;
         }
-        if(this.fields[i].display !== 'None'){
+        if (this.fields[i].display !== 'None') {
             tr.appendChild(th);
             this.exportObj.fields += this.fields[i].name + ',';
             this.exportObj.titles += this.fields[i].title + ',';
         }
         this.sFields += this.fields[i].name + ',';
     }
-    if(this.exportObj.fields !== ''){
+    if (this.exportObj.fields !== '') {
         this.exportObj.fields = this.exportObj.fields.substr(0, this.exportObj.fields.length - 1);
     }
-    if(this.exportObj.titles !== ''){
+    if (this.exportObj.titles !== '') {
         this.exportObj.titles = this.exportObj.titles.substr(0, this.exportObj.titles.length - 1);
     }
-    if(this.listButtons.show){
+    if (this.listButtons.show) {
         var th = document.createElement('th');
         th.style.width = '100px';
         th.innerHTML = i18next.t("table.op") || '操作';
@@ -129,64 +129,86 @@ _dataTable.prototype.createHeader = function(){
     this.div.append(table);
 };
 
-_dataTable.prototype.fnServerData = function(query, afterSend, beforeSend, lookup){
+_dataTable.prototype.fnServerData = function (query, afterSend, beforeSend, lookup) {
     var _this = this;
-    var _query = query ? query: this.condition;
-    var _lookup = lookup ? lookup: this.lookup;
-    return function retrieveData( sSource, aoData, fnCallback ) {
-        var auth_code = $.cookie('auth_code');
-        var page_count = aoData[4].value;
-        var page_no = (aoData[3].value / page_count) + 1;
-        var sort = _this.sort;
-        if(aoData[10].value > 0){
-            if(aoData[11].value === 'asc'){
-                sort = _this.fields[aoData[10].value].name;
-            }else{
-                sort = '-' + _this.fields[aoData[10].value].name;
+    var _query = query ? query : this.condition;
+    var _lookup = lookup ? lookup : this.lookup;
+    return function retrieveData(sSource, aoData, fnCallback) {
+        if (_this.tableName == '') {
+            var page_count = aoData[4].value;
+            var page_no = (aoData[3].value / page_count) + 1;
+            var json = {};
+            json.page_count = page_count;
+            json.page_no = page_no;
+            json.sEcho = aoData[0].value;
+            json.iTotalRecords = 0;
+            json.iTotalDisplayRecords = 0;
+            json.aaData = [];
+
+            if (beforeSend) {
+                beforeSend(json, fnCallback); //发送之前对处理进行处理
+            } else {
+                fnCallback(json); //服务器端返回的对象的returnObject部分是要求的格式
             }
-        }
-        var url = '';
-        if(_lookup){
-            url = wistorm_api._lookupUrl(_this.tableName, _lookup, _query, _this.sFields, sort, sort, page_no, page_count, auth_code, true);
-        }else{
-            url = wistorm_api._listUrl(_this.tableName, _query, _this.sFields, sort, sort, 0, 0, page_no, page_count, auth_code, true);
-        }
-        if(_this.exportObj.displays !== ''){
-            _this.exportUrl = wistorm_api._exportUrl(_this.tableName, _query, _this.exportObj.fields, _this.exportObj.titles, _this.exportObj.displays, sort, sort, _this.exportObj.map || 'BAIDU', auth_code);
-        }
-        $.ajax( {
-            "type": "GET",
-            "contentType": "application/json",
-            "url": url,
-            "dataType": "json",
-            "data": null, //以json格式传递
-            "success": function(json) {
-                json.sEcho = aoData[0].value;
-                json.iTotalRecords = json.total;
-                json.iTotalDisplayRecords = json.total;
-                json.aaData = json.data;
-                // 设置导出按钮是否显示
-                if($('#export').length > 0){
-                    if(_this.exportUrl === '' || json.total === 0){
-                        $('#export').hide();
-                    }else{
-                        $('#export').show();
+            if (afterSend) {
+                afterSend(json);
+            }
+        } else {
+            var auth_code = $.cookie('auth_code');
+            var page_count = aoData[4].value;
+            var page_no = (aoData[3].value / page_count) + 1;
+            var sort = _this.sort;
+            if (aoData[10].value > 0) {
+                if (aoData[11].value === 'asc') {
+                    sort = _this.fields[aoData[10].value].name;
+                } else {
+                    sort = '-' + _this.fields[aoData[10].value] ? sort : _this.fields[aoData[10].value].name ;
+                }
+            }
+            var url = '';
+            if (_lookup) {
+                url = wistorm_api._lookupUrl(_this.tableName, _lookup, _query, _this.sFields, sort, sort, page_no, page_count, auth_code, true);
+            } else {
+                url = wistorm_api._listUrl(_this.tableName, _query, _this.sFields, sort, sort, 0, 0, page_no, page_count, auth_code, true);
+            }
+            if (_this.exportObj.displays !== '') {
+                _this.exportUrl = wistorm_api._exportUrl(_this.tableName, _query, _this.exportObj.fields, _this.exportObj.titles, _this.exportObj.displays, sort, sort, _this.exportObj.map || 'BAIDU', auth_code);
+            }
+            $.ajax({
+                "type": "GET",
+                "contentType": "application/json",
+                "url": url,
+                "dataType": "json",
+                "data": null, //以json格式传递
+                "success": function (json) {
+                    json.sEcho = aoData[0].value;
+                    json.iTotalRecords = json.total;
+                    json.iTotalDisplayRecords = json.total;
+                    json.aaData = json.data;
+                    // 设置导出按钮是否显示
+                    if ($('#export').length > 0) {
+                        if (_this.exportUrl === '' || json.total === 0) {
+                            $('#export').hide();
+                        } else {
+                            $('#export').show();
+                        }
+                    }
+                    if (beforeSend) {
+                        beforeSend(json, fnCallback); //发送之前对处理进行处理
+                    } else {
+                        fnCallback(json); //服务器端返回的对象的returnObject部分是要求的格式
+                    }
+                    if (afterSend) {
+                        afterSend(json);
                     }
                 }
-                if(beforeSend){
-                    beforeSend(json, fnCallback); //发送之前对处理进行处理
-                }else{
-                    fnCallback(json); //服务器端返回的对象的returnObject部分是要求的格式
-                }
-                if(afterSend){
-                    afterSend(json);
-                }
-            }
-        });
+            });
+        }
+
     }
 };
 
-_dataTable.prototype.query = function(query, afterSend, beforeSend, lookup){
+_dataTable.prototype.query = function (query, afterSend, beforeSend, lookup) {
     var _columns = [];
     for (var i = 0; i < this.fields.length; i++) {
         var col = {};
@@ -222,7 +244,7 @@ _dataTable.prototype.query = function(query, afterSend, beforeSend, lookup){
         }
     }
     var getButtonRender = function (obj) {
-        var _listButtons = obj.listButtons || {edit: true, delete: true};
+        var _listButtons = obj.listButtons || { edit: true, delete: true };
         var _userDefineButtons = obj.userDefineButtons;
         return function (obj) {
             var html = '';
@@ -241,7 +263,7 @@ _dataTable.prototype.query = function(query, afterSend, beforeSend, lookup){
             return html;
         };
     };
-    if(this.listButtons.show) {
+    if (this.listButtons.show) {
         var render = getButtonRender(this);
         var buttonCol = {
             "mData": null,
@@ -264,12 +286,12 @@ _dataTable.prototype.query = function(query, afterSend, beforeSend, lookup){
         "aoColumns": _columns,
         "sDom": "<'row'r>t<'row'<'pull-right'p>>",
         "sPaginationType": "bootstrap",
-        "oLanguage": {"sUrl": 'css/' + lang + '.txt'},
+        "oLanguage": { "sUrl": 'css/' + lang + '.txt' },
         "sAjaxSource": "",
         "fnServerData": this.fnServerData(query, afterSend, beforeSend, lookup)
     };
     this._table = $(this.tableElem).dataTable(objTable);
-    if(_tableResize){
+    if (_tableResize) {
         setTimeout(function () {
             _tableResize();
         }, 1000);

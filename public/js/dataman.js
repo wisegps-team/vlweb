@@ -20,7 +20,7 @@ function vehicleQuery(cust_id, tree_path) {
     var page_no = 1;
     var page_count = 100;
     var key = '';
-    if($("#vehicleKey").val() != '搜索车辆'){
+    if($("#vehicleKey").val() != '搜索目标'){
         key = $("#vehicleKey").val();
     }
 

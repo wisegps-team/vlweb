@@ -35,7 +35,7 @@ var _InfoSuccess = function(json) {
     $("#divBooking").dialog("open");
 };
 
-// 初始化车辆信息窗体
+// 初始化目标信息窗体
 var initFrmBooking = function (title, flag, name, mobile, city, status, remark, updatedAt, createdAt) {
     $("#divBooking").dialog("option", "title", title);
     _flag = flag;
@@ -203,7 +203,7 @@ var editSuccess = function (json) {
     }
 };
 
-// 新增车辆
+// 新增目标
 var _delete = function (_id) {
     // var wistorm_api = new WiStormAPI(app_key, app_secret, 'json', '2.0', 'md5', dev_key);
     var query_json = {

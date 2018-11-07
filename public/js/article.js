@@ -33,7 +33,7 @@ var articleInfoSuccess = function(json) {
     $("#divArticle").dialog("open");
 };
 
-// 初始化车辆信息窗体
+// 初始化目标信息窗体
 var initFrmArticle = function (title, flag, type, artTitle, summary, author, img, content, createdAt) {
     $("#divArticle").dialog("option", "title", title);
     article_flag = flag;
@@ -165,7 +165,7 @@ var articleAddSuccess = function (json) {
     }
 };
 
-// 修改车辆
+// 修改目标
 var articleEdit = function () {
     var title = $("#title").val();
     var type = $("#type").val();
@@ -200,7 +200,7 @@ var articleEditSuccess = function (json) {
     }
 };
 
-// 新增车辆
+// 新增目标
 var articleDelete = function (_id) {
     // var wistorm_api = new WiStormAPI(app_key, app_secret, 'json', '2.0', 'md5', dev_key);
     var query_json = {

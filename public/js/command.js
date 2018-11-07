@@ -19,7 +19,7 @@ $(document).ready(function () {
     $("#alert").hide();
 
     windowResize();
-
+    
     var cmdId = setInterval(function () {
         if (!i18nextLoaded) {
             return;
@@ -41,7 +41,7 @@ $(document).ready(function () {
                 className: 'center',
                 display: 'UserDefined',
                 render: function (obj) {
-                    var data = obj.aData ? obj.aData: obj;
+                    var data = obj.aData ? obj.aData : obj;
                     return data.vehicleName || data.did;
                 }
             },
@@ -128,7 +128,7 @@ $(document).ready(function () {
             // updateLoc();
         });
 
-        // 初始化车辆选择框
+        // 初始化目标选择框
         var ts = new vehicleSelector($('#name2'), function (vid, did, name) {
             $('#did2').val(did);
             $('#did').val(did);
@@ -174,7 +174,7 @@ $(document).ready(function () {
         });
 
         clearInterval(cmdId);
-    });
+    },100);
 });
 
 
