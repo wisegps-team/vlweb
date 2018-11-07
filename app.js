@@ -117,13 +117,18 @@ app.get('/booking', routes.booking);
 app.get('/branch', routes.branch);
 app.get('/callback', routes.callback);
 app.get('/exists', routes.exists);
-app.get('/cardManagement',routes.cardManagement)
+// app.get('/planId', routes.planId)
+app.get('/card_management', routes.card_management)
+app.get('/serviceplan', routes.serviceplan)
+app.get('/renew', routes.renew)
 app.get('/restart', function (req, res) {
   process.exit(0);
 });
 
 
-
+app.get('/burseLogin', routes.burseLogin);
+app.get('/burse', routes.burse);
+app.get('/burseLoginAndSave', routes.burseLoginAndSave);
 // app.get('/usecar', routes.usecar);
 // app.get('/repair_car', routes.repaircar);
 // app.get('/usecar_detail', routes.usecar_detail);

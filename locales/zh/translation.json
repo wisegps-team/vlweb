@@ -67,14 +67,20 @@
     "add_role": "新增角色",
     "change_parent": "更换上级",
     "selected_customer": "{{count}}个选中客户",
+    "fee_adjust": "费率调整",
     "fee_month": "月费上浮",
-    "fee_year": "年费上浮"
+    "fee_year": "年费上浮",
+    "disabled":"停用",
+    "enabled":"启用",
+    "is_disabled":"是否确认停用该账号及名下账号",
+    "is_enabled":"是否确认启用该账号及名下账号"
   },
   "member": {
     "name": "会员名称",
     "cust_type": "会员类型",
     "edit_member": "编辑会员",
-    "member": "会员"
+    "member": "会员",
+    "search_member": "搜索会员"
   },
   "depart": {
     "search": "搜索部门",
@@ -255,7 +261,7 @@
     "edit_vehicle": "编辑目标",
     "base_info": "基本信息",
     "bind_device": "绑定设备",
-    "device_info":"设备信息",
+    "device_info": "设备信息",
     "err_change_parent": "更换目标所属用户失败，请稍后再试",
     "msg_confirm_delete": "你确认删除目标{{name}}吗？",
     "msg_add_fail": "新增目标失败，请稍后再试",
@@ -280,7 +286,10 @@
     "change_parent": "更换所属用户",
     "select_vehicle": "选择目标",
     "selected_vehicle": "{{count}}个选中目标",
-    "fuel_tank": "油箱容积(L)"
+    "fuel_tank": "油箱容积(L)",
+    "cust_info": "客户信息",
+    "alert_set": "报警设置",
+    "all_not": "全选/不选"
   },
   "monitor": {
     "all_status": "全部",
@@ -620,7 +629,20 @@
     "income_statis": "收入统计",
     "member_statis": "会员使用统计",
     "member_detail": "会员收支明细",
-    "income_report": "收入报表"
+    "income_report": "收入报表",
+    "income_detail": "收支明细",
+    "mileage_report": "里程报表",
+    "oil_discharge_curve": "油量曲线",
+    "trading_hours": "交易时间",
+    "orderId": "订单ID",
+    "available_amount": "可用金额(￥)",
+    "trading_amount": "交易金额(￥)",
+    "trading_remark": "交易备注",
+    "trading_type": "交易类型",
+    "income": "收入(￥)",
+    "total_amount": "总金额(￥)",
+    "total_usage": "总使用次数",
+    "oil": "油量"
   },
   "direct": {
     "N": "正北",
@@ -696,6 +718,7 @@
     "vehicle_mileageOrfuel": "目标里程/油耗",
     "vehicle_onlineStatis": "目标上线统计",
     "vehicle_statusStatis": "目标状态统计",
+    "vehicle_warn":"车务提醒",
     "mileage": "里程",
     "fuel": "油耗",
     "daily_mileage": "日统计里程",

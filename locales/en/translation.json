@@ -67,14 +67,20 @@
     "add_role": "Add Role",
     "change_parent": "Change Parent",
     "selected_customer": "{{count}} selected customer",
+    "fee_adjust": "Fee Adjust",
     "fee_month": "Month Fee",
-    "fee_year": "Year Fee"
+    "fee_year": "Year Fee",
+    "disabled":"Disabled",
+    "enabled":"Enabled",
+    "is_disabled":"Confirm whether to suspend the account and the account under your name",
+    "is_enabled":"Confirm whether to open the account and the account under your name"
   },
   "member": {
     "name": "MemberName",
     "cust_type": "MemberType",
     "edit_member": "EditMember",
-    "member": "Member"
+    "member": "Member",
+    "search_member": "Search Member"
   },
   "depart": {
     "search": "Search department",
@@ -280,7 +286,10 @@
     "change_parent": "Change Parent",
     "select_vehicle": "Select Vehicle",
     "selected_vehicle": "{{count}} selected vehicle",
-    "fuel_tank":"Fuel Tank(L)"
+    "fuel_tank":"Fuel Tank(L)",
+    "cust_info": "Customer Info",
+    "alert_set": "Alert Setting",
+    "all_not": "All/Not"
   },
   "monitor": {
     "all_status": "All ",
@@ -616,7 +625,24 @@
     "action_type": "Action",
     "login": "Login",
     "logout": "Logout",
-    "tag_time": "Action Time"
+    "tag_time": "Action Time",
+    "income_statis": "Income Statis",
+    "member_statis": "Member Usage Statis",
+    "member_detail": "Member Income Detail",
+    "income_report": "Income Report",
+    "income_detail": "Income detail",
+    "mileage_report": "Mileage Report",
+    "oil_discharge_curve": "Oil Discharge Curve",
+    "trading_hours": "Trading Hours",
+    "orderId": "Order ID",
+    "available_amount": "Available Amount(￥)",
+    "trading_amount": "Trading Amount(￥)",
+    "trading_remark": "Trading Remark",
+    "trading_type": "Trading Type",
+    "income": "Income(￥)",
+    "total_amount": "Total Amount(￥)",
+    "total_usage": "Total Usage",
+    "oil": "Oil"
   },
   "direct": {
     "N": "N",
@@ -692,6 +718,7 @@
     "vehicle_mileageOrfuel":"Vehicle Mileage and Fuel",
     "vehicle_onlineStatis":"Vehicle Online Statistics",
     "vehicle_statusStatis":"Vehicle Status Statistics",
+    "vehicle_warn":"Vehicle Warn",
     "mileage":"Mileage",
     "fuel":"Fuel",
     "daily_mileage":"Daily Mileage",
