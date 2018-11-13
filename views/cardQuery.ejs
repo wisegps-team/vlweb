@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,viewport-fit=cover">
+    <title>物联卡</title>
+    <!-- <link rel="stylesheet" href="./css/weui.css" />
+    <link rel="stylesheet" href="./css/example.css" /> -->
+    <!-- <link href="css/style.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="./css/weui.min.css" />
+    <style>
+        body {
+            font-family: Roboto-Regular, Roboto, Helvetica Neue, Helvetica, Tahoma, Arial, "Noto Sans", 'Microsoft Yahei', SimSun, sans-serif !important;
+            font-size: 12px;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0
+        }
+
+        .weui-btn_primary {
+            background-color: #1AAD19;
+        }
+
+        .weui-msg__title {
+            font-weight: 500;
+            font-size: 18px;
+        }
+
+        .weui-msg__desc {
+            font-weight: 600;
+            font-size: 36px;
+            color: #000;
+            text-align: center;
+        }
+
+        .burseIcon {
+            display: inline-block;
+            width: 102px;
+            height: 102px;
+            border-radius: 51px;
+            /* background: url('./img/burse.svg') no-repeat; */
+            background-size: 102px;
+            background-repeat: no-repeat;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        .container, .page {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+        .page.js_show {
+            opacity: 1;
+        }
+        .page {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            opacity: 0;
+            z-index: 1;
+        }
+        @-webkit-keyframes a {
+            0% {
+                -webkit-transform: translate3d(100%,0,0);
+                transform: translate3d(100%,0,0);
+                opacity: 0
+            }
+
+            to {
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+                opacity: 1
+            }
+        }
+
+        @keyframes a {
+            0% {
+                -webkit-transform: translate3d(100%,0,0);
+                transform: translate3d(100%,0,0);
+                opacity: 0
+            }
+
+            to {
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+                opacity: 1
+            }
+        }
+
+        @-webkit-keyframes b {
+            0% {
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+                opacity: 1
+            }
+
+            to {
+                -webkit-transform: translate3d(100%,0,0);
+                transform: translate3d(100%,0,0);
+                opacity: 0
+            }
+        }
+
+        @keyframes b {
+            0% {
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+                opacity: 1
+            }
+
+            to {
+                -webkit-transform: translate3d(100%,0,0);
+                transform: translate3d(100%,0,0);
+                opacity: 0
+            }
+        }
+        .page.slideIn {
+            -webkit-animation: a .2s forwards;
+            animation: a .2s forwards
+        }
+
+        .page.slideOut {
+            -webkit-animation: b .2s forwards;
+            animation: b .2s forwards
+        }
+        .weui-cells {
+            /* margin-top: 1em; */
+            /* padding: 10px; */
+            border-radius: 10px;
+        }
+        .weui-cells:before {
+            border-top: 0px
+        }
+        .weui-cells:after {
+            border-bottom: 0px
+        }
+        .detail {
+            background-color: #f8f8f8;
+        }
+        .getMessage .page__title {
+            text-align: center;
+            font-size: 19px;
+            padding: 5px;
+            font-weight: 500;
+            background: #fff;
+            border-bottom: 1px solid #e4e4e4;
+       }
+       .getMessage div.page__title {
+            border-bottom: 0px;
+            position: relative;
+            height: 40px;
+
+       }
+       .getMessage .page__hd {
+            position: fixed;
+            width: 100%;
+            z-index: 999;
+       }
+       .getMessage .page__bd {
+            margin: 10px;
+            margin-top: 50px;
+            margin-bottom: 50px;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            margin-right: 0;
+            padding-right: 10px;
+            /* overflow: visible; */
+
+       }
+       .detail .weui-cells{
+           margin-top: 0px
+       }
+       .detail_back {
+           position: absolute;
+           top: 9px;
+           left: 6px;
+           display: inline-block;
+           width: 20px;
+           height: 20px;
+           background: url('./img/back.svg') no-repeat;
+           cursor: pointer;
+       }
+       .detail_back a {
+           display: inline-block;
+           width: 20px;
+           height: 20px;
+       }
+       .weui-cell:before {
+           left: 0px;
+       }
+       .loadMore{
+            text-align: center;
+            height: 50px;
+            line-height: 50px;
+            border-top: 1px solid #e5e5e5;
+       }
+       .flex2 {
+           flex:2
+       }
+       .tf {
+           text-align: left;
+       }
+       .hdlineColor {
+            background: -webkit-linear-gradient(left, #7b99e9 , #04c);
+            background: -o-linear-gradient(right, #7b99e9 , #04c);
+            background: -moz-linear-gradient(right, #7b99e9 , #04c);
+            background: linear-gradient(to right, #7b99e9 , #04c);
+       }
+       .bColor {
+           background: #04c;
+           color: #fff;
+       }
+       #queryCardButton.bColor {
+           background: #04c;
+           color: #fff;
+       }
+       .card-iccid {
+            height: 45px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            padding: 0 10px;
+            box-sizing: border-box;
+            background: #fff;
+       }
+       .card-iccid-button {
+            background: #fff;
+            color: #999;
+       }
+       .page {
+            background-color: #f8f8f8;
+       }
+       .sendMessage .weui-cell {
+           padding: 0
+       }
+       .sendMessage .flex4 {
+           flex: 4
+       }
+       .sendMessage .weui-cell__bd {
+           font-size: 17px
+       }
+       .sendMessage  .card-iccid{
+            width: 36%;
+       }
+       .sendMessage #queryCards {
+            display: inline-block;
+            position: absolute;
+            margin-left: 8px;
+       }
+       .sendMessage .weui-cell {
+           margin-bottom: 20px
+       }
+       .sendMessage .weui-cell::before{
+           border-top: 0px
+       }
+       .sendMessage textarea {
+           border-radius: 5px;
+           border: 1px solid #ccc;
+           padding: 10px;
+           box-sizing: border-box;
+           font-size: 17px
+       }
+       .sendMessage .weui-cells__title {
+            padding-left: 5px;
+            font-size: 15px;    
+       }
+       
+       .getMessage .message,.getMessage .message1 {
+            max-width: 280px;
+            display: inline-block;
+            min-height: 46px;
+            margin-left: 6px;
+            /* margin-top: 7px; */
+            background-color: #fff;
+            border: 1px solid #f1f1f1;
+            color: #000;
+            font-size: 17px;
+            line-height: 18px;
+            padding: 12px;
+            box-sizing: border-box;
+            border-radius: 6px;
+            position: relative;
+            word-break: break-all;
+        }
+        .getMessage .message1{
+            background-color: green;
+            color:#fff
+        }
+        .getMessage .message::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background-color: inherit;
+            left: -6px;
+            position: absolute;
+            transform: rotate(45deg);
+            top: 20px;
+            margin-top: -5px;
+            border: 1px solid #f1f1f1;
+            border-top: 0px;
+            border-right: 0px;
+        }
+        .getMessage .message1::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background-color: inherit;
+            /* left: -6px; */
+            position: absolute;
+            right: -4px;
+            transform: rotate(45deg);
+            top: 20px;
+            margin-top: -5px;
+            /* border: 1px solid #f1f1f1; */
+            /* border-top: 0px;
+            border-right: 0px; */
+        }
+        .getMessage .message_cell {
+            margin-bottom: 20px
+        }
+        .getMessage #sendMessageBtn {
+            display: inline-block;
+            padding: 5px;
+            background: green;
+            color: #fff;
+            position: absolute;
+            right: 5px;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .getMessage .messageInput {
+            width: 80%;
+            border-bottom: 1px solid #ccc;
+            position: absolute;
+            left: 9px;
+            height: 32px;
+            top: 8px;
+        }
+
+        .renew .card-h {
+            color: #000;
+            font-size: 18px;
+            height: 30px;
+            line-height: 30px;
+        }
+        .renew .card-m {
+            color: #000;
+            font-size: 48px;
+            height: 76px;
+            line-height: 76px;
+            border-bottom: 1px solid #ccc
+        }
+        .showTip {
+            height: 40px;
+            width: 120px;
+            line-height: 40px;
+            display: inline-block;
+            position: absolute;
+            top: 50%;
+            margin: -20px auto 0px;
+            z-index: 999;
+            background: #201f1f;
+            color: #fff;
+            padding: 0 10px;
+            border-radius: 10px;
+            left: 50%;
+            margin-left: -60px;
+            text-align: center;
+            opacity: 0.8;
+            font-size: 14px;
+            box-sizing: border-box;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body ontouchstart>
+
+    <div class="container" id="container"></div>
+
+    <!-- 卡号查询 -->
+    <script type="text/html" id="tpl_home">
+        <div class="page home js_show">
+            <div class="page__bd" style="margin: 10px;margin-top:140px">
+                
+                <div class="weui-msg__opr-area">
+                    <p class="weui-btn-area">
+                        <input class="weui-input card-iccid" type="text" placeholder="网卡号/ICCID号" id="queryCard">
+                    </p>
+                </div>
+                <div class="weui-msg__opr-area">
+                    <p class="weui-btn-area">
+                        <a href="javascript:void(0)" class="weui-btn weui-btn_default card-iccid-button" id="queryCardButton">查询</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <!-- 续费 -->
+    <script type="text/html" id="tpl_renew">
+        <div class="page">
+            <div class="page__bd" style="margin: 10px;">
+                <div class="weui-panel weui-panel_access">
+                    <!-- <div class="weui-panel__hd">文字组合列表</div> -->
+                    <div class="weui-panel__bd">
+                        <div class="weui-media-box weui-media-box_text">
+                            <!-- <h4 class="weui-media-box__title">标题一</h4> -->
+                            <p class="weui-media-box__desc card-h">卡号:<span id="renewCard"></span></p>
+                            <p class="weui-media-box__desc card-h">充值金额</p>
+                            <p class="weui-media-box__desc card-m">￥<span id="renewAmount"></span></p>
+                        </div>
+                        <!-- <hr/> -->
+                        <div class="weui-msg__opr-area">
+                            <p class="weui-btn-area">
+                                <a href="javascript:void(0)" class="weui-btn weui-btn_primary bColor" id="renewBtn">续费</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <!-- 卡号信息 -->
+    <script type="text/html" id="tpl_detail">
+        <div class="page">
+            <div class="page__bd" style="margin: 10px;">
+                <div class="weui-cells" style="margin-top:20px">
+                    <div class="weui-cell hdlineColor">
+                        <div class="weui-cell__bd">
+                            <span style="color:#fff">卡片信息</span>
+                        </div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__bd">
+                            <span style="color:#999">卡号</span>
+                        </div>
+                        <div class="weui-cell__ft flex2 tf">
+                            <p  style="color:#777" id="msisdn"></p>
+                        </div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__bd">
+                            <span style="color:#999">运营商</span>
+                        </div>
+                        <div class="weui-cell__ft flex2 tf">
+                            <p  style="color:#777">中国移动</p>
+                        </div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__bd">
+                            <span style="color:#999">ICCID</span>
+                        </div>
+                        <div class="weui-cell__ft flex2 tf">
+                            <p  style="color:#777" id="iccid"></p>
+                        </div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__bd">
+                            <span style="color:#999">卡片状态</span>
+                        </div>
+                        <div class="weui-cell__ft flex2 tf">
+                            <p  style="color:#777" id="status"></p>
+                        </div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__bd">
+                            <span style="color:#999">服务期止</span>
+                        </div>
+                        <div class="weui-cell__ft flex2 tf">
+                            <p  style="color:#777" id="expireIn"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="weui-cells" style="margin-top:10px">
+                    <div class="weui-cell hdlineColor">
+                        <div class="weui-cell__bd">
+                            <span style="color:#fff">套餐信息</span>
+                        </div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__bd">
+                            <span style="color:#999">流量套餐</span>
+                        </div>
+                        <div class="weui-cell__ft flex2 tf">
+                            <p  style="color:#777" id="salePackage"></p>
+                        </div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__bd">
+                            <span style="color:#999">当月剩余</span>
+                        </div>
+                        <div class="weui-cell__ft flex2 tf">
+                            <p  style="color:#777" id="monthNoUsed"></p>
+                        </div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__bd">
+                            <span style="color:#999">当月已用</span>
+                        </div>
+                        <div class="weui-cell__ft flex2 tf">
+                            <p  style="color:#777" id="monthUsed"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="weui-msg__opr-area">
+                    <p class="weui-btn-area">
+                        <a href="#sendMessage" class="weui-btn weui-btn_primary bColor" >发送短信</a>
+                        <a href="#renew" class="weui-btn weui-btn_primary bColor" >到期续费</a>
+                        <a href="#getMessage" class="weui-btn weui-btn_primary bColor" >短信历史</a>
+                        <a href="#" class="weui-btn weui-btn_default" >切换卡片</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <!-- 发送信息 -->
+    <script type="text/html" id="tpl_sendMessage">
+        <div class="page">
+            <div class="page__bd" style="margin: 10px;">
+               
+                <div class="weui-cell">
+                    <div class="weui-cell__ft flex4 tf">
+                        <input class="weui-input card-iccid" type="text" placeholder="开始卡号" id="startCard">
+                        -
+                        <input class="weui-input card-iccid" type="text" placeholder="结束卡号" id="endCard">
+
+                        <a href="javascript:void(0)" class="weui-btn weui-btn_primary bColor" id="queryCards" >查询</a>
+                    
+                    </div>
+                </div>
+                <div class="weui-cells__title">卡号</div>
+                <div class="weui-cell">
+                    <div class="weui-cell__ft" style="width:100%">
+                        <textarea class="weui-textarea" placeholder="请输入卡号,多个用逗号分隔" rows="5" id="cards"></textarea>
+                    </div>
+                </div>
+                <div class="weui-cells__title">短信内容</div>
+                <div class="weui-cell">
+                    <div class="weui-cell__ft" style="width:100%">
+                        <textarea class="weui-textarea" placeholder="请输入短信内容(不能包含中文)" rows="3" id="content"></textarea>
+                    </div>
+                </div>
+                
+                <div class="weui-msg__opr-area">
+                    <p class="weui-btn-area">
+                        <a href="javascript:void(0)" class="weui-btn weui-btn_primary bColor" id="send">发送</a>
+                        <a href="#getMessage" class="weui-btn weui-btn_primary bColor" >查看短信内容</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <!-- 短信回复 -->
+    <script type="text/html" id="tpl_getMessage">
+        <div class="page">
+            <div class="page__hd">
+                <h1 class="page__title">
+                    <span class="detail_back"><a href="javascript:history.back();"></a></span>
+                    <span id="showCard"></span>
+                </h1>
+            </div>
+            <div class="page__bd" id="getMessageRecord">
+                    
+            </div>
+            <div class="page__hd" style="bottom:0px">
+                <div class="page__title">
+                    <input class="weui-input messageInput" type="text" />
+                    <!-- <span class="detail_back"><a href="javascript:history.back();"></a></span> -->
+                    <span id="sendMessageBtn">发送</span>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <script src='js/jquery.cookie.js'></script>
+    <script src="js/json.js"></script>
+    <script src="js/locales.js"></script>
+    <script src='js/md5.js'></script>
+    <script src="js/system.js"></script>
+    <script src="js/wistorm/md5.js"></script>
+    <script src="js/wistorm/define.js"></script>
+    <script src="js/wistorm/wistorm.js"></script>
+    <!-- <script src="js/wistorm/wistorm_2.js"></script> -->
+    <script src="js/cardQuery.js"></script>
+    <script>
+        var REMOTE_DATA = "<%= user %>";
+        var user = JSON.parse(decodeURIComponent(REMOTE_DATA));
+        console.log(user)
+        $.cookie('adminUser', user.adminUser)
+        // $.cookie('username', $("#username").val());
+        $.cookie('auth_code', user.access_token);
+        $.cookie('dealer_id', user.uid);
+        $.cookie('parent_id', user.pid || '');
+        $.cookie('dealer_type', user.user_type);
+        // console.log()
+    </script>
+</body>
+
+</html>

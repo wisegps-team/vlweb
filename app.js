@@ -129,6 +129,11 @@ app.get('/restart', function (req, res) {
 app.get('/burseLogin', routes.burseLogin);
 app.get('/burse', routes.burse);
 app.get('/burseLoginAndSave', routes.burseLoginAndSave);
+
+
+app.get('/cardQueryLogin', routes.cardQueryLogin);
+app.get('/cardQuery', routes.cardQuery);
+app.get('/cardQueryLoginAndSave', routes.cardQueryLoginAndSave);
 // app.get('/usecar', routes.usecar);
 // app.get('/repair_car', routes.repaircar);
 // app.get('/usecar_detail', routes.usecar_detail);

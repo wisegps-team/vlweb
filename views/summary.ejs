@@ -123,13 +123,13 @@
                     <div data-module="monitor">
                         <div class="dash-full-item-wrapper">
                             <div class="dash-item">
-                                <p class="dash-item-hd"> 总体概况 </p>
+                                <p class="dash-item-hd"> <%= t('summary.summary')%> </p>
                                 <div class="dash-item-bd">
                                     <div class="check-area">
                                         <div class="fr-row module-item-monitor customer">
                                             <div class="ca-col-main">
                                                 <a href="/customer" data-event="nav" data-hot="newhp.problem.jiankong">
-                                                    <p class="ca-col-tit">客户</p>
+                                                    <p class="ca-col-tit"><%= t('summary.customer')%></p>
                                                     <p class="ca-col-data"><span class="num-font" id="customerCounter">0</span></p>
                                                 </a>
                                             </div>
@@ -137,7 +137,7 @@
                                         <div class="fr-row module-item-monitor depart">
                                             <div class="ca-col-main">
                                                 <a href="/depart" data-event="nav" data-hot="newhp.problem.jiankong">
-                                                    <p class="ca-col-tit">部门</p>
+                                                    <p class="ca-col-tit"><%= t('summary.department')%></p>
                                                     <p class="ca-col-data"><span class="num-font" id="departCounter">0</span></p>
                                                 </a>
                                             </div>
@@ -145,7 +145,7 @@
                                         <div class="fr-row module-item-monitor employee">
                                             <div class="ca-col-main">
                                                 <a href="/employee" data-event="nav" data-hot="newhp.problem.jiankong">
-                                                    <p class="ca-col-tit">成员</p>
+                                                    <p class="ca-col-tit"><%= t('summary.employee')%></p>
                                                     <p class="ca-col-data"><span class="num-font" id="employeeCounter">0</span></p>
                                                 </a>
                                             </div>
@@ -153,7 +153,7 @@
                                         <div class="fr-row module-item-monitor vehicle">
                                             <div class="ca-col-main">
                                                 <a href="/vehicle" data-event="nav" data-hot="newhp.problem.jiankong">
-                                                    <p class="ca-col-tit">车辆</p>
+                                                    <p class="ca-col-tit"><%= t('summary.vehicle')%></p>
                                                     <p class="ca-col-data"><span class="num-font" id="vehicleCounter">0</span></p>
                                                 </a>
                                             </div>
@@ -161,7 +161,7 @@
                                         <div class="fr-row module-item-monitor device">
                                             <div class="ca-col-main">
                                                 <a href="/device" data-event="nav" data-hot="newhp.problem.jiankong">
-                                                    <p class="ca-col-tit">设备</p>
+                                                    <p class="ca-col-tit"><%= t('summary.device')%></p>
                                                     <p class="ca-col-data"><span class="num-font" id="deviceCounter">0</span></p>
                                                 </a>
                                             </div>
@@ -174,7 +174,7 @@
                     <div data-module="backlog">
                         <div class="dash-half-item-wrapper">
                             <div class="dash-item chart-item">
-                                <p class="dash-item-hd"> 车辆里程/油耗 </p>
+                                <p class="dash-item-hd"> <%= t('summary.vehicle_mileageOrfuel')%> </p>
                                 <div class="dash-item-bd">
                                     <div id="stat" style="padding-top:20px;width: 100%;height:280px;"></div>
                                 </div>
@@ -184,7 +184,7 @@
                     <div data-module="backlog">
                         <div class="dash-square-item-wrapper">
                             <div class="dash-item chart-item">
-                                <p class="dash-item-hd"> 车辆上线统计 </p>
+                                <p class="dash-item-hd"> <%= t('summary.vehicle_onlineStatis')%> </p>
                                 <div class="dash-item-bd">
                                     <div id="online" style="padding-top:0px;width: 100%;height:280px;"></div>
                                 </div>
@@ -194,9 +194,19 @@
                     <div data-module="backlog">
                         <div class="dash-square-item-wrapper">
                             <div class="dash-item chart-item">
-                                <p class="dash-item-hd"> 车辆状态统计 </p>
+                                <p class="dash-item-hd"> <%= t('summary.vehicle_warn')%> </p>
                                 <div class="dash-item-bd">
-                                    <div id="status" style="padding-top:0px;width: 100%;height:280px;"></div>
+                                    <!-- <div id="status" style="padding-top:0px;width: 100%;height:280px;"></div> -->
+                                    <div id="vehicle_warn" style="padding-top:20px;width: 100%;min-height:50px;max-height:320px;overflow:auto">
+                                        <!-- <p style="color:#ccc;text-align:center">今天暂无待办事项</p> -->
+                                        <!-- <div style="font-size:12px"><span >浙C3301警</span><span style="margin-left:20px;color:red">距离保养到期还有3天</span></div>
+                                        <div style="font-size:12px"><span >浙C3301警</span><span style="margin-left:20px;color:red">距离保险到期还有3天</span></div>
+                                        <div style="font-size:12px"><span >浙C3301警</span><span style="margin-left:20px;color:red">距离年检到期还有3天</span></div>
+                                        <div style="font-size:12px"><span >浙C3301警</span><span style="margin-left:20px;color:red">距离保养到期还有3天</span></div>
+                                        <div style="font-size:12px"><span >浙C3301警</span><span style="margin-left:20px;color:red">距离保险到期还有3天</span></div>
+                                        <div style="font-size:12px"><span >浙C3301警</span><span style="margin-left:20px;color:red">距离年检到期还有3天</span></div> -->
+                                        <!-- <div><span >阮俊广的维修申请</span></div> -->
+                                    </div>
                                 </div>
                             </div>
                         </div>

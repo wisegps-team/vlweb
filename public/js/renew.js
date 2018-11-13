@@ -1383,10 +1383,10 @@ $(document).ready(function () {
         }
 
         var feeChangeResult = function (res) {
-            var yearFee2 = parseFloat($('#2mparent_year_fee').text()) || 1;
-            var yearFee5 = parseFloat($('#5mparent_year_fee').text()) || 2;
-            var yearFee30 = parseFloat($('#30mparent_year_fee').text()) || 5;
-            var yearFee100 = parseFloat($('#100mparent_year_fee').text()) | 10;
+            var yearFee2 = parseFloat($('#2mparent_year_fee').text());
+            var yearFee5 = parseFloat($('#5mparent_year_fee').text());
+            var yearFee30 = parseFloat($('#30mparent_year_fee').text());
+            var yearFee100 = parseFloat($('#100mparent_year_fee').text());
             var cardAmount = {
                 2: yearFee2,
                 5: yearFee5,

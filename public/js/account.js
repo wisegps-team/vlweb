@@ -146,7 +146,7 @@ function addEmbed() {
 }
 
 
-
+//获取流量费率
 function _accountGetCustomer() {
     var cust_id = $.cookie('dealer_id');
     var user_type = $.cookie('dealer_type');

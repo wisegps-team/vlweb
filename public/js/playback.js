@@ -54,7 +54,10 @@ function windowResize() {
     // debugger;
     play_info.css({ "height": canvasHeight - 356 + 'px' })
     _panorama.css({ "height": canvasHeight + "px" });
-    $('.dataTables_scrollBody').css({ "height": ($(window).height() - 138 - $('.accordion-group').height()) + "px" });
+    // alert(($(window).height() - 158 - $('.accordion-group').height()) )
+    // alert($('.accordion-group').height()+','+ ($(window).height() - 158 - $('.accordion-group').height()))
+    
+    $('.dataTables_scrollBody').css({ "height": ($(window).height() - 148 - $('.accordion-group').height()) + "px" });
 
 }
 
@@ -226,7 +229,7 @@ var setGpsDataList = function (json) {
         "data": json.data,
         "aoColumns": _columns,
         "paging": false,
-        "scrollY": ($(window).height() - 412) + "px",
+        "scrollY": ($(window).height() - 148 - $('.accordion-group').height()) + "px",
         // "scrollCollapse": true,
         "sDom": "<'row'r>t<'row'<'pull-right'p>>",
         // "sPaginationType":"bootstrap",
@@ -268,6 +271,8 @@ var setGpsDataList = function (json) {
         wimap.addStartMarker(data.lon, data.lat, content);
         wimap.setCenter(data.lon, data.lat);
         setLocation(0, data.lon, data.lat, $(row.child().find('#loc')[0]), showLocation);
+        // debugger;
+        // windowResize()
     });
     $('#vehicle_list tbody').on('click', 'td.details-control', function () {
         // var tr = $(this).closest('tr');
@@ -352,7 +357,7 @@ var loadGpsData = function (did, name, startTime, endTime, objectType) {
             if(_zoom > 14){
                 wimap.map.setZoom(_zoom-2)
             }
-            
+            // windowResize();
             // 显示第一个定位
             vehicle = {
                 obj_id: did,

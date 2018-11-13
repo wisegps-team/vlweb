@@ -914,9 +914,11 @@ exports.burseLoginAndSave = function (req, res) {
         }
     })
 }
+
+
 exports.burse = function (req, res) {
     // console.log(req.query)
-    const data = "tp_18344178461";
+    // const data = "tp_18344178461";
     //公钥
     // const publicKey = fs.readFileSync(__dirname+'/rsa_1024_priv.pem').toString('ascii');
     // 私钥
@@ -972,6 +974,46 @@ exports.burse = function (req, res) {
             res.send('404')
         }
     }
-    // }, 5000)
+}
+
+exports.cardQueryLogin = function (req, res) {
+    var _pwd = new Date(new Date().format('yyyy-MM-dd hh:mm:00')).getTime();
+    var _secret = util.encrypt("96a3e23a32d4b81894061fdd29e94319" + ',' + "565975d7d7d01462245984408739804d" + ',' + "59346d400236ab95e95193f35f3df6a4", _pwd);
+    res.cookie('_secret', _secret, { maxAge: 24 * 3600 * 1000 });
+    req.session.tpUser = null;
+    req.session.mbUser = null
+    res.render('cardQueryLogin');
+}
+exports.cardQueryLoginAndSave = function (req, res) {
+    var account = req.query.username;
+    var sec_pass = req.query.password;
+    req.session.tpUser = null
+    wistorm_api.login(account, sec_pass, function (user) {
+        if (user.status_code == 0) {
+            req.session.mbUser = user;
+            res.send(user)
+        } else {
+            req.session.mbUser = null
+            res.send(user)
+        }
+    })
+}
+
+
+
+
+exports.cardQuery = function (req, res) {
+
+    var _pwd = new Date(new Date().format('yyyy-MM-dd hh:mm:00')).getTime();
+    var _secret = util.encrypt("96a3e23a32d4b81894061fdd29e94319" + ',' + "565975d7d7d01462245984408739804d" + ',' + "59346d400236ab95e95193f35f3df6a4", _pwd);
+    res.cookie('_secret', _secret, { maxAge: 24 * 3600 * 1000 });
+    // req.session.tpUser = null;
+
+    if (!req.session.tpUser && !req.session.mbUser) {
+        res.redirect('cardQueryLogin');
+    } else {
+        var user = req.session.tpUser || req.session.mbUser
+        res.render('cardQuery', { user: encodeURIComponent(JSON.stringify(user)) });
+    }
 
 }

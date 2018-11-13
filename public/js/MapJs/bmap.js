@@ -1160,7 +1160,7 @@ bmap.prototype.addPanoramaCtrl = function (top, right) {
     this.map.addControl(panoramaCtrl);
     var _this = this;
     //添加地图移动事件
-    debugger;
+    // debugger;
     var movePanorama = function (type, target) {
         panorama.setPosition(new BMap.Point(_this.map.getCenter().lng, _this.map.getCenter().lat));
     };

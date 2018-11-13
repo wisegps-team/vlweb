@@ -134,7 +134,7 @@
                     $.cookie("password", "");
                 }
 
-                var logUrl = "/burseLoginAndSave";
+                var logUrl = "/cardQueryLoginAndSave";
                 // debugger
                 var logData = { username: txtName, password: txtPwd };
                 var obj = { type: "GET", url: logUrl, data: logData, success: success, error: error };
@@ -156,7 +156,7 @@
                     $.cookie('parent_id', json.pid || '');
                     $.cookie('dealer_type', json.user_type);
                     $.cookie('lang', 'zh-CN');
-                    location.href = '/burse';
+                    location.href = '/cardQuery';
 
 
                 } else if (json.status_code == 1) {

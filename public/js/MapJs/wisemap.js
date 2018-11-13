@@ -61,7 +61,7 @@ if ($.cookie('map_type')) {
         document.write('<script src="js/MapJs/bmap.js"></script>');
 
     } else if ($.cookie('map_type') == 2) {
-        document.write('<script type="text/javascript" src="http://ditu.google.cn/maps/api/js?libraries=drawing&key=AIzaSyAPNfIol28jBmFgzU-ubjI_nVE8fIEtdjg"></script>');
+        document.write('<script type="text/javascript" src="http://ditu.google.cn/maps/api/js?libraries=drawing&key=AIzaSyCuDiKV_oDvSYHgi8VwZksm_7hy0Zf_5XU"></script>');
         document.write('<script src="js/MapJs/define.js"></script>');
         document.write('<script src="js/MapJs/gmap.js"></script>');
     } else if ($.cookie('map_type') == 3) {
@@ -83,7 +83,7 @@ if ($.cookie('map_type')) {
         document.write('<script src="js/panoramaCtrl.js"></script>');
         document.write('<script src="js/MapJs/bmap.js"></script>');
     } else {
-        document.write('<script type="text/javascript" src="http://ditu.google.cn/maps/api/js?libraries=drawing&key=AIzaSyAPNfIol28jBmFgzU-ubjI_nVE8fIEtdjg"></script>');
+        document.write('<script type="text/javascript" src="http://ditu.google.cn/maps/api/js?libraries=drawing&key=AIzaSyCuDiKV_oDvSYHgi8VwZksm_7hy0Zf_5XU"></script>');
         document.write('<script src="js/MapJs/define.js"></script>');
         document.write('<script src="js/MapJs/gmap.js"></script>');
     }
