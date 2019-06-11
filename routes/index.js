@@ -7,7 +7,40 @@ var define = require('../lib/rest-cli/define');
 var url = require('url');
 var util = require('../lib/rest-cli/util');
 const crypto = require('crypto')
-const fs = require('fs')
+const fs = require('fs');
+var path = require('path');
+var https = require('https')
+var http = require('http')
+
+var Wechat = require('wechat-jssdk');
+var FileStore = Wechat.FileStore;
+var DOMAIN = 'http://u.wisegps.cn';
+var WXBizDataCrypt = require('./WXBizDataCrypt') //获取微信信息
+
+
+var wechatConfig = {
+    //=====a service account test=====
+    domain: DOMAIN,
+    wechatToken: "",
+    // appId: "wx789e9656ed870ea9",
+    // appSecret: "fe86fe7f1d950274345dc0c500b63652",
+    appId: "wxa5c196f7ec4b5df9",
+    appSecret: "e89542d7376fc479aac35706305fc23f",
+    wechatRedirectUrl: `${DOMAIN}/oauth`,
+    // store: new MongoStore({limit: 5}),
+    store: new FileStore({ interval: 1000 * 60 * 3 }),
+    card: true,
+    payment: true,
+    merchantId: '1340675801',
+    paymentSandBox: false, //dev env
+    paymentKey: 'e10adc3949ba59abbe56e057f20f883e',
+    // paymentSandBoxKey: '',
+    paymentCertificatePfx: fs.readFileSync(path.join(process.cwd(), 'cert/apiclient_cert.p12')),
+    paymentNotifyUrl: `${DOMAIN}/api/wechat/payment/`,
+};
+
+const wx = new Wechat(wechatConfig);
+
 
 var dev_key = "59346d400236ab95e95193f35f3df6a4";
 var app_key = "96a3e23a32d4b81894061fdd29e94319";
@@ -21,6 +54,20 @@ var checkValid = function (req) {
     var page = obj.pathname || req.originalUrl;
     console.log('session: ' + req.session.opt);
     return req.session.uid && req.session.validPages && req.session.validPages[page];
+};
+
+exports.getSignature = function (req, res) {
+    console.log(req.query);
+    wx.jssdk.getSignature(req.query.url).then(
+        data => {
+            console.log('OK', data);
+            res.json(data);
+        },
+        reason => {
+            console.error(reason);
+            res.json(reason);
+        }
+    );
 };
 
 exports.login = function (req, res) {
@@ -892,6 +939,9 @@ exports.repaircar_apply = function (req, res) {
 exports.repair_accident = function (req, res) {
     res.render('repair_accident', { opt: req.session.opt, groups: req.session.groups });
 }
+
+
+
 exports.burseLogin = function (req, res) {
     var _pwd = new Date(new Date().format('yyyy-MM-dd hh:mm:00')).getTime();
     var _secret = util.encrypt("96a3e23a32d4b81894061fdd29e94319" + ',' + "565975d7d7d01462245984408739804d" + ',' + "59346d400236ab95e95193f35f3df6a4", _pwd);
@@ -976,15 +1026,15 @@ exports.burse = function (req, res) {
     }
 }
 
-exports.cardQueryLogin = function (req, res) {
+exports.mobileHomeLogin = function (req, res) {
     var _pwd = new Date(new Date().format('yyyy-MM-dd hh:mm:00')).getTime();
     var _secret = util.encrypt("96a3e23a32d4b81894061fdd29e94319" + ',' + "565975d7d7d01462245984408739804d" + ',' + "59346d400236ab95e95193f35f3df6a4", _pwd);
     res.cookie('_secret', _secret, { maxAge: 24 * 3600 * 1000 });
     req.session.tpUser = null;
     req.session.mbUser = null
-    res.render('cardQueryLogin');
+    res.render('mobileHomeLogin');
 }
-exports.cardQueryLoginAndSave = function (req, res) {
+exports.mobileHomeLoginAndSave = function (req, res) {
     var account = req.query.username;
     var sec_pass = req.query.password;
     req.session.tpUser = null
@@ -1002,7 +1052,16 @@ exports.cardQueryLoginAndSave = function (req, res) {
 
 
 
-exports.cardQuery = function (req, res) {
+exports.mobileHome = function (req, res) {
+
+    if (!req.session.openid && !req.query.code) {
+        var implicitOAuthUrl = wx.oauth.generateOAuthUrl(
+            DOMAIN + req.url
+        );
+        res.redirect(implicitOAuthUrl);
+        return;
+    }
+
 
     var _pwd = new Date(new Date().format('yyyy-MM-dd hh:mm:00')).getTime();
     var _secret = util.encrypt("96a3e23a32d4b81894061fdd29e94319" + ',' + "565975d7d7d01462245984408739804d" + ',' + "59346d400236ab95e95193f35f3df6a4", _pwd);
@@ -1013,7 +1072,271 @@ exports.cardQuery = function (req, res) {
         res.redirect('cardQueryLogin');
     } else {
         var user = req.session.tpUser || req.session.mbUser
-        res.render('cardQuery', { user: encodeURIComponent(JSON.stringify(user)) });
+        if (!req.session.openid) {
+            wx.oauth.getUserBaseInfo(req.query.code).then(function (tokenInfo) {
+                console.log('implicit oauth: ', tokenInfo);
+                req.session.openid = tokenInfo.openid;
+                res.render('mobileHome', { user: encodeURIComponent(JSON.stringify(user)), openId: req.session.openid });
+            });
+        } else {
+            res.render('mobileHome', { user: encodeURIComponent(JSON.stringify(user)), openId: req.session.openid });
+        }
     }
+}
 
+
+exports.cardQuery = function (req, res) {
+    if (!req.session.tpUser && !req.session.mbUser && !req.session.user) {
+        res.redirect('mobileHomeLogin');
+    } else {
+        var user = req.session.tpUser || req.session.mbUser || req.session.user
+        res.render('cardQuery', { user: encodeURIComponent(JSON.stringify(user)) })
+    }
+}
+
+
+
+// exports.d = function (req, res) {
+//     if (!req.session.openid && !req.query.code) {
+//         var implicitOAuthUrl = wx.oauth.generateOAuthUrl(
+//             DOMAIN + req.url
+//         );
+//         res.redirect(implicitOAuthUrl);
+//         return;
+//     }
+
+//     if (!req.session.openid) {
+//         wx.oauth.getUserBaseInfo(req.query.code).then(function (tokenInfo) {
+//             // res.send(JSON.stringify(tokenInfo))
+//             console.log('implicit oauth: ', tokenInfo);
+//             // console.log('implicit oauth: ', JSON.stringify(tokenInfo));
+//             req.session.openid = tokenInfo.openid;
+//             res.send(tokenInfo.openid)
+//             // 判断用户是否存在，如果不存在，则自动创建
+//             // getUser(tokenInfo.openid, function(uid){
+//             //     res.render('order', {
+//             //         product: obj.data,
+//             //         act: act.data,
+//             //         skuObj: JSON.stringify(obj.data.skuObj),
+//             //         openid: tokenInfo.openid,
+//             //         uid: uid
+//             //     });
+//             // });
+//         });
+//     } else {
+//         res.send(req.session.openid)
+//     }
+// };
+
+//空气净化器小程序api
+exports.littleApi = function (req, res, next) {
+    wistorm_api.getToken('nwuser', 'ff864b6e5f9c42a4a2e729e55312b0f6', 1, function (token) {
+        setTimeout(() => {
+            littleApiFun(token, req.query, res)
+        }, 200);
+    })
+
+}
+
+var littleApiFun = function (token, query, res) {
+    var method = query.method;
+    var openid = query.openid;
+    var query_json = {
+        did: query.did || '',
+        map: 'BAIDU'
+    }
+    //console.log(JSON.parse(query.param))
+    wistorm_api._get('_iotDevice', query_json, 'params', token.access_token, true, function (obj) {
+        if (obj.status_code == 0) {
+            if (obj.data) {
+                if (obj.data.params) {
+                    if (obj.data.params.openid) { //已绑定微信
+                        if (openid == obj.data.params.openid) { //绑定微信和授权微信一致
+                            switch (method) {
+                                case 'getDevice':
+                                    getDeviceLA(token, query, res);
+                                    break;
+                                case 'listAirData':
+                                    listAirDataLA(token, query, res);
+                                    break;
+                                case 'sendCommand':
+                                    sendCommandLA(token, query, res);
+                                    break;
+                                case 'getCityQuality':
+                                    getCityQualityLA(query, res);
+                                    break;
+                                case 'unBindWx':
+                                    unbindWXLA(token, query, res)
+                                    break;
+                                case 'update':
+                                    updateTable(token, query, res);
+                                    break;
+                                default:
+                                    break
+                            }
+                        } else {  //不一致
+                            res.send({ status_code: -3 })
+                        }
+                    } else { //绑定微信操作
+                        bindWXLA(query.did, token, openid, function (uJ) {
+                            if (uJ.status_code == 0) {
+                                littleApiFun(token, query, res)
+                            } else {
+                                res.send({ status_code: -1 })
+                            }
+                        })
+                    }
+                } else { //绑定微信操作
+                    bindWXLA(query.did, token, openid, function (uJ) {
+                        if (uJ.status_code == 0) {
+                            littleApiFun(token, query, res)
+                        } else {
+                            res.send({ status_code: -1 })
+                        }
+                    })
+                }
+            } else {
+                res.send({ status_code: -1 })
+            }
+        } else {
+            res.send({ status_code: -1 })
+        }
+    })
+
+}
+
+
+var bindWXLA = function (did, token, openid, callback) {
+    var query_json = {
+        did: did
+    }
+    var update_json = {
+        'params.openid': openid
+    }
+    wistorm_api._update('_iotDevice', query_json, update_json, token.access_token, true, function (json) {
+        callback(json)
+    })
+}
+
+var unbindWXLA = function (token, query, res) {
+    var query_json = {
+        did: query.did
+    }
+    var update_json = {
+        'params.openid': ''
+    }
+    wistorm_api._update('_iotDevice', query_json, update_json, token.access_token, true, function (json) {
+        res.send(json)
+    })
+}
+
+var getDeviceLA = function (token, query, res) {
+    var query_json = {
+        did: query.did || '',
+        map: 'BAIDU'
+    }
+    wistorm_api._get('_iotDevice', query_json, 'activeGpsData,params', token.access_token, true, function (obj) {
+        // console.log(obj)
+        res.send(obj)
+    })
+}
+
+var listAirDataLA = function (token, query, res) {
+    var query = {
+        did: query.did
+    };
+    wistorm_api._list('_iotGpsData', query, 'air', 'gpsTime', 'gpsTime', 0, 0, 0, -1, token.access_token, true, function (obj) {
+        res.send(obj)
+    });
+}
+
+//发送指令
+var sendCommandLA = function (token, query, res) {
+    var did = query.did;
+    var cmdType = query.cmdType;
+    var params = JSON.parse(query.params);
+    var type = query.type;
+    var remark = query.remark;
+    wistorm_api.createCommand(did, cmdType, params, type, remark, token.access_token, function (obj) {
+        res.send(obj)
+    })
+}
+
+//获取城市空气质量
+var getCityQualityLA = function (query, res) {
+    var city = query.city
+    var path = 'http://www.pm25.in/api/querys/aqi_details.json?city=' + encodeURIComponent(city) + '&avg=true&stations=no&token=GmBqBNJhqwsNf19Fwqdy';
+    // var path = "http://www.pm25.in/api/querys/aqi_details.json?city=%E5%B9%BF%E5%B7%9E&avg=true&stations=no&token=GmBqBNJhqwsNf19Fwqdy"
+    // var url = `https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${secret}&js_code=${code}&grant_type=authorization_code`
+    http.get(path, function (ress) {
+        ress.on('data', function (data) {
+            res.send({ status_code: 0, data: JSON.parse(data.toString()) })
+            //console.log(data.toString(), 'd')
+        });
+        ress.on("end", function () {
+            //console.log();
+        });
+    }).on("error", function (err) {
+        res.send({ status_code: -1, err: '请求出错' })
+        //console.log(err)
+    });
+}
+
+var updateTable = function (token, query, res) {
+
+    var table = query.table;
+    var query_json = JSON.parse(query.query)
+    var update_json = JSON.parse(query.update)
+
+    wistorm_api._update(table, query_json, update_json, token.access_token, true, function (json) {
+        res.send(json)
+    })
+
+}
+
+
+
+
+
+
+
+
+exports.getSessionKey = function (req, res) {
+    var appId = "wx078e1ef63be61fe2";
+    var secret = "c640fe4aa693943ab3c739d7a695af0c";
+    var code = req.query.code;
+    var url = `https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${secret}&js_code=${code}&grant_type=authorization_code`
+    https.get(url, function (ress) {
+        ress.on('data', function (data) {
+            res.send({ status_code: 0, data: JSON.parse(data.toString()) })
+            //console.log(data.toString(), 'd')
+        });
+        ress.on("end", function () {
+            //console.log();
+        });
+    }).on("error", function (err) {
+        res.send({ status_code: -1, err: '请求出错' })
+        //console.log(err)
+    });
+
+
+}
+
+exports.getAuthData = function (req, res) {
+    var appId = 'wx078e1ef63be61fe2';
+    var sessionKey = decodeURIComponent(req.query.sessionKey);
+    var encryptedData = decodeURIComponent(req.query.encryptedData);
+    var iv = decodeURIComponent(req.query.iv);
+    console.log(iv, '/n', encryptedData, '/n', sessionKey)
+    if (iv && encryptedData && sessionKey) {
+        try {
+            var pc = new WXBizDataCrypt(appId, sessionKey)
+            var data = pc.decryptData(encryptedData, iv)
+            res.send({ status_code: 0, data })
+        } catch (e) {
+            res.send({ status_code: -1, message: '参数错误' })
+        }
+    } else {
+        res.send({ status_code: -2 })
+    }
 }
